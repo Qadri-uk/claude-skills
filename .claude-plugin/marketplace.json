@@ -1,0 +1,12 @@
+{
+  "name": "qadri-uk",
+  "owner": { "name": "qadri-uk" },
+  "metadata": { "description": "qadri-uk's personal Claude skill library." },
+  "plugins": [
+    {
+      "name": "qadri-skills",
+      "source": "./",
+      "description": "Skill library with proactive-use instructions and shadcn + chrome-devtools MCP servers."
+    }
+  ]
+}

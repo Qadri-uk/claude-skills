@@ -1,0 +1,7 @@
+{
+  "name": "qadri-skills",
+  "version": "1.0.0",
+  "description": "qadri-uk skill library: UI/UX, motion, 3D, video, components, databases, dashboards and SaaS, plus standing instructions to use them proactively.",
+  "author": { "name": "qadri-uk" },
+  "homepage": "https://github.com/qadri-uk/claude-skills"
+}
