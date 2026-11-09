@@ -1,5 +1,5 @@
 ---
-name: wireframe
+name: wireframe-progressive
 description: Progressive UX generation — Phase 1 generates 5 B&W wireframe options instantly (1 safe + 4 exploratory), then Phase 2 renders Clean + Polished color variants via 5 parallel Task agents (one per option). Supports wireframes-only or wireframes+visuals. Extracts optimization intent from arguments when present. Maintains persistent design context. Use when user says "wireframe", "prototype", "UX options", or "layout exploration".
 argument-hint: "[feature-description]"
 ---

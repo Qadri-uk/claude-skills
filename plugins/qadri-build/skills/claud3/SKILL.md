@@ -1,5 +1,5 @@
 ---
-name: d3-viz
+name: d3-tufte
 description: Creates D3.js data visualizations using Tufte principles. Use when the user asks to visualize data, create a chart, build a D3 visualization, or explore data visually.
 user_invocable: true
 ---
