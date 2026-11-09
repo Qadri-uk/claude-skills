@@ -1,12 +1,10 @@
 {
   "name": "qadri-uk",
   "owner": { "name": "qadri-uk" },
-  "metadata": { "description": "qadri-uk's personal Claude skill library." },
+  "metadata": { "description": "qadri-uk's personal Claude skill library, in three plugins." },
   "plugins": [
-    {
-      "name": "qadri-skills",
-      "source": "./",
-      "description": "Skill library with proactive-use instructions and shadcn + chrome-devtools MCP servers."
-    }
+    { "name": "qadri-design", "source": "./plugins/qadri-design", "description": "Core: UI/UX design skills, proactive-skills instructions, shadcn and chrome-devtools MCP servers. Install this one first." },
+    { "name": "qadri-motion", "source": "./plugins/qadri-motion", "description": "Motion, animation, 3D/WebGL, shaders, diagrams and video." },
+    { "name": "qadri-build", "source": "./plugins/qadri-build", "description": "Build and product: React/Next.js, Vercel, Supabase, AI SDK, mobile, data viz, presentations, PM and marketing." }
   ]
 }

@@ -1,0 +1,7 @@
+{
+  "name": "qadri-design",
+  "version": "1.0.0",
+  "description": "Core of the qadri-uk skill library: UI/UX design, research, design systems, accessibility and critique skills, plus the proactive-skills instructions and the shadcn and chrome-devtools MCP servers.",
+  "author": { "name": "qadri-uk" },
+  "homepage": "https://github.com/qadri-uk/claude-skills"
+}
