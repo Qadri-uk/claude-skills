@@ -1,80 +1,160 @@
 ---
 name: product-position
-description: |
-  B2B SaaS product positioning, messaging hierarchy, and differentiation advisor.
-  Applies Dunford, JTBD, Raskin, and Lochhead frameworks to produce positioning docs,
-  messaging matrices, competitive framing, and strategic narratives.
-triggers:
-  - "product positioning"
-  - "positioning strategy"
-  - "messaging hierarchy"
-  - "value proposition"
-  - "positioning doc"
-  - "product-position"
-  - "competitive framing"
-  - "strategic narrative"
-das:
-  type: skill
-  category: content-design
-  upstream: "https://github.com/firatcand/founder-skills"
-  version: latest
+description: Use when a B2B SaaS product needs upstream positioning or messaging clarity — defining who it's for, the category, competitive alternatives, differentiation, value props, strategic narrative, or a messaging hierarchy. Triggers include "my messaging isn't working," "we sound like everyone else," repositioning, or auditing an existing positioning doc. Use before homepage, deck, or sales-narrative work. Not for writing the final copy (use copywriter-skill) or running the sales process (use sales-skill).
 ---
 
-# product-position
+# Product Positioning & Messaging for B2B SaaS
 
-> Catalogue stub — full skill: [firatcand/founder-skills](https://github.com/firatcand/founder-skills)
+## Purpose
 
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
+Help founders and operators make sharp positioning decisions, build structured messaging hierarchies, and produce core positioning artifacts — grounded in methodologies from Dunford, Ries & Trout, Raskin, Moesta, Laja, Pierri, Lochhead, and others. If brand/voice/audience/stage context is provided, honor it; otherwise state assumptions and proceed.
 
-1. **Is the full skill already installed?**
-   - Global: `f=~/.agents/skills/product-position/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/product-position/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `product-position`, invoke it and proceed
-   - `pointer` → go to step 2
+## Output discipline
 
-2. **Detect scope, then install:**
+Deliver only what the user will actually use. Never leak internal scaffolding into the output:
+- No reference citations the reader can't see ("§3.2", "per the knowledge base", "KB §1.4").
+- No mode or process narration ("Mode: Generate", "I have everything I need", "following the skill's methodology").
+- No skill-handoff chatter inside the deliverable.
 
-   ```bash
-   [ -e ~/.agents/skills/product-position ] && echo "global" || echo "project"
-   ```
+Apply frameworks silently — name one only when it helps the reader, not to show your work. When context is missing, state your assumption in one line and proceed; don't interrogate.
 
-   **Global:**
-   ```bash
-   npx skills add firatcand/founder-skills --skill product-position -g -y
-   ```
+## When to use this skill
 
-   **Project:**
-   ```bash
-   npx skills add firatcand/founder-skills --skill product-position -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
+- Positioning a product from scratch or repositioning
+- Auditing/critiquing existing positioning or messaging
+- Building a positioning doc, messaging hierarchy, or JTBD summary
+- Clarifying category choice vs. category creation decisions
+- Defining competitive alternatives (including status quo / "do nothing")
+- Structuring a strategic narrative (Raskin-style)
+- Testing whether messaging has clarity, relevance, value, and differentiation
 
-**Heads-up**
+## Workflow
 
-- **License:** MIT
-<!-- das:install:end -->
+### Step 1: Diagnose the request
 
-## Invoke after install
+Determine which mode the user needs:
 
-- Skill name: `product-position`
-- Trigger phrases: "product positioning", "positioning strategy", "messaging hierarchy", "value proposition", "positioning doc"
+| Mode | Trigger | Output |
+|------|---------|--------|
+| **Build** | "Help me position X" / new product / repositioning | Full positioning doc + messaging hierarchy |
+| **Audit** | "Review my positioning" / "why isn't this landing?" | Diagnosis with specific fixes |
+| **Artifact** | "Write me a positioning doc" / "messaging matrix" | Structured deliverable |
+| **Advise** | Specific question about frameworks, category, differentiation | Targeted answer with framework citation |
 
-## What it does
+### Step 2: Discovery interview (Build & Audit modes)
 
-Positioning and messaging advisor grounded in methodologies from Dunford, Ries & Trout, Raskin, Moesta, Laja, and Lochhead:
+Infer from context; if genuinely missing, state your assumption and proceed. When discovery is warranted, ask in batches of 2-3 questions max, covering these areas in order:
 
-- Positioning from scratch or repositioning existing products
-- Audit and critique of existing messaging or positioning
-- Builds positioning docs, messaging hierarchies, and JTBD summaries
-- Competitive alternative framing (including "do nothing" / status quo)
-- Category choice vs. category creation decisions
-- Strategic narrative structure (Raskin-style)
-- Homepage, pitch deck, and sales narrative messaging clarity
+**Round 1 — Context & ICP**
+- What does the product do in one sentence?
+- Who are your best-fit customers today? (Role, company size, industry, situation)
+- What were they doing before they found you? (Status quo, tools, manual process)
 
-## When NOT to use
+**Round 2 — Competitive alternatives & switch triggers**
+- What are the real alternatives buyers consider? (Include "do nothing")
+- What event or pain triggers them to look for a solution?
+- What are the forces at play? (Push of current situation, pull of new solution, anxiety about switching, habit of present)
 
-- Landing page copy or headlines → use `copywriting-skill`
-- Full PM discovery / PRD → use `deanpeters-pm-skills` or `pm-skills`
-- User research for positioning insights → use `user-research-cookiy`
-- Brand identity / visual language → use `brand-design-md`
+**Round 3 — Differentiation & value**
+- What can your product do that alternatives cannot? (Unique capabilities)
+- What workflow changes when someone adopts your product?
+- What measurable outcomes do your best customers report?
+- Is there a worldview or belief that drives your approach differently from competitors?
+
+**Round 4 — Category & narrative**
+- What category do buyers put you in today?
+- Is that the right category, or does it set wrong expectations?
+- What's the big change in the world that makes your product necessary now?
+
+Skip questions the user has already answered. Adapt depth to context.
+
+### Step 3: Apply frameworks
+
+After discovery, apply the relevant frameworks from `references/frameworks.md`. Read that file before producing output.
+
+**For positioning decisions**, follow Dunford's methodology:
+1. Competitive alternatives → 2. Unique attributes → 3. Value themes → 4. Best-fit customers → 5. Category choice → 6. Positioning statement
+
+**For differentiation**, evaluate across four lenses:
+- Capability (what it uniquely does)
+- Workflow (how work gets done differently)
+- Outcome (what results customers achieve)
+- Worldview (how the company's beliefs differ)
+
+**For category decisions**, apply the decision rule:
+- Default to **category choice** (pick a known category + subsegment) unless there is strong evidence of a genuinely new problem-solution pairing with capital and time for education.
+- Only recommend **category creation** (Lochhead/Play Bigger) when the product introduces a fundamentally new way of working that existing categories cannot contain.
+
+**For strategic narratives**, follow Raskin's 5-part structure:
+1. Name the big change → 2. Winners and losers → 3. Promised land → 4. Obstacles → 5. Product as vehicle
+
+**For message validation**, apply Laja's 4-point test:
+1. Clarity — Do people immediately understand what it is?
+2. Relevance — Can the right audience recognize it's for them?
+3. Value — Is the value compelling enough to care?
+4. Differentiation — Is it clear how this differs from alternatives?
+
+### Step 4: Produce artifacts
+
+This skill produces three core artifacts:
+
+#### Artifact 1: Positioning Document (1-3 pages)
+Structure:
+- **ICP definition** (role, company profile, situation/trigger)
+- **Competitive alternatives** (including status quo)
+- **Unique attributes** (capabilities that alternatives lack)
+- **Value themes** (outcomes those attributes enable)
+- **Category** (chosen category + rationale)
+- **Positioning statement** (concise, follows from above)
+- **JTBD summary** (job, forces of progress, desired outcome)
+
+#### Artifact 2: Messaging Hierarchy
+Structure:
+- **Strategic narrative** (1-paragraph "change in the world" story)
+- **Core value propositions** (3-5, each with: claim, capability, proof point)
+- **Persona-level messages** (by role: economic buyer, champion, end user)
+- **Altitude guide** (executive = outcomes & risk; user = workflow & relief)
+
+#### Artifact 3: JTBD Summary
+Structure:
+- **Job statement** ("When [situation], help me [progress], so I can [outcome]")
+- **Forces diagram** (push, pull, anxiety, habit)
+- **Timeline** (first thought → passive looking → active looking → deciding → onboarding → ongoing use)
+- **Hiring criteria** (functional, emotional, social)
+
+### Step 5: Handoff
+
+When the user needs downstream execution from positioning:
+
+| Need | Hand off to |
+|------|-------------|
+| Homepage copy, landing page, email copy, CTAs | `copywriter-skill` |
+| Sales deck, battlecards, objection handling, discovery scripts | `sales-skill` |
+| Video/podcast scripts from positioning | `script-writer-skill` |
+| Cold outreach, prospecting cadences | `prospecting` |
+| Channel strategy, CAC analysis | `channel-expert` |
+| Pricing & packaging decisions | `pricing` |
+| PLG onboarding messaging | `plg-skill` |
+
+Explicitly tell the user: "Positioning is set — for [specific task], I'll hand off to [skill name]."
+
+## Audit mode
+
+When auditing existing positioning or messaging, evaluate against:
+
+1. **Dunford completeness** — Are all 6 elements defined? (alternatives, attributes, value, customers, category, statement)
+2. **Laja's 4-point test** — Clarity, relevance, value, differentiation
+3. **Pierri's homepage test** — Can a stranger understand what it is, who it's for, and when they'd use it in <10 seconds?
+4. **Raskin narrative check** — Does the story start from a change in the world, or does it start from the product?
+5. **JTBD alignment** — Is messaging framed as customer progress, or as a feature list?
+
+Produce a scored audit (1-5 per dimension) with specific, actionable fixes.
+
+## Key principles (always apply)
+
+- Positioning is a **strategic decision**, not copywriting. If the user asks for "better messaging" but has a positioning problem (unclear ICP, no category commitment, no differentiation), say so.
+- Always include **"do nothing" and status quo** as competitive alternatives.
+- **Category choice > category creation** for most companies. Don't recommend category creation lightly.
+- Messaging must be expressed in **customer language about their progress**, not internal jargon about features.
+- Every value proposition needs a **capability layer** (what users can concretely do) between features and outcomes.
+- Positioning should be **cross-functional** — flag when decisions require product, sales, or leadership input, not just marketing.

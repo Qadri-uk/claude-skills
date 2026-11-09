@@ -1,6 +1,6 @@
 ---
 name: distinctive-frontend
-description: Create visually distinctive, non-generic frontends using a four-vector approach (extreme typography, cultural colour themes such as Cyberpunk/Brutalist/Nordic, orchestrated staggered motion, layered backgrounds). Use when a UI must avoid default AI-slop aesthetics.
+description: Create visually distinctive, high-impact frontend interfaces that avoid generic "AI slop" aesthetics (no Inter/Roboto defaults, no purple gradients, no generic layouts). Applies a four-vector system — typography, color/theme, motion, backgrounds. Use when designing or redesigning UI that needs a strong, memorable visual identity.
 ---
 
 # Distinctive Frontend Design

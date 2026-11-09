@@ -1,69 +1,80 @@
 ---
 name: wcag-audit-patterns
-description: |
-  Runs WCAG 2.2 audits combining automated testing, manual verification steps,
-  and prioritised remediation guidance. Covers perceivability, operability,
-  understandability, and robustness criteria across web interfaces.
-triggers:
-  - "WCAG audit"
-  - "accessibility audit"
-  - "WCAG 2.2"
-das:
-  type: skill
-  category: accessibility-quality
-  upstream: "https://github.com/wshobson/agents"
-  upstream_path: "plugins/accessibility-compliance/skills/wcag-audit-patterns/SKILL.md"
-  version: latest
-  install: true
+description: Conduct WCAG 2.2 accessibility audits with automated testing, manual verification, and remediation guidance. Use when auditing websites for accessibility, fixing WCAG violations, or implementing accessible design patterns.
 ---
 
-# wcag-audit-patterns
+# WCAG Audit Patterns
 
-> Catalogue stub — full skill: [wshobson/agents](https://github.com/wshobson/agents/blob/main/plugins/accessibility-compliance/skills/wcag-audit-patterns/SKILL.md)
+Comprehensive guide to auditing web content against WCAG 2.2 guidelines with actionable remediation strategies.
 
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
+## When to Use This Skill
 
-1. **Is the full skill already installed?**
-   - Global: `f=~/.agents/skills/wcag-audit-patterns/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/wcag-audit-patterns/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `wcag-audit-patterns`, invoke it and proceed
-   - `pointer` → go to step 2
+- Conducting accessibility audits
+- Fixing WCAG violations
+- Implementing accessible components
+- Preparing for accessibility lawsuits
+- Meeting ADA/Section 508 requirements
+- Achieving VPAT compliance
 
-2. **Detect scope, then install:**
+## Core Concepts
 
-   ```bash
-   [ -e ~/.agents/skills/wcag-audit-patterns ] && echo "global" || echo "project"
-   ```
+### 1. WCAG Conformance Levels
 
-   **Global:**
-   ```bash
-   npx skills add wshobson/agents --skill wcag-audit-patterns -g -y
-   ```
+| Level   | Description            | Required For      |
+| ------- | ---------------------- | ----------------- |
+| **A**   | Minimum accessibility  | Legal baseline    |
+| **AA**  | Standard conformance   | Most regulations  |
+| **AAA** | Enhanced accessibility | Specialized needs |
 
-   **Project:**
-   ```bash
-   npx skills add wshobson/agents --skill wcag-audit-patterns -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
-
-**Claude Code plugin route:**
+### 2. POUR Principles
 
 ```
-/plugin marketplace add wshobson/agents
-/plugin install accessibility-compliance@claude-code-workflows
+Perceivable:  Can users perceive the content?
+Operable:     Can users operate the interface?
+Understandable: Can users understand the content?
+Robust:       Does it work with assistive tech?
 ```
 
-**Heads-up**
+### 3. Common Violations by Impact
 
-- **License:** MIT
-<!-- das:install:end -->
+```
+Critical (Blockers):
+├── Missing alt text for functional images
+├── No keyboard access to interactive elements
+├── Missing form labels
+└── Auto-playing media without controls
 
-## Invoke after install
+Serious:
+├── Insufficient color contrast
+├── Missing skip links
+├── Inaccessible custom widgets
+└── Missing page titles
 
-- Skill name: `wcag-audit-patterns`
-- Trigger phrases: "WCAG audit", "accessibility audit", "WCAG 2.2", "accessibility remediation"
+Moderate:
+├── Missing language attribute
+├── Unclear link text
+├── Missing landmarks
+└── Improper heading hierarchy
+```
 
-## What it does
+## Detailed patterns and worked examples
 
-Provides structured WCAG 2.2 audit patterns that combine automated testing tools with manual verification checklists. Surfaces failures by success criterion and generates prioritised remediation guidance so teams can address the highest-impact issues first. It is one skill from the `accessibility-compliance` plugin of `wshobson/agents`, which also carries a screen-reader testing skill, agents, and commands (available through the Claude Code plugin route).
+Detailed pattern documentation lives in `references/details.md`. Read that file when the navigation tier above is insufficient.
+
+## Best Practices
+
+### Do's
+
+- **Start early** - Accessibility from design phase
+- **Test with real users** - Disabled users provide best feedback
+- **Automate what you can** - 30-50% issues detectable
+- **Use semantic HTML** - Reduces ARIA needs
+- **Document patterns** - Build accessible component library
+
+### Don'ts
+
+- **Don't rely only on automated testing** - Manual testing required
+- **Don't use ARIA as first solution** - Native HTML first
+- **Don't hide focus outlines** - Keyboard users need them
+- **Don't disable zoom** - Users need to resize
+- **Don't use color alone** - Multiple indicators needed

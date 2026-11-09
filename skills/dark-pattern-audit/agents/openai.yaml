@@ -1,0 +1,5 @@
+interface:
+  display_name: "Dark Pattern Audit"
+  short_description: "Manual audit for deceptive UX patterns"
+policy:
+  allow_implicit_invocation: false

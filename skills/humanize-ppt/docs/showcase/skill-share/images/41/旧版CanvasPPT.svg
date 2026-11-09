@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#eee7d6"/>
+  <rect x="54" y="48" width="1092" height="624" fill="#f6f1e6" stroke="#4a3b2e" stroke-opacity=".28" stroke-width="2"/>
+  <rect x="92" y="90" width="478" height="250" fill="#2a273d"/>
+  <rect x="630" y="90" width="478" height="250" fill="#e6b07a"/>
+  <rect x="92" y="386" width="478" height="194" fill="#f3ebe0" stroke="#4a3b2e" stroke-opacity=".18"/>
+  <rect x="630" y="386" width="478" height="194" fill="#1f241e"/>
+  <text x="120" y="132" fill="#f8f1df" font-family="Georgia,serif" font-size="34">Nano Banana Page</text>
+  <text x="658" y="132" fill="#211a15" font-family="Arial,sans-serif" font-size="34">GPT-4 Image Page</text>
+  <text x="120" y="194" fill="#f8f1df" font-family="Arial,sans-serif" font-size="24" opacity=".82">画风 A：强视觉概念</text>
+  <text x="658" y="194" fill="#211a15" font-family="Arial,sans-serif" font-size="24" opacity=".78">画风 B：另一套排版</text>
+  <text x="120" y="440" fill="#211a15" font-family="Arial,sans-serif" font-size="26" opacity=".86">文字经常被塞进图片里</text>
+  <text x="120" y="486" fill="#211a15" font-family="Arial,sans-serif" font-size="22" opacity=".58">后续修改需要重新生成，长篇很难统一。</text>
+  <text x="658" y="440" fill="#f8f1df" font-family="Georgia,serif" font-size="30">Style Drift</text>
+  <text x="658" y="486" fill="#f8f1df" font-family="Arial,sans-serif" font-size="22" opacity=".66">每页都能看，但整套读起来不顺。</text>
+  <path d="M125 285 C210 220 310 230 505 290" fill="none" stroke="#f8f1df" stroke-width="3" opacity=".34"/>
+  <path d="M675 285 C780 250 910 250 1065 292" fill="none" stroke="#211a15" stroke-width="3" opacity=".25"/>
+  <text x="92" y="632" fill="#4a3b2e" font-family="'Courier New',monospace" font-size="22" letter-spacing="8">PLACEHOLDER · REPLACE WITH OLD CANVAS SCREENSHOT</text>
+</svg>

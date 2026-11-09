@@ -1,73 +1,179 @@
 ---
 name: email-html-mjml
-description: |
-  Generates cross-client responsive HTML email from MJML 5.x — Outlook 2013-365 safe,
-  Gmail-optimized, WCAG 2.1 AA accessible. Triggers automatically when asked to create,
-  compile, or troubleshoot HTML email. Compiles with npx mjml, so it needs Node.js 20+.
-triggers:
-  - "MJML"
-  - "HTML email"
-  - "email template"
-  - "Outlook-safe email"
-  - "email-html-mjml"
-das:
-  type: skill
-  category: email-design
-  upstream: "https://github.com/framix-team/skill-email-html-mjml"
-  upstream_path: "email-html-mjml/SKILL.md"
-  version: latest
-  install: true
+description: Responsive HTML email template generation using MJML 5.x framework. Use when the user asks to create, generate, design, or build an email template — including welcome emails, promotional blasts, transactional templates, newsletters, or any responsive email. Also use when the user asks to compile MJML to HTML, work with or edit existing MJML templates or `.mjml` files, or troubleshoot email rendering issues across clients.
+license: MIT
+compatibility: Requires Node.js 20 or later (LTS 20/22/24) for npx mjml compilation. Install MJML per project (npm install -D mjml). Works with Claude Code and Claude.ai.
+metadata:
+  author: Framix
+  version: 2.0.0
+  documentation: https://github.com/framix-team/skill-email-html-mjml
 ---
 
-# email-html-mjml
+# email-html-mjml — Responsive Email Developer
 
-> Catalogue stub — full skill: [framix-team/skill-email-html-mjml](https://github.com/framix-team/skill-email-html-mjml)
+Generate valid, cross-client MJML 5.x templates and compile them to production-ready HTML. The primary goal is compatibility: Outlook (2013–365), Gmail (web/app), Apple Mail, and major mobile clients. Every output must be compilable with `--config.validationLevel=strict` and survive Gmail's 102KB clip limit.
 
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
+---
 
-1. **Is the full skill already installed?**
-   - Global: `f=~/.agents/skills/email-html-mjml/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/email-html-mjml/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `email-html-mjml`, invoke it and proceed
-   - `pointer` → go to step 2
+## Workflow
 
-2. **Detect scope, then install:**
+1. **Gather requirements** — Infer email type, brand colors, and content from the user's message and conversation context. Ask only for what is genuinely missing and blocking progress (e.g., no colors provided and the layout has branded sections). Never front-load a questionnaire.
+2. **Plan layout** — Decide and announce the structure before writing code (single-column, 2-col grid, hero + content, etc.)
+3. **Load component references** — Read the relevant file(s) from the Component Index below before writing any MJML
+4. **Generate MJML** — Write complete, valid MJML starting from `<mjml>` with a full `<mj-head>`
+5. **Compile** — Follow `compilation.md`. Run `npx mjml` with `--config.minify=true`
+6. **Deliver both files** — Always output `.mjml` source AND compiled `.html`
 
-   ```bash
-   [ -e ~/.agents/skills/email-html-mjml ] && echo "global" || echo "project"
-   ```
+---
 
-   **Global:**
-   ```bash
-   npx skills add framix-team/skill-email-html-mjml --skill email-html-mjml -g -y
-   ```
+## 9 Engineering Rules
 
-   **Project:**
-   ```bash
-   npx skills add framix-team/skill-email-html-mjml --skill email-html-mjml -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
+1. **Structural Integrity** — All visual content MUST be in `<mj-column>` inside `<mj-section>`. Sections cannot be nested.
+2. **Responsive Defaults** — Assume 600px width. Use `<mj-group>` to prevent mobile stacking for side-by-side elements (social bars, logo rows). Use `<mj-section gutter="...">` for equal spacing between columns instead of padding tricks.
+3. **Outlook Compatibility** — Use `<mj-font>` for web fonts (prevents Times New Roman fallback). Always provide a fallback stack (Arial, sans-serif). For `<mj-section>` background images, always set both `background-size` and a fallback `background-color`.
+4. **Gmail Optimization** — Use `inline="inline"` on `<mj-style>` for custom CSS. Prefer component attributes (`color`, `font-size`) over CSS classes for critical styles.
+5. **Dark Mode** — Include dark mode support when explicitly requested or when the email has a light background that would cause harsh forced-inversion. See the Dark Mode Pattern below.
+6. **Accessibility** — Every `<mj-image>` MUST have `alt`. Always set `<mj-title>` (populates `aria-label`). Maintain WCAG 2.1 AA 4.5:1 contrast. For heading roles, use `mj-html-attributes` — direct `role`/`aria-level` attributes on `mj-text` are illegal under strict validation (see Accessibility Checklist below).
+7. **Styling Efficiency** — Use `<mj-attributes>` with `<mj-all>`, component defaults, and `<mj-class>` to eliminate repetitive inline styles.
+8. **Hero Sections** — Use `<mj-hero>` for full-bleed hero banners; it falls back to a regular section in unsupported clients. Avoid `<mj-accordion>` and `<mj-carousel>` — client support is too poor to be useful.
+9. **Templating Support** — Plain interpolations (`{{firstName}}`) need no wrapping — they pass through text, attributes, `mj-title` and `mj-preview` untouched. Only block tags containing `<` or `>` (`{% if x < 5 %}`, `{{#if a<b}}`) need `<!-- htmlmin:ignore -->` protection, or minify silently corrupts them. An `<mj-raw>` between content components inside a column emits its content *between* `</tr>` and `<tr>` — invalid markup; put `mj-raw` between sections, and keep templating tags out of `<mj-style>` (see `compilation.md`).
 
-**Heads-up**
+---
 
-- **Requires:** Node.js 20 or later; MJML installed per project (`npm install -D mjml`), never globally
-- **License:** MIT
-<!-- das:install:end -->
+## Critical Gotchas
 
-## Invoke after install
+**MJML 5 `mj-include` is disabled by default:**
+- `<mj-include>` tags are silently ignored unless includes are explicitly enabled — a deliberate security change from MJML 4
+- CLI: add `--config.allowIncludes true`. Node API: pass `ignoreIncludes: false`
+- Scope allowed directories with `--config.includePath` (CLI) or `includePath` (Node) — only MJML, HTML, and CSS includes are supported
+- A partial outside the template's own directory is denied unless its directory is allowlisted
+- **`--config.validationLevel=strict` does not catch this** — a dropped include still exits `0` and still writes the `.html`. A clean compile is NOT proof the include landed; grep the output for known partial content before delivering
+- If a compiled template is missing content you expected from an include, check for this first
 
-- Skill name: `email-html-mjml`
-- Trigger phrases: "MJML", "HTML email", "email template", "Outlook-safe email"
+**Outlook:**
+- Background images: VML only generated for `<mj-section>` and `<mj-hero>` — nowhere else
+- Background positioning: keyword values only (`top`, `center`, `bottom`) — pixel values ignored
+- Always pair `background-repeat="no-repeat"` with explicit `background-size`
+- Font fallback: `<mj-font>` hides `@font-face` from Outlook via MSO conditional comments
 
-## What it does
+**Gmail:**
+- Use component attributes for critical layout — CSS classes may be stripped
+- 102KB clip: always compile with `--config.minify=true`
 
-Generates production-ready HTML email using MJML 5.x as the authoring layer. MJML's responsive components compile to table-based HTML that is compatible with Outlook 2013 through 365, Gmail web and mobile, Apple Mail, and other major clients. The skill ships component references, example templates (newsletter, order confirmation, promo, basic layout) and compile instructions; it always delivers the `.mjml` source and the compiled `.html`, validated with MJML's strict mode and checked against Gmail's 102 KB clipping limit. Output follows accessibility rules (alt text, titles, contrast). The skill self-activates when asked to create, compile, or troubleshoot any HTML email.
+**iOS / Android stacking:**
+- **MJML 5's minify no longer strips whitespace between tags** — `htmlnano` collapses runs to a single space where `html-minifier` removed them (verified: v4 emits `<![endif]--><div class="mj-column-per-50"`, v5 emits `<![endif]--> <div ...`). The anti-stacking defence that still works is the `font-size:0px` MJML puts on the parent `<td>`, which is emitted in both versions
+- To restore v4 whitespace stripping: `--config.minifyOptions '{"collapseWhitespace":"all"}'` (JSON string form required)
+- Whitespace between tags causes stacking even inside `<mj-group>`
 
-It compiles with `npx mjml`, so Node.js 20 or later is required, and MJML itself is installed per project (`npm install -D mjml`).
+**Vertical-align bug:**
+- If any column in a section sets `vertical-align`, ALL columns in that section must explicitly set it
 
-## When NOT to use
+**JavaScript:**
+- JS is completely blocked in all email clients (Gmail, Outlook, Apple Mail, iOS Mail). No `onclick`, no clipboard API, no interactivity of any kind. Interactive-looking elements (copy buttons, toggles) are purely decorative.
 
-- Marketing web page HTML — use design-html instead
-- Animated web content or interactive landing pages
-- Email rendering testing across clients (use a dedicated email testing service like Litmus)
+---
+
+## Dark Mode Pattern
+
+```xml
+<mj-head>
+  <mj-raw>
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+  </mj-raw>
+
+  <!-- Light logo visible by default; dark logo hidden -->
+  <mj-style inline="inline">
+    .dark-logo { display: none !important; }
+  </mj-style>
+
+  <!-- Dark mode overrides -->
+  <mj-style>
+    @media (prefers-color-scheme: dark) {
+      .light-logo { display: none !important; }
+      .dark-logo  { display: block !important; }
+    }
+  </mj-style>
+</mj-head>
+```
+
+Safe neutrals: `#121212` (not `#000000`) and `#F1F1F1` (not `#FFFFFF`) — prevents jarring forced inversions.
+
+---
+
+## Accessibility Checklist
+
+- `<mj-title>` is set (screen reader email label + `aria-label`)
+- `lang` attribute on root `<mjml>` tag
+- `alt` on every `<mj-image>` and `<mj-social-element>`
+- Heading role set via `mj-html-attributes` (NOT as a direct attribute on `mj-text`):
+  ```xml
+  <!-- In mj-head -->
+  <mj-html-attributes>
+    <mj-selector path=".email-heading div">
+      <mj-html-attribute name="role">heading</mj-html-attribute>
+      <mj-html-attribute name="aria-level">1</mj-html-attribute>
+    </mj-selector>
+  </mj-html-attributes>
+  <!-- On the component -->
+  <mj-text css-class="email-heading" ...>Heading text</mj-text>
+  ```
+- 4.5:1 contrast ratio on all text/background pairs
+- No text baked into images — always use live `<mj-text>` blocks
+
+---
+
+## Component Index
+
+Before writing any MJML, read the component file(s) for the components you'll use.
+
+| Group | Components | Load when | File |
+|-------|-----------|-----------|------|
+| Head | mj-attributes, mj-font, mj-style, mj-preview, mj-breakpoint, mj-html-attributes | Setting up head, global styles | `components/head.md` |
+| Layout | mj-body, mj-section, mj-column, mj-group, mj-wrapper | Building structure / grid | `components/layout.md` |
+| Content | mj-text, mj-image, mj-button, mj-divider, mj-spacer, mj-table | Adding content blocks | `components/content.md` |
+| Interactive | mj-accordion, mj-carousel, mj-social, mj-navbar | Interactive or social elements | `components/interactive.md` |
+| Advanced | mj-hero, mj-raw, mj-include | Hero banners, template tags, partials | `components/advanced.md` |
+
+General reference (hierarchy, ending tags, validation, width math, Gmail clip): `mjml-reference.md`
+
+---
+
+## Compilation
+
+Read `compilation.md` for the full workflow. Key command:
+
+```bash
+npx mjml template.mjml -o dist/template.html --config.minify=true --config.validationLevel=strict
+```
+
+Hard rules:
+- Never `npm install -g mjml`
+- Always use `npx` or `./node_modules/.bin/mjml`
+- If mjml not in `package.json`, suggest `npm install -D mjml`
+
+---
+
+## Examples
+
+All four compile clean under `--config.validationLevel=strict --config.minify=true` on MJML 5.4.0.
+
+| File | Use as a reference for |
+|------|------------------------|
+| `assets/examples/basic-layout.mjml` | Structure only. MJML docs example: 6-section layout (header, image hero + button, intro, 2-col image+text, 3-col icons, social row). Intentionally bare-bones — no `mj-head`, no dark mode, placeholder copy. Not a production template. |
+| `assets/examples/order-confirmation.mjml` | Transactional. Full `mj-head` (`mj-attributes` + `mj-class` + `mj-font` + `mj-html-attributes`), receipt `mj-table` with `scope="col"` headers, Handlebars in `mj-raw` with `htmlmin:ignore`, conditional block, and `mj-include` of `partials/footer.mjml`. **Requires `--config.allowIncludes true`.** |
+| `assets/examples/promo-sale.mjml` | Promotional. `mj-hero` and `mj-section` background images (VML generated), `mj-navbar`, `mj-group` non-stacking row, `mj-social`, `mj-breakpoint`, plus the MJML 5 `gutter` / `border` / `inner-padding` attributes. |
+| `assets/examples/newsletter.mjml` | Editorial + **dark mode**. The full dark-mode pattern from above, `mj-wrapper`, `mj-html-attributes` for `aria-level` 1 and 2, and `vertical-align` set on every column in each section. |
+
+All copy, image URLs, and brands in these files are placeholders — replace them; do not ship them as-is.
+
+---
+
+## Output
+
+Always deliver:
+
+1. **`<name>.mjml`** — complete MJML source (editable, version-controllable)
+2. **`<name>.html`** — compiled output (production-ready, send via ESP)
+
+Name files after the email type: `welcome.mjml`, `promo-sale.mjml`, `order-confirmation.mjml`

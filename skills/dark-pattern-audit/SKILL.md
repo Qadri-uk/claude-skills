@@ -1,91 +1,81 @@
 ---
 name: dark-pattern-audit
-description: |
-  Audits codebases and product copy for deceptive dark patterns inferable from
-  local source code and text — no runtime inspection or screenshots needed.
-  Produces a structured narrative report with confidence grading, source
-  locations, concise reasoning, and official pattern reference links for each
-  detected pattern. Covers pricing, subscriptions, consent, modals, preselected
-  controls, misleading CTAs, and more.
-triggers:
-  - "dark pattern audit"
-  - "dark pattern detection"
-  - "deceptive design audit"
-  - "dark-pattern-audit"
-  - "deceptive patterns"
-  - "manipulative UI audit"
-das:
-  type: skill
-  category: accessibility-quality
-  upstream: "https://github.com/SidKH/skills"
-  upstream_path: "dark-pattern-audit/SKILL.md"
-  version: latest
+description: Audit codebases and product copy for deceptive dark patterns that are inferable from local source code and text. Produce a structured narrative report with confidence, source locations, concise reasoning, and the official pattern link for each detected pattern.
+disable-model-invocation: true
 ---
 
-# dark-pattern-audit
+# Dark Pattern Audit
 
-> Catalogue stub — full skill: [SidKH/skills](https://github.com/SidKH/skills/tree/main/dark-pattern-audit)
+Audit a repository for dark patterns using only what is inferable from local source code and copy text. Do not rely on runtime inspection, screenshots, live browsing, telemetry, or external allegations.
+Audit the entire repository by default unless the user narrows scope.
 
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
+## Workflow
 
-1. **Is the full skill already installed?**
-   - Global: `f=~/.agents/skills/dark-pattern-audit/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/dark-pattern-audit/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `dark-pattern-audit`, invoke it and proceed
-   - `pointer` → go to step 2
+1. Confirm scope.
+Default to the full repository. If the user names files, directories, or flows, constrain the audit to that scope.
 
-2. **Detect scope, then install:**
+2. Load the pattern catalog.
+Read [pattern-index.md](./references/pattern-index.md) first. Open only the detailed pattern files that match candidate evidence.
 
-   ```bash
-   [ -e ~/.agents/skills/dark-pattern-audit ] && echo "global" || echo "project"
-   ```
+3. Search for evidence in code and copy.
+Look for product surfaces where dark patterns commonly appear:
+- pricing, checkout, billing, fees, cart, upsells
+- subscriptions, trials, renewal, cancellation
+- consent, privacy, notification prompts, permissions
+- modals, interstitials, nags, countdowns, stock counters
+- preselected controls, bundled choices, forced steps
+- misleading CTA text, disclaimers, low-contrast disclosures
 
-   **Global:**
-   ```bash
-   npx skills add SidKH/skills --skill dark-pattern-audit -g -y
-   ```
+Use fast repository search and then inspect surrounding implementation details. Prefer direct evidence in copy, component props, business logic, and tests over broad speculation.
 
-   **Project:**
-   ```bash
-   npx skills add SidKH/skills --skill dark-pattern-audit -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
+4. Decide confidence conservatively.
+Use:
+- `likely` when the code or copy directly supports the pattern
+- `possible` when the cues are meaningful but static analysis cannot prove the full behavior
+- `insufficient evidence` for internal triage only; do not include these as findings in the final report
 
-**Heads-up**
+5. Write a structured narrative report.
+Include only detected patterns with `likely` or `possible` confidence. If nothing persuasive is found, say:
 
-- **License:** no LICENSE file in the repo
-<!-- das:install:end -->
+`No dark patterns detected from the local codebase. That is a good sign.`
 
-## Invoke after install
+Then add a short caveat that static analysis cannot rule out runtime or operational behavior outside the repository.
 
-- Skill name: `dark-pattern-audit`
-- The upstream skill sets `disable-model-invocation: true`: an agent will not start it on its own. Ask the user to run `/dark-pattern-audit` (in Claude Code), or to name the skill explicitly in the prompt.
-- Trigger phrases: "dark pattern audit", "dark pattern detection", "deceptive design audit"
+## Output Template
 
-## What it does
+# Dark Pattern Audit Report
 
-Static analysis of a codebase for dark patterns — purely from source code and copy, without runtime access:
+## Summary
+- Scope reviewed
+- Method: local codebase and copy text only
+- Result: number of detected dark patterns
 
-**Surfaces covered:**
-- Pricing, checkout, billing, fees, cart, upsells
-- Subscriptions, trials, renewals, cancellation flows
-- Consent dialogs, privacy prompts, notification permissions
-- Modals, interstitials, countdown timers, fake stock counters
-- Preselected controls, bundled choices, forced steps
-- Misleading CTA text, low-contrast disclosures, hidden disclaimers
+## Detected Dark Patterns
 
-**Output per finding:**
-- Pattern name + official reference link
-- Confidence grade (conservative — only high-confidence findings reported)
-- Exact source location (file, line, component)
-- Concise reasoning grounded in local evidence
+### {Pattern Name}
+- Confidence: `likely` or `possible`
+- Source locations:
+  - absolute file path with line references where possible
+- Evidence:
+  - concise narrative describing the relevant code, copy, or logic
+- Reasoning:
+  - brief explanation of why the evidence maps to this pattern
+- Pattern link:
+  - official deceptive.design URL
 
-**Workflow:** Confirm scope → load pattern catalog → search evidence in code/copy → report
+Repeat one section per detected pattern.
 
-## When NOT to use
+## Reporting Rules
 
-- General design quality audit (typography, dark mode, RTL) → use `design-auditor`
-- WCAG accessibility compliance → use `wcag-ai-skill`
-- AI writing pattern detection → use `humanize-text`
-- Ethical design strategy → use `plan-design-review`
+- Use the exact pattern names from the catalog.
+- Point to source locations for every finding.
+- Do not include remediation advice unless the user asks for it later.
+- Do not claim intent, legality, or proven harm unless the repository itself establishes it.
+- Prefer exact strings, component names, flags, and control flow over vague claims.
+- If evidence is weak, downgrade confidence or omit the finding.
+
+## Reference Files
+
+- Use [pattern-index.md](./references/pattern-index.md) as the navigation file.
+- Open pattern files under `references/patterns/` only for relevant candidates.
+- When new patterns are added later, add a new markdown file under `references/patterns/` and append it to the index.

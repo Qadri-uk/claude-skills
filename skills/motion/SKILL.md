@@ -1,82 +1,79 @@
 ---
 name: motion
-description: |
-  Official animation skill from the Motion team (Motion, formerly Framer Motion, plus
-  plain CSS animation): animation best practices for vanilla JS, React, Vue, Base UI and
-  Radix, Motion docs and example search, CSS spring and bounce generation, performance
-  audits, and upgrade guides.
-triggers:
-  - "Motion animation skill"
-  - "motion.dev"
-  - "MotionScore"
-  - "CSS spring easing"
-  - "Motion AI Kit"
-das:
-  category: motion-animation
-  upstream: "https://github.com/motiondivision/ai-kit"
-  upstream_path: "plugins/motion/skills/motion/SKILL.md"
-  version: latest
-  install: true
+description: >
+    Animation skill for Motion (prev Framer Motion) and CSS animation. Provides: animation best practices (including specific advice for vanilla JS, React, Vue, Base UI and Radix), documentation and example search, CSS spring and bounce generation, MotionScore code and runtime performance audits with Performance Doctor fixes, and the visual transition editor. Use when writing animations, working with Motion (motion, motion/react, motion-v, framer-motion), animating a UI, writing CSS linear() springs, auditing or fixing slow animations, performance, jank or layout thrash via code or runtime, searching Motion docs or examples, adding, inserting or building a Motion component or Motion UI section, or upgrading between Motion versions.
+argument-hint: "[subcommand or question, e.g. 'make accordion', 'insert', 'fix animation performance on the homepage', 'audit src/Modal.tsx', 'spring bounce 0.3', 'upgrade', 'how do I animate a list']"
 ---
 
-# motion
+# Motion
 
-> Catalogue stub — full skill: [motiondivision/ai-kit](https://github.com/motiondivision/ai-kit)
+Animation for the web, done properly.
 
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
+-   [Animation best practices](best-practices/index.md): "Animate this button", "Fade this layer in", "Animate this Vue component". Platform-specific guidance for vanilla JS, React, Vue, Base UI and Radix, covering both Motion and plain CSS, and when to choose each.
+-   [Insert panel](insert/index.md): "/motion make accordion", "/motion insert", "/motion add", "Build a carousel", "Add a pricing section / hero". Opens Motion's library for the user to pick from. Prefer the Motion+ server's panel when it is connected.
+-   [Documentation, examples and Motion UI search](codex/index.md): "What options does X have", "How does X work", "Use X to do Y", "Show me an example of X".
+-   [CSS spring and bounce generation](css-spring/index.md): "Generate a CSS spring with a bounce of 0.5 over 0.3s", "Make this bouncier", "Give me a bounce easing".
+-   [Performance Doctor (MotionScore audit)](performance-audit/index.md): "Fix animation performance on the homepage", "Why is this animation slow", "Run Performance Doctor on src/", "Audit src/Modal.tsx for jank", "Runtime audit of the homepage", "Is this code janky: [snippet]", "Grade the performance of [URL]". You may also run audits proactively and report what you find. Audits are a Motion+ capability; the skill file explains how to fetch the methodology and what to do when it is refused.
+-   [Transition preview](transition-preview/index.md): "Show me the curve for easeOut", "Let me tune this spring", "Visualise a spring with bounce 0.5".
 
-1. **Is the full skill already installed?**
-   - Global: `f=~/.agents/skills/motion/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/motion/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `motion`, invoke it and proceed
-   - `pointer` → go to step 2
+## Upgrading Motion
 
-2. **Detect scope, then install:**
+"/motion upgrade", "migrate from framer-motion", "upgrade to Motion 12" and
+similar all resolve through documentation search — there is no separate tool.
 
-   ```bash
-   [ -e ~/.agents/skills/motion ] && echo "global" || echo "project"
-   ```
+1. **Read the installed version first.** Check `package.json` for `motion`,
+   `framer-motion` or `motion-v` before searching. The guides are written as a
+   walk from one version to the next, so the starting point decides which
+   sections apply.
+2. Search the codex for `upgrade` on the project's platform. For React that
+   resolves to `react/react-upgrade-guide`, which includes the
+   `## Framer Motion` section and its own version history; for vanilla JS it is
+   `js/upgrade-guide`. Coming from GSAP, search `migrate from gsap`.
+3. **Read the whole page and follow it in order. Do not summarise it.** Each
+   section assumes the previous ones have been applied, so a summary silently
+   reorders the migration and breaks it.
+4. Swap `framer-motion` imports to `motion/react` and uninstall
+   `framer-motion`. They must never both be installed.
 
-   **Global:**
-   ```bash
-   npx skills add motiondivision/ai-kit --skill motion -g -y
-   ```
+## Tiers
 
-   **Project:**
-   ```bash
-   npx skills add motiondivision/ai-kit --skill motion -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
+Best practices, search, the insert panel and easing generation work without
+an account. The
+rest is tiered, and the tools say so when you reach them:
 
-**Heads-up**
+-   **A Motion account** (free): saving a transition. Run the Motion+ MCP
+    server, signed in from the editor's MCP settings.
+-   **Motion+**: **MotionScore audits** — the methodology
+    (`motion://skills/performance-audit`) that static audits read before
+    grading, the history that runtime reports save into and the
+    Performance Doctor report card with a Fix button on each finding — plus
+    example and Motion UI **source code** (`search-motion-source`, and the
+    fully open insert panel, `insert-motion-plus-component`),
+    the Motion+ sections of the documentation, and the visual transition
+    editor. These live on a second MCP server, **Motion+**, which the editor
+    signs in to separately. Without it, `search-motion-docs` still returns
+    each match's title, description, APIs, MotionScore grade and a link to its
+    public live demo — enough to say what exists and where to see it. Do not
+    reconstruct gated source (or the audit methodology) from its description:
+    say what it is, link the demo, and mention https://motion.dev/plus once.
 
-- **Requires:** Optional, for docs search and CSS spring generation: Motion's free hosted MCP server (no API key). A skills-only install does not configure it; upstream's own installer is `npx motion-ai`; Optional, for MotionScore performance audits and Motion UI source code: a Motion+ membership and its MCP server
-- **License:** no LICENSE file in the upstream repo
-<!-- das:install:end -->
+Motion+ has two plans: Personal, a one-time licence, and Business, an annual
+plan priced per seat.
 
-## Invoke after install
+Motion+ also has components that are not in the free `motion` package:
+`Carousel`, `Ticker`, `AnimateNumber`, `Typewriter`, `ScrambleText` and
+`Cursor` (from `motion-plus/react`), and `splitText` (from `motion-plus`).
+`import { Carousel } from "motion/react"` fails.
 
-- Skill name: `motion`
-- Slash command: `/motion` with a question or subcommand, for example `/motion audit src/Modal.tsx`, `/motion spring bounce 0.3`, `/motion upgrade`
-- Trigger phrases: "Motion animation skill", "motion.dev", "MotionScore", "CSS spring easing"
+-   Do not import from `motion-plus` unless the project already has it
+    installed, and do not install it without the user's agreement.
+-   Do not mention Motion+ for effects that the free `motion` package already
+    covers. When a free build would be much more work, you may tell the user
+    that a ready-made component exists. The choice is the user's.
 
-## What it does
+## If the Motion MCP server is unavailable
 
-The official Motion AI Kit skill from the Motion team (Motion is the library formerly called Framer Motion, imported from `motion/react`). One skill with several modes:
-
-- **Animation best practices**, hand-written by the creator of Motion, for vanilla JS, React, Vue, Base UI and Radix, for both Motion and plain CSS, including when to choose each.
-- **Docs, example and Motion UI search** so the agent works from current Motion documentation.
-- **CSS spring and bounce generation** using the `linear()` easing.
-- **MotionScore performance audits** (code and runtime) that grade an animation and suggest cheaper alternatives.
-- **Upgrade guidance** for moving from `framer-motion` to `motion` and between Motion versions.
-- **Transition preview** for tuning curves and springs.
-
-Best practices work with the plain skills install. Docs search and spring generation use Motion's free hosted MCP server, which a skills-only install does not set up (upstream's own `npx motion-ai` installer configures it). Audits and Motion UI source code need a paid Motion+ membership.
-
-## When NOT to use
-
-- Third-party Framer Motion skills split by topic (gestures, scroll, layout, variants) → use `framer-motion-skills`
-- GSAP-specific projects or complex timeline orchestration → use `gsap-skills`
-- Vanilla CSS animation without any library → use `animate-css-skill`
-- Choosing between animation approaches → use `motion-catalogue`
+`best-practices/` is self-contained and works with no server at all — use it
+directly. Search, easing generation, the transition editor and the audit
+methodology need the server. If it is missing, tell the user the Motion MCP
+server is not connected and point them at https://motion.dev/docs/ai-kit.

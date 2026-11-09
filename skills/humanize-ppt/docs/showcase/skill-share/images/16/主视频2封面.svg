@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="Video cover">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e1914"/>
+      <stop offset="0.48" stop-color="#383026"/>
+      <stop offset="1" stop-color="#b7aa93"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3ead8" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#f3ead8" stop-opacity="0.18"/>
+    </linearGradient>
+    <filter id="soft">
+      <feGaussianBlur stdDeviation="34"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1220" cy="178" r="260" fill="#efe1c2" opacity="0.18" filter="url(#soft)"/>
+  <circle cx="230" cy="720" r="300" fill="#0d0f15" opacity="0.34" filter="url(#soft)"/>
+  <g opacity="0.24" stroke="#f3ead8" stroke-width="1">
+    <path d="M160 220H1440"/>
+    <path d="M160 330H1440"/>
+    <path d="M160 440H1440"/>
+    <path d="M160 550H1440"/>
+    <path d="M160 660H1440"/>
+  </g>
+  <g transform="translate(210 180)">
+    <rect x="0" y="0" width="1180" height="540" fill="#15120f" opacity="0.52" stroke="#f3ead8" stroke-opacity="0.55"/>
+    <rect x="58" y="70" width="300" height="160" fill="url(#panel)" stroke="#f3ead8" stroke-opacity="0.7"/>
+    <rect x="440" y="70" width="300" height="160" fill="url(#panel)" stroke="#f3ead8" stroke-opacity="0.54"/>
+    <rect x="822" y="70" width="300" height="160" fill="url(#panel)" stroke="#f3ead8" stroke-opacity="0.38"/>
+    <path d="M358 150H440M740 150H822" stroke="#f3ead8" stroke-opacity="0.7" stroke-width="3"/>
+    <circle cx="398" cy="150" r="7" fill="#f3ead8"/>
+    <circle cx="781" cy="150" r="7" fill="#f3ead8"/>
+    <text x="58" y="326" fill="#f3ead8" font-family="serif" font-size="54" letter-spacing="2">FIND SKILL LOOP</text>
+    <text x="60" y="385" fill="#f3ead8" opacity="0.72" font-family="monospace" font-size="24" letter-spacing="8">QUERY  CANDIDATES  FIT  RUN</text>
+    <text x="60" y="462" fill="#f3ead8" opacity="0.44" font-family="monospace" font-size="20" letter-spacing="4">PREVIEW COVER / ORIGINAL VIDEO</text>
+  </g>
+  <g transform="translate(800 450)">
+    <circle r="82" fill="#f3ead8" opacity="0.16" stroke="#f3ead8" stroke-opacity="0.72" stroke-width="2"/>
+    <path d="M-20 -34L46 0L-20 34Z" fill="#f3ead8"/>
+  </g>
+</svg>

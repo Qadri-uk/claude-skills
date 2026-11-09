@@ -1,75 +1,42 @@
 ---
-name: hig-doctor
-description: |
-  Audits interface source code (Swift, UIKit, AppKit, React, Vue, Svelte, Angular,
-  Compose, Android XML, Flutter, CSS, HTML) for Apple HIG-aligned interface and
-  accessibility problems by running the HIG Doctor CLI, then reports findings by severity
-  and helps remediate them. Review evidence, not certification.
-triggers:
-  - "HIG doctor"
-  - "HIG compliance"
-  - "Apple HIG audit"
-  - "HIG diagnosis"
-  - "fix Apple HIG"
-das:
-  type: skill
-  category: visual-components
-  upstream: "https://github.com/raintree-technology/hig-doctor"
-  upstream_path: "plugin/skills/hig-doctor-audit/SKILL.md"
-  version: latest
-  install: true
+name: hig-doctor-audit
+description: Audit interface source with HIG Doctor when the user asks to scan, lint, review, or remediate Swift, UIKit, AppKit, React, Vue, Svelte, Angular, Compose, Android XML, Flutter, CSS, or HTML for HIG-aligned interface and accessibility concerns. Do not activate for general design advice without source to audit; use the relevant HIG guidance skill instead.
 ---
 
-# hig-doctor
+# HIG Doctor audit
 
-> Catalogue stub — full skill: [raintree-technology/hig-doctor](https://github.com/raintree-technology/hig-doctor/tree/main/plugin/skills/hig-doctor-audit)
+Use HIG Doctor findings as review evidence, not certification.
 
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
+## Audit workflow
 
-1. **Is the full skill already installed?**
-   Upstream names this skill `hig-doctor-audit`, so it installs next to this pointer (the pointer is not replaced).
-   - Global: `f=~/.agents/skills/hig-doctor-audit/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/hig-doctor-audit/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `hig-doctor-audit`, invoke it and proceed
-   - `pointer` → go to step 2
+1. Confirm the target repository or directory. Keep the scan within that scope.
+2. Run `npx -y hig-doctor@2.0.3 <target> --json` for machine-readable findings.
+3. Report the detected frameworks, severity counts, rule IDs, locations, and
+   material analysis limits.
+4. Use `hig_explain_finding` or the relevant bundled HIG skill when a finding
+   needs its cited guidance and context.
+5. Before editing, distinguish mechanical fixes from changes that require
+   product, design, accessibility, or platform judgment.
+6. If the user authorized remediation, preserve justified suppressions and
+   rerun the audit plus the repository's relevant checks.
 
-2. **Detect scope, then install:**
+## Gates and baselines
 
-   ```bash
-   [ -e ~/.agents/skills/hig-doctor ] && echo "global" || echo "project"
-   ```
+- Use `--fail-on <critical|serious|moderate>` only when the requested workflow
+  needs a gate.
+- Use `--write-baseline` only when the user asks to adopt a baseline. A baseline
+  records accepted existing findings; it does not resolve them.
+- Do not delete or weaken configuration, inline suppressions, or baselines merely
+  to produce a clean result.
 
-   **Global:**
-   ```bash
-   npx skills add raintree-technology/hig-doctor/plugin/skills/hig-doctor-audit -g -y
-   ```
+## Failure handling
 
-   **Project:**
-   ```bash
-   npx skills add raintree-technology/hig-doctor/plugin/skills/hig-doctor-audit -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
+If `npx` or the package cannot run, state the failed command and the missing
+prerequisite. Ask the user to install a supported Node.js runtime or restore
+package-registry access. Do not substitute an unversioned audit command.
 
-**Heads-up**
+## Output
 
-- **Requires:** Node.js with npx and npm registry access at audit time (the skill runs a version-pinned `npx -y hig-doctor@<version> <target> --json`); optional companion for the guidance behind each finding: the apple-hig-skills pointer (the hig-* reference skills)
-- **License:** MIT (tooling; Apple reference content is attributed, see upstream THIRD_PARTY_NOTICES.md)
-<!-- das:install:end -->
-
-## Invoke after install
-
-- Skill name: `hig-doctor-audit`
-- Trigger phrases: "HIG compliance", "Apple HIG audit", "scan this code for HIG issues", "fix Apple HIG"
-
-## What it does
-
-A scan-and-remediate workflow around the HIG Doctor CLI. Given a repository or directory, it runs the version-pinned `npx -y hig-doctor@<version> <target> --json`, reports the detected frameworks, severity counts, rule IDs, locations and analysis limits, separates mechanical fixes from changes that need product, design or accessibility judgment, and, if you authorise remediation, fixes and re-runs the audit. It preserves justified suppressions and baselines and never claims that a scan proves HIG compliance. It does nothing useful without source code to audit.
-
-Needs Node.js with `npx` and npm registry access. The guidance behind each finding comes from the HIG reference skills, which are a separate pointer: `apple-hig-skills`.
-
-## When NOT to use
-
-- General Apple design advice with no source to audit — use `apple-hig-skills` (the `hig-*` reference skills)
-- SwiftUI implementation help — use `swiftui-patterns` or `swiftui-claude-skills`
-- Web accessibility conformance audits — use `wcag-audit-patterns`
+Lead with the audit result. Separate confirmed findings, judgment-dependent
+warnings, preserved exceptions, checks run, and missing evidence. Never claim
+that an automated scan proves HIG compliance or accessibility.

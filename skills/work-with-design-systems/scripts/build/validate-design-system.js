@@ -1,0 +1,831 @@
+/**
+ * QA Validation Script for Design System — v1.4.0
+ *
+ * Audits a Figma design system file and returns a structured report.
+ * Designed to run inside the Figma MCP server's `use_figma` context.
+ *
+ * Read-only: inspects but does not modify the file.
+ *
+ * Checks:
+ *  - Variable collections (Primitives required; Semantic recommended)
+ *  - Variable scopes (ALL_SCOPES violations, empty scopes)
+ *  - codeSyntax.WEB coverage, uniqueness and name shape (not a value)
+ *  - codeSyntax.WEB names that collide after dash collapse and lowercasing
+ *  - Duplicate primitive values (grouped by name domain — spacing, radius, type, color separately)
+ *  - Mode parity (values present in all modes)
+ *  - Semantic Light/Dark mode presence
+ *  - Text styles count and variable bindings
+ *  - Effect styles count
+ *  - Expected library pages (Cover, Foundations, Components) — informational, does not warn
+ *  - Hardcoded color fills and strokes inside component trees
+ *  - Missing Auto Layout on components
+ *  - Text nodes without TEXT component properties
+ *  - WCAG AA contrast (1.4.3) for color/text × color/bg pairs in Light and
+ *    Dark: a warning for every pair below 4.5:1, worded apart for a pair that
+ *    still passes 3:1 as large text. Scoped so that `color/text/on-{surface}`
+ *    is only tested against backgrounds whose name contains `{surface}` as a
+ *    segment. Alpha tokens (a colour alias carrying an opacity) are composited
+ *    before measuring.
+ *
+ * Per SKILL.md Critical Rule #3: this script flags hardcoded *colors*
+ * only (fills, strokes). Component-specific pixel dimensions outside
+ * the spacing scale are permitted and NOT flagged here.
+ *
+ * ---
+ *
+ * Usage via `use_figma` (MCP):
+ *   The script calls `runAudit()` and returns its result at the top level.
+ *   The MCP runtime wraps the script in an async context, so the `return`
+ *   below delivers the audit report directly to the caller.
+ *
+ * Usage as a standalone Figma plugin:
+ *   Replace the final `return await runAudit();` with:
+ *     runAudit().then(
+ *       (result) => figma.closePlugin(JSON.stringify(result)),
+ *       (err) => figma.closePluginWithFailure(err.toString())
+ *     );
+ */
+
+async function runAudit() {
+  // Page scope. Variables and styles are file-level and need no page. The
+  // component-tree walk (section 7) scans ONE page: PAGE_ID when the caller
+  // defines it, else the current page — the use_figma runtime allows at most
+  // one page switch per call and has no loadAllPagesAsync (looping
+  // setCurrentPageAsync reloads the file each time). Fan out one call per
+  // component page (in one message) for full coverage; `scannedPage` /
+  // `otherPages` in the result say what is left.
+  let scanPage = figma.currentPage;
+  if (typeof PAGE_ID !== "undefined" && PAGE_ID) {
+    const target = await figma.getNodeByIdAsync(PAGE_ID);
+    if (!target || target.type !== "PAGE") {
+      throw new Error(`PAGE_ID ${PAGE_ID} is not a page`);
+    }
+    await figma.setCurrentPageAsync(target);
+    scanPage = target;
+  }
+  const otherPages = figma.root.children
+    .filter((p) => p.id !== scanPage.id)
+    .map((p) => ({ id: p.id, name: p.name }));
+
+  const issues = [];
+  const stats = {
+    variableCollections: 0,
+    variables: 0,
+    textStyles: 0,
+    effectStyles: 0,
+    components: 0,
+    componentSets: 0,
+    pages: figma.root.children.length,
+  };
+
+  const addIssue = (severity, category, message) => {
+    issues.push({ severity, category, message });
+  };
+
+  // ---------- Helpers ----------
+
+  // WCAG relative luminance. Input: {r,g,b} in 0..1.
+  const relativeLuminance = (c) => {
+    const lin = (v) =>
+      v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    return 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+  };
+
+  const contrastRatio = (c1, c2) => {
+    const l1 = relativeLuminance(c1);
+    const l2 = relativeLuminance(c2);
+    const lighter = Math.max(l1, l2);
+    const darker = Math.min(l1, l2);
+    return (lighter + 0.05) / (darker + 0.05);
+  };
+
+  // WCAG ratios are defined on opaque colours. An alpha token (an alias carrying
+  // an opacity) resolves to a < 1, so flatten it before measuring: identity on
+  // an opaque colour, which keeps every ratio on a file without alpha tokens
+  // byte-identical.
+  const composite = (fg, bg) => {
+    const a = fg.a === undefined ? 1 : fg.a;
+    if (a >= 1) return { r: fg.r, g: fg.g, b: fg.b };
+    return {
+      r: fg.r * a + bg.r * (1 - a),
+      g: fg.g * a + bg.g * (1 - a),
+      b: fg.b * a + bg.b * (1 - a),
+    };
+  };
+  const isTranslucent = (c) => c && c.a !== undefined && c.a < 1;
+  // What a translucent BACKGROUND sits on. Nothing in the variable graph says,
+  // so assume the page is white; the alternative (measuring the token's own
+  // alpha away) would report a semi-transparent scrim as opaque.
+  const PAGE_BASE = { r: 1, g: 1, b: 1 };
+
+  // Check whether a paint has a color variable binding.
+  // Handles both per-paint (paint.boundVariables.color) and node-level
+  // (node.boundVariables.fills[idx] / strokes[idx]) binding paths.
+  const isPaintBound = (node, paintsKey, paint, paintIndex) => {
+    if (paint && paint.boundVariables && paint.boundVariables.color) {
+      return true;
+    }
+    const nodeBindings = node.boundVariables && node.boundVariables[paintsKey];
+    if (Array.isArray(nodeBindings) && nodeBindings[paintIndex]) {
+      return true;
+    }
+    return false;
+  };
+
+  // Which mode of the aliased variable's collection answers for `modeId` of the
+  // referring variable's collection. Prefers a mode of the same name; falls back
+  // to the collection default.
+  const targetModeIdFor = async (variable, modeId, aliased) => {
+    const aliasedCol = await figma.variables.getVariableCollectionByIdAsync(
+      aliased.variableCollectionId
+    );
+    const origCol = await figma.variables.getVariableCollectionByIdAsync(
+      variable.variableCollectionId
+    );
+    const origModeName = origCol?.modes.find((m) => m.modeId === modeId)?.name;
+    const target =
+      aliasedCol?.modes.find((m) => m.name === origModeName) ||
+      aliasedCol?.modes.find((m) => m.modeId === aliasedCol.defaultModeId) ||
+      aliasedCol?.modes[0];
+    return target ? target.modeId : null;
+  };
+
+  // Resolve a variable's color value for a given mode, following alias chains.
+  // Three value shapes live in `valuesByMode` of a COLOR variable:
+  //   { r, g, b, a }                                     a literal
+  //   { type: "VARIABLE_ALIAS", id }                     a bare alias
+  //   { color: <literal | alias>, opacity: <number | alias> }
+  //       an alias (or literal) carrying its own opacity — the alpha-token
+  //       shape. `opacity` is a PERCENT, 0–100, and may itself alias a FLOAT
+  //       variable (scoped COLOR_OPACITY). It multiplies the alpha of the
+  //       colour it points at, so resolve the colour FIRST, the opacity second.
+  // A reader that tests only the first two shapes returns null here, and a null
+  // silently drops the variable from every check downstream — which is exactly
+  // the disabled / overlay / scrim tokens this shape exists for.
+  // Returns { r, g, b, a } or null.
+  const colorCache = new Map();
+
+  // A colour slot: a bare alias, or a literal. Used for `raw` and for `raw.color`.
+  const resolveColorLike = async (value, ownerVariable, modeId, visited) => {
+    if (value && typeof value === "object" && value.type === "VARIABLE_ALIAS") {
+      const aliased = await figma.variables.getVariableByIdAsync(value.id);
+      if (!aliased) return null;
+      const targetModeId = await targetModeIdFor(ownerVariable, modeId, aliased);
+      if (!targetModeId) return null;
+      return resolveColorValue(aliased, targetModeId, visited);
+    }
+    if (value && typeof value === "object" && "r" in value) return value;
+    return null;
+  };
+
+  // An opacity slot: a percent, or an alias to a FLOAT variable holding one.
+  // Absent means fully opaque.
+  const resolveOpacityPercent = async (value, ownerVariable, modeId) => {
+    if (value === undefined || value === null) return 100;
+    if (typeof value === "number") return value;
+    if (value && typeof value === "object" && value.type === "VARIABLE_ALIAS") {
+      const aliased = await figma.variables.getVariableByIdAsync(value.id);
+      if (!aliased) return null;
+      const targetModeId = await targetModeIdFor(ownerVariable, modeId, aliased);
+      if (!targetModeId) return null;
+      const raw = aliased.valuesByMode[targetModeId];
+      return typeof raw === "number" ? raw : null;
+    }
+    return null;
+  };
+
+  const resolveColorValue = async (variable, modeId, visited = new Set()) => {
+    const cacheKey = `${variable.id}::${modeId}`;
+    if (colorCache.has(cacheKey)) return colorCache.get(cacheKey);
+    if (visited.has(variable.id)) return null;
+    visited.add(variable.id);
+
+    const raw = variable.valuesByMode[modeId];
+    if (raw === undefined || raw === null || typeof raw !== "object") {
+      colorCache.set(cacheKey, null);
+      return null;
+    }
+
+    let resolved = null;
+    if (raw.color !== undefined) {
+      const base = await resolveColorLike(raw.color, variable, modeId, visited);
+      const percent = await resolveOpacityPercent(raw.opacity, variable, modeId);
+      if (base && percent !== null) {
+        resolved = {
+          r: base.r,
+          g: base.g,
+          b: base.b,
+          a: (base.a === undefined ? 1 : base.a) * (percent / 100),
+        };
+      }
+    } else {
+      resolved = await resolveColorLike(raw, variable, modeId, visited);
+    }
+
+    colorCache.set(cacheKey, resolved);
+    return resolved;
+  };
+
+  // Extract the top-level domain from a variable name (first segment before /).
+  // "spacing/16" → "spacing", "color/text/primary" → "color", "radius/button" → "radius"
+  const getDomain = (name) => {
+    const idx = name.indexOf("/");
+    return idx >= 0 ? name.slice(0, idx).toLowerCase() : name.toLowerCase();
+  };
+
+  // ---------- 1. Variable collections ----------
+  const collections =
+    await figma.variables.getLocalVariableCollectionsAsync();
+  stats.variableCollections = collections.length;
+
+  const lowerNames = collections.map((c) => c.name.toLowerCase());
+  const DOMAIN_RE = /colou?r|spac|radius|typo|type|font|grid|size/;
+  const domainCollections = lowerNames.filter((n) => DOMAIN_RE.test(n)).length;
+  if (!lowerNames.some((n) => n.includes("primitiv"))) {
+    if (domainCollections >= 2) {
+      // Flat domain-based architecture (Colors / Spacing / Radius / Typography …)
+      // is a valid shape per SKILL.md Phase 2a — report, don't fail.
+      addIssue(
+        "info",
+        "tokens",
+        `No "Primitives" collection — flat domain-based architecture detected (${domainCollections} domain collections)`
+      );
+    } else {
+      addIssue("error", "tokens", 'Missing "Primitives" variable collection');
+    }
+  }
+  // Per v1.2.0 flexible architecture: flat domain-based collections are valid.
+  if (!lowerNames.some((n) => n.includes("semantic"))) {
+    addIssue(
+      "warning",
+      "tokens",
+      'No "Semantic" collection found. If using flat domain-based architecture (Colors, Spacing, Radius), this is expected.'
+    );
+  }
+
+  // ---------- 2. Variables: scopes, codeSyntax, mode parity, duplicates ----------
+  const variables = await figma.variables.getLocalVariablesAsync();
+  stats.variables = variables.length;
+
+  let allScopesCount = 0;
+  let emptyScopesCount = 0;
+  let missingCodeSyntaxCount = 0;
+  // codeSyntax.WEB quality: one unique CSS custom-property NAME per variable.
+  // A value ("1.25rem", "9999px", "--1rem", "#fff") or a name shared by several
+  // variables (six semantic roles all aliased to "--color-primary-500") breaks
+  // the design-to-code bridge just as much as a missing one.
+  // codeSyntax.WEB tiers:
+  //   "css"   — a CSS custom property, "--name" or "var(--name)" (Figma's own
+  //             examples use the var() form). What Phase 6 tokens.css needs.
+  //   "other" — name-shaped but not a custom property: an SCSS "$t-color-…",
+  //             a bare "data-vis-green-3", a JS path. Valid when the codebase
+  //             speaks that convention; Phase 6 cannot consume it → info.
+  //   null    — a VALUE ("1rem", "#fff", "400", "Regular"): error.
+  // Duplicates are detected on the bare name whatever the tier.
+  const codeSyntaxOwners = new Map();
+  const CSS_FORM_RE = /^(?:var\((--[^\s()]+)\)|(--[^\s()]+))$/;
+  const BARE_CSS_RE = /^--[a-z_][a-z0-9_-]*$/i;
+  const VALUE_RE = /^(?:--)?(?:#|\d)|(?:px|rem|em|%)$|^[A-Za-z]+$/;
+  const classifyCodeSyntax = (s) => {
+    const m = CSS_FORM_RE.exec(s);
+    if (m) {
+      const bare = m[1] || m[2];
+      return BARE_CSS_RE.test(bare) && !VALUE_RE.test(bare) ? { tier: "css", bare } : { tier: null, bare: s };
+    }
+    // Other conventions: optional "$"/"@" sigil, then letters/digits/-/_/./slash.
+    if (VALUE_RE.test(s) || !/^[$@]?[a-z_][a-z0-9_.\/-]*$/i.test(s)) return { tier: null, bare: s };
+    return { tier: "other", bare: s };
+  };
+  const nonCssNames = [];
+  // Every name-shaped codeSyntax.WEB, kept for the collision check after the loop.
+  const namedCodeSyntax = [];
+  // Duplicate detection is scoped by (mode, domain) pair. Variables from
+  // different domains that happen to share a numeric value (e.g. spacing/16
+  // and type/size/body, both = 16) are NOT considered duplicates.
+  const primitiveValueMap = new Map();
+
+  for (const v of variables) {
+    if (v.scopes && v.scopes.length === 1 && v.scopes[0] === "ALL_SCOPES") {
+      allScopesCount++;
+    }
+    if (!v.scopes || v.scopes.length === 0) {
+      emptyScopesCount++;
+    }
+    const webName = v.codeSyntax && v.codeSyntax.WEB ? v.codeSyntax.WEB.trim() : "";
+    if (webName === "") {
+      missingCodeSyntaxCount++;
+    } else {
+      const { tier, bare } = classifyCodeSyntax(webName);
+      if (tier === null) {
+        addIssue(
+          "error",
+          "tokens",
+          `Variable "${v.name}" codeSyntax.WEB is a value, not a token name: "${webName}"`
+        );
+      } else {
+        if (tier === "other") nonCssNames.push(`${v.name} → ${webName}`);
+        if (!codeSyntaxOwners.has(bare)) codeSyntaxOwners.set(bare, []);
+        codeSyntaxOwners.get(bare).push(v.name);
+        namedCodeSyntax.push({ name: v.name, codeSyntax: webName, bare });
+      }
+    }
+
+    const collection = collections.find(
+      (c) => c.id === v.variableCollectionId
+    );
+    if (!collection) continue;
+
+    // Mode parity
+    for (const mode of collection.modes) {
+      if (v.valuesByMode[mode.modeId] === undefined) {
+        addIssue(
+          "warning",
+          "tokens",
+          `Variable "${v.name}" missing value in mode "${mode.name}"`
+        );
+      }
+    }
+
+    // Duplicate detection — only for Primitives with raw values. A bare alias
+    // and an alias-with-opacity ({color, opacity}) are references, not values:
+    // neither produces a key, so neither is reported as a duplicate.
+    // Grouped by domain so cross-domain collisions (spacing × type-size) don't fire.
+    if (collection.name.toLowerCase().includes("primitiv")) {
+      const domain = getDomain(v.name);
+      for (const mode of collection.modes) {
+        const val = v.valuesByMode[mode.modeId];
+        if (val === undefined || val === null) continue;
+        let key = null;
+        if (typeof val === "object" && "r" in val) {
+          key = `${mode.modeId}::${domain}::color::${val.r.toFixed(
+            4
+          )}:${val.g.toFixed(4)}:${val.b.toFixed(4)}:${(val.a ?? 1).toFixed(
+            4
+          )}`;
+        } else if (typeof val === "number") {
+          key = `${mode.modeId}::${domain}::number::${val}`;
+        } else if (typeof val === "string") {
+          key = `${mode.modeId}::${domain}::string::${val}`;
+        }
+        if (key) {
+          if (!primitiveValueMap.has(key)) primitiveValueMap.set(key, []);
+          primitiveValueMap.get(key).push(v.name);
+        }
+      }
+    }
+  }
+
+  if (allScopesCount > 0) {
+    addIssue(
+      "warning",
+      "tokens",
+      `${allScopesCount} variables have ALL_SCOPES (should be explicitly scoped)`
+    );
+  }
+  if (emptyScopesCount > 0) {
+    addIssue(
+      "error",
+      "tokens",
+      `${emptyScopesCount} variables have EMPTY scopes (invisible in every property picker)`
+    );
+  }
+  if (missingCodeSyntaxCount > 0) {
+    addIssue(
+      "warning",
+      "tokens",
+      `${missingCodeSyntaxCount} variables missing codeSyntax.WEB (breaks design-to-code bridge)`
+    );
+  }
+  if (nonCssNames.length > 0) {
+    addIssue(
+      "info",
+      "tokens",
+      `${nonCssNames.length} variables have a codeSyntax.WEB that is not a CSS custom property (fine if the codebase uses that convention; Phase 6 tokens.css needs "--name" / "var(--name)"): ${nonCssNames
+        .slice(0, 3)
+        .join(", ")}${nonCssNames.length > 3 ? ", …" : ""}`
+    );
+  }
+  for (const [webName, owners] of codeSyntaxOwners.entries()) {
+    if (owners.length > 1) {
+      addIssue(
+        "error",
+        "tokens",
+        `codeSyntax.WEB "${webName}" is shared by ${owners.length} variables: ${owners
+          .slice(0, 6)
+          .join(", ")}${owners.length > 6 ? ", …" : ""}`
+      );
+    }
+  }
+
+  // Collisions after normalization. "--color--text-primary" and
+  // "--color-text--primary" are distinct CSS custom properties, so the exact
+  // check above is silent, but a tool that normalizes names on import (a canvas
+  // tool's token import, a preprocessor) may store both as
+  // "--color-text-primary" and keep only one. Normalize the way such a tool may:
+  // lowercase, keep a leading "--", collapse every other run of dashes to one.
+  // A group holding a single bare name is the exact duplicate reported above,
+  // so only groups with two or more distinct bare names are collisions.
+  const normalizeName = (bare) => {
+    const lower = bare.toLowerCase();
+    const lead = lower.startsWith("--") ? "--" : "";
+    return lead + lower.slice(lead.length).replace(/-{2,}/g, "-");
+  };
+  const normalizedGroups = new Map();
+  for (const entry of namedCodeSyntax) {
+    const key = normalizeName(entry.bare);
+    if (!normalizedGroups.has(key)) normalizedGroups.set(key, []);
+    normalizedGroups.get(key).push(entry);
+  }
+  const codeSyntaxCollisions = [];
+  for (const [normalized, members] of normalizedGroups.entries()) {
+    if (new Set(members.map((m) => m.bare)).size < 2) continue;
+    codeSyntaxCollisions.push({
+      normalized,
+      variables: members.map((m) => ({ name: m.name, codeSyntax: m.codeSyntax })),
+    });
+    addIssue(
+      "error",
+      "tokens",
+      `codeSyntax.WEB names collide after dash collapse to "${normalized}" (a tool that normalizes names on import keeps only one of them): ${members
+        .slice(0, 6)
+        .map((m) => `${m.name} → "${m.codeSyntax}"`)
+        .join(", ")}${members.length > 6 ? ", …" : ""}`
+    );
+  }
+
+  for (const [, names] of primitiveValueMap.entries()) {
+    const unique = [...new Set(names)];
+    if (unique.length > 1) {
+      const shown = unique.slice(0, 4).join(", ");
+      const more = unique.length > 4 ? `, +${unique.length - 4} more` : "";
+      addIssue(
+        "warning",
+        "tokens",
+        `Duplicate value within same domain, shared by ${unique.length} variables: ${shown}${more}`
+      );
+    }
+  }
+
+  // ---------- 3. Semantic Light/Dark modes ----------
+  const semanticCollection = collections.find((c) =>
+    c.name.toLowerCase().includes("semantic")
+  );
+  if (semanticCollection) {
+    const modeNames = semanticCollection.modes.map((m) =>
+      m.name.toLowerCase()
+    );
+    if (!modeNames.some((n) => n.includes("light"))) {
+      addIssue(
+        "warning",
+        "tokens",
+        'Semantic collection missing "Light" mode'
+      );
+    }
+    if (!modeNames.some((n) => n.includes("dark"))) {
+      addIssue("warning", "tokens", 'Semantic collection missing "Dark" mode');
+    }
+  }
+
+  // ---------- 4. Text styles ----------
+  const textStyles = await figma.getLocalTextStylesAsync();
+  stats.textStyles = textStyles.length;
+  if (textStyles.length === 0) {
+    addIssue("error", "typography", "No text styles defined");
+  }
+
+  // Flag text styles with zero variable bindings.
+  // Per Critical Rule #4: lineHeight percentages can't be bound to variables,
+  // so we only warn when NONE of the bindable fields are bound.
+  let unboundTextStyleCount = 0;
+  for (const ts of textStyles) {
+    const bv = ts.boundVariables || {};
+    if (!bv.fontSize && !bv.lineHeight && !bv.fontFamily && !bv.fontWeight) {
+      unboundTextStyleCount++;
+    }
+  }
+  if (unboundTextStyleCount > 0) {
+    addIssue(
+      "warning",
+      "typography",
+      `${unboundTextStyleCount} text styles have no variable bindings on fontSize/lineHeight/fontFamily/fontWeight`
+    );
+  }
+
+  // ---------- 5. Effect styles ----------
+  const effectStyles = await figma.getLocalEffectStylesAsync();
+  stats.effectStyles = effectStyles.length;
+
+  // ---------- 6. Pages (informational) ----------
+  // Library-style files typically have Cover / Foundations / Components pages.
+  // Product design files often don't. These are reported as info, not warnings.
+  const pageNames = figma.root.children.map((p) => p.name);
+  const expectedPages = ["Cover", "Foundations", "Components"];
+  for (const expected of expectedPages) {
+    if (
+      !pageNames.some((n) =>
+        n.toLowerCase().includes(expected.toLowerCase())
+      )
+    ) {
+      addIssue(
+        "info",
+        "structure",
+        `Missing optional page: "${expected}" (standard for library files; product files often skip this)`
+      );
+    }
+  }
+
+  // ---------- 7. Component-tree walking ----------
+  // Scope hardcoded-color checks to component trees only. Documentation
+  // frames on Foundations pages often use literal colors intentionally.
+  const FILLABLE_TYPES = new Set([
+    "RECTANGLE",
+    "FRAME",
+    "TEXT",
+    "VECTOR",
+    "ELLIPSE",
+    "STAR",
+    "POLYGON",
+    "BOOLEAN_OPERATION",
+    "INSTANCE",
+    "COMPONENT",
+    "COMPONENT_SET",
+  ]);
+
+  // One page per call (see the page-scope note at the top of runAudit).
+  const allComponents = scanPage.findAllWithCriteria({ types: ["COMPONENT"] });
+  const allComponentSets = scanPage.findAllWithCriteria({
+    types: ["COMPONENT_SET"],
+  });
+  stats.components = allComponents.length;
+  stats.componentSets = allComponentSets.length;
+
+  const hardcodedFillCounts = new Map();
+  const hardcodedStrokeCounts = new Map();
+  const missingAutoLayout = [];
+  const componentsWithUnboundText = [];
+
+  const auditComponent = (rootNode) => {
+    const label = rootNode.name;
+    let hcFills = 0;
+    let hcStrokes = 0;
+    const unboundTextNodes = [];
+
+    const walk = (node) => {
+      if (FILLABLE_TYPES.has(node.type)) {
+        // Fills
+        if (Array.isArray(node.fills)) {
+          node.fills.forEach((fill, idx) => {
+            if (fill.type !== "SOLID") return;
+            if (fill.visible === false) return;
+            if (fill.opacity === 0) return;
+            if (isPaintBound(node, "fills", fill, idx)) return;
+            // Skip pure white (common default frame fill that often stays unbound)
+            const c = fill.color;
+            const isWhite = c.r === 1 && c.g === 1 && c.b === 1;
+            if (isWhite) return;
+            hcFills++;
+          });
+        }
+        // Strokes
+        if (Array.isArray(node.strokes)) {
+          node.strokes.forEach((stroke, idx) => {
+            if (stroke.type !== "SOLID") return;
+            if (stroke.visible === false) return;
+            if (isPaintBound(node, "strokes", stroke, idx)) return;
+            hcStrokes++;
+          });
+        }
+      }
+
+      // TEXT component property check.
+      // Skip nodes whose name starts with "." or "_" (private/decorative by convention)
+      // and very short strings (icons, glyphs, single-char labels).
+      if (node.type === "TEXT") {
+        const hasCharRef =
+          node.componentPropertyReferences &&
+          node.componentPropertyReferences.characters;
+        const nodeName = node.name || "";
+        const isPrivate =
+          nodeName.startsWith(".") || nodeName.startsWith("_");
+        const isTinyText =
+          typeof node.characters === "string" && node.characters.length <= 2;
+        if (
+          !hasCharRef &&
+          !isPrivate &&
+          !isTinyText &&
+          node.characters &&
+          node.characters.length > 0
+        ) {
+          unboundTextNodes.push(nodeName || node.characters.slice(0, 20));
+        }
+      }
+
+      if ("children" in node) {
+        for (const child of node.children) walk(child);
+      }
+    };
+
+    walk(rootNode);
+
+    if (rootNode.type === "COMPONENT" && rootNode.layoutMode === "NONE") {
+      missingAutoLayout.push(label);
+    }
+
+    if (hcFills > 0) hardcodedFillCounts.set(label, hcFills);
+    if (hcStrokes > 0) hardcodedStrokeCounts.set(label, hcStrokes);
+    if (unboundTextNodes.length > 0) {
+      componentsWithUnboundText.push({
+        name: label,
+        sample: unboundTextNodes.slice(0, 3),
+      });
+    }
+  };
+
+  for (const cs of allComponentSets) auditComponent(cs);
+  for (const c of allComponents) {
+    // Skip components that are children of a Component Set — already audited.
+    if (!c.parent || c.parent.type !== "COMPONENT_SET") {
+      auditComponent(c);
+    }
+  }
+
+  for (const [name, count] of hardcodedFillCounts) {
+    addIssue("warning", "components", `"${name}" has ${count} hardcoded fill(s)`);
+  }
+  for (const [name, count] of hardcodedStrokeCounts) {
+    addIssue(
+      "warning",
+      "components",
+      `"${name}" has ${count} hardcoded stroke(s)`
+    );
+  }
+  for (const name of missingAutoLayout) {
+    addIssue(
+      "warning",
+      "components",
+      `Component "${name}" missing Auto Layout`
+    );
+  }
+  for (const entry of componentsWithUnboundText) {
+    addIssue(
+      "warning",
+      "components",
+      `"${entry.name}" has text nodes without TEXT component property (overrides lost on update): ${entry.sample.join(", ")}`
+    );
+  }
+
+  // ---------- 8. WCAG contrast ----------
+  // Check all semantic color/text/* × color/bg/* pairs in Light and Dark.
+  // Scope-aware: `color/text/on-{surface}` tokens are inverse text tokens
+  // designed to sit on a filled surface of the same family. They are tested
+  // ONLY against backgrounds whose name contains `{surface}` as a name segment
+  // (split by "/" or "-"). This avoids false positives like pairing
+  // "color/text/on-accent" with "color/bg/card".
+  // Token pairs carry no font size, so a ratio between 3:1 and 4.5:1 is not a
+  // verdict: the pair passes 1.4.3 only where its text is large. It warns in
+  // its own words. `failures` counts every pair below 4.5:1; `largeTextOnly`
+  // and `failAllSizes` split them at 3:1.
+  const contrastReport = {
+    light: [],
+    dark: [],
+    failures: 0,
+    largeTextOnly: 0,
+    failAllSizes: 0,
+    skipped: 0,
+  };
+
+  const textVars = variables.filter((v) => /^color\/text\//i.test(v.name));
+  const bgVars = variables.filter((v) => /^color\/bg\//i.test(v.name));
+
+  const pickModes = (collection) => {
+    if (!collection) return { light: null, dark: null };
+    const light = collection.modes.find((m) =>
+      m.name.toLowerCase().includes("light")
+    );
+    const dark = collection.modes.find((m) =>
+      m.name.toLowerCase().includes("dark")
+    );
+    return { light, dark };
+  };
+
+  // Use the collection of the first text variable as the mode anchor.
+  let anchorCollection = null;
+  if (textVars.length > 0) {
+    anchorCollection = await figma.variables.getVariableCollectionByIdAsync(
+      textVars[0].variableCollectionId
+    );
+  }
+  const { light: lightMode, dark: darkMode } = pickModes(anchorCollection);
+
+  // Returns true if `bvName` should be paired with the given `on-{surface}` text var.
+  const isCompatibleInverseSurface = (surface, bvName) => {
+    const segments = bvName.toLowerCase().split(/[/\-]/);
+    return segments.includes(surface);
+  };
+
+  const checkMode = async (mode, label) => {
+    if (!mode) return;
+    for (const tv of textVars) {
+      // Detect inverse text tokens: color/text/on-accent, color/text/on-brand, etc.
+      const onMatch = /^color\/text\/on-([a-z0-9-]+)$/i.exec(tv.name);
+      const surface = onMatch ? onMatch[1].toLowerCase() : null;
+
+      const tColor = await resolveColorValue(tv, mode.modeId);
+      if (!tColor) continue;
+
+      for (const bv of bgVars) {
+        if (surface && !isCompatibleInverseSurface(surface, bv.name)) {
+          contrastReport.skipped++;
+          continue;
+        }
+
+        const bColor = await resolveColorValue(bv, mode.modeId);
+        if (!bColor) continue;
+
+        const bgSolid = composite(bColor, PAGE_BASE);
+        const textSolid = composite(tColor, bgSolid);
+        const ratio = contrastRatio(textSolid, bgSolid);
+        const entry = {
+          text: tv.name,
+          bg: bv.name,
+          ratio: Math.round(ratio * 100) / 100,
+          passAA: ratio >= 4.5,
+          passAALarge: ratio >= 3,
+        };
+        if (isTranslucent(tColor) || isTranslucent(bColor)) {
+          entry.alphaComposited = true;
+        }
+        contrastReport[label].push(entry);
+        if (!entry.passAA) {
+          contrastReport.failures++;
+          if (entry.passAALarge) contrastReport.largeTextOnly++;
+          else contrastReport.failAllSizes++;
+          if (contrastReport.failures <= 10) {
+            const verdict = entry.passAALarge
+              ? "large text only: fails WCAG AA 4.5:1 for normal text, passes 3:1 at ≥ 24px or ≥ 18.66px bold"
+              : "fails WCAG AA Large 3:1";
+            addIssue(
+              "warning",
+              "accessibility",
+              `${label}: "${tv.name}" on "${bv.name}" — contrast ${entry.ratio}:1 (${verdict})`
+            );
+          }
+        }
+      }
+    }
+  };
+
+  await checkMode(lightMode, "light");
+  await checkMode(darkMode, "dark");
+
+  if (contrastReport.failures > 10) {
+    addIssue(
+      "warning",
+      "accessibility",
+      `+${contrastReport.failures - 10} more contrast failures (see contrast.worstLight / worstDark in output)`
+    );
+  }
+
+  // ---------- Output ----------
+  const CAP = 100;
+  const cappedIssues = issues.slice(0, CAP);
+  const hasMore = issues.length > CAP;
+
+  return {
+    scannedPage: { id: scanPage.id, name: scanPage.name },
+    otherPages,
+    stats,
+    issueCount: issues.length,
+    issues: cappedIssues,
+    hasMore,
+    summary: {
+      errors: issues.filter((i) => i.severity === "error").length,
+      warnings: issues.filter((i) => i.severity === "warning").length,
+      info: issues.filter((i) => i.severity === "info").length,
+    },
+    // Read this rather than `issues` for the collision count: the issue list
+    // is capped and a large file can push these entries past the cap.
+    codeSyntaxCollisions,
+    contrast: {
+      lightPairs: contrastReport.light.length,
+      darkPairs: contrastReport.dark.length,
+      skippedInverseMismatches: contrastReport.skipped,
+      failures: contrastReport.failures,
+      largeTextOnly: contrastReport.largeTextOnly,
+      failAllSizes: contrastReport.failAllSizes,
+      worstLight: contrastReport.light
+        .filter((p) => !p.passAA)
+        .sort((a, b) => a.ratio - b.ratio)
+        .slice(0, 10),
+      worstDark: contrastReport.dark
+        .filter((p) => !p.passAA)
+        .sort((a, b) => a.ratio - b.ratio)
+        .slice(0, 10),
+    },
+  };
+}
+
+// Entry point for `use_figma` (MCP): invoke runAudit and return the result.
+// The MCP runtime wraps this script in an async context, so top-level `return`
+// delivers the audit report to the caller.
+return await runAudit();

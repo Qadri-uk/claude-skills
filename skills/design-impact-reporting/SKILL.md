@@ -1,68 +1,88 @@
 ---
 name: design-impact-reporting
-description: |
-  Communicate design’s contribution to user and business outcomes in stakeholder terms.
-  Metrics framework, scorecard / before-after / A-B / portfolio report formats.
-triggers:
-  - "design impact reporting"
-  - "design ROI"
-  - "measuring design impact"
-  - "design scorecard"
-  - "design metrics report"
-das:
-  type: skill
-  category: design-review
-  upstream: "https://github.com/Owl-Listener/designer-skills"
-  upstream_path: "design-ops/skills/design-impact-reporting/SKILL.md"
-  version: latest
+description: Communicate design's contribution to business and user outcomes in stakeholder language. Use when reporting results upward. For choosing the metrics in the first place, use `metrics-definition` (ux-strategy).
 ---
-
-# design-impact-reporting
-
-> Catalogue stub — full skill: [Owl-Listener/designer-skills](https://github.com/Owl-Listener/designer-skills)
-
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
-
-1. **Is the full skill already installed?**
-   - Global: `f=~/.agents/skills/design-impact-reporting/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/design-impact-reporting/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `design-impact-reporting`, invoke it and proceed
-   - `pointer` → go to step 2
-
-2. **Detect scope, then install:**
-
-   ```bash
-   [ -e ~/.agents/skills/design-impact-reporting ] && echo "global" || echo "project"
-   ```
-
-   **Global:**
-   ```bash
-   npx skills add Owl-Listener/designer-skills --skill design-impact-reporting -g -y
-   ```
-
-   **Project:**
-   ```bash
-   npx skills add Owl-Listener/designer-skills --skill design-impact-reporting -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
-
-**Heads-up**
-
-- **License:** MIT
-<!-- das:install:end -->
-
-## Invoke after install
-
-- Skill name: `design-impact-reporting`
-- Trigger phrases: "design impact reporting", "design ROI", "design scorecard"
-
-## What it does
-
-Owl-Listener's design-impact skill: connect design work to user metrics → product metrics → business metrics, with honest attribution of shared outcomes. Provides concrete report structures (design scorecard, before/after case, A/B summary, annual portfolio) plus narrative structure and qualitative-evidence pairing. It is aimed at reporting results upward; for choosing the metrics in the first place, upstream points to its `metrics-definition` skill (ux-strategy), which is part of the same `Owl-Listener/designer-skills` repo (see the `designer-skills` stub).
-
-## When NOT to use
-
-- Portfolio case-study storytelling → use a case-study/portfolio skill
-- PM-level product metrics only → use `pm-skills` or `deanpeters-pm-skills`
-- Picking which design metrics to track → use `metrics-definition` from `designer-skills`
+# Design Impact Reporting
+You are an expert in measuring and communicating the value of design work to leadership, cross-functional partners, and the broader organization.
+## What You Do
+You build the evidence and narrative that connects design decisions to measurable outcomes — so design is treated as a strategic investment, not a cost center or aesthetic layer.
+## Why This Is Hard
+Design impact is often diffuse, lagged, and shared with other functions. A better onboarding flow increases conversion — but so does a marketing campaign and a pricing change that launched the same quarter. Design impact reporting requires:
+- Isolating design's contribution where possible
+- Acknowledging shared outcomes honestly where isolation isn't possible
+- Building a portfolio of evidence over time, not just one-off wins
+## Metrics Framework
+Connect design work to three levels:
+### User Metrics (leading indicators)
+What users do as a result of the design:
+- Task completion rate and time-on-task
+- Error rate and recovery rate
+- System Usability Scale (SUS) or similar satisfaction scores
+- Net Promoter Score, CSAT, or in-product feedback
+- Activation rate (first meaningful action after sign-up)
+- Feature adoption and retention
+### Product Metrics (mid-level)
+What the product achieves:
+- Conversion rate (sign-up, trial-to-paid, checkout)
+- Onboarding completion rate
+- Support ticket volume for designed flows (reduction = design improvement)
+- Accessibility compliance score
+- Time spent in key flows
+### Business Metrics (lagging, shared)
+What the business achieves:
+- Revenue attributed to redesigned flows (use A/B test data where available)
+- Churn reduction in redesigned areas
+- Cost savings (reduced support, engineering rework avoided)
+- Time-to-market for design-system-enabled features
+## Reporting Structures
+### The Design Scorecard
+A recurring (quarterly) snapshot of key metrics across active design work:
+- 3–5 metrics per major initiative
+- Baseline vs current vs target
+- Status: on track / at risk / achieved
+- Brief narrative on what drove change
+### Before/After Case
+For significant shipped work:
+- Metric before (baseline, with date)
+- Design change described in one sentence
+- Metric after (with date and sample size)
+- Caveat if other factors were in play
+- Business value: revenue, cost, time
+### A/B Test Summary
+When controlled experiments are available:
+- Hypothesis
+- Variants and sample sizes
+- Primary metric result (with statistical significance)
+- Secondary metric results
+- Decision and rationale
+### Portfolio Summary (annual)
+For leadership and headcount conversations:
+- Projects shipped with their impact metrics
+- Cumulative impact across the year
+- Investment: design team time, tooling cost
+- ROI framing: "Design team investment returned X in conversion improvement"
+## Qualitative Evidence
+Quantitative metrics alone are incomplete. Pair them with:
+- User quotes from research that predicted the outcome
+- Usability test clips showing the problem and the improvement
+- Design debt that was resolved (showing risk reduction)
+- Accessibility improvements (compliance + expanded user reach)
+## Common Mistakes
+- Reporting outputs (screens designed, components shipped) instead of outcomes
+- Attributing metric improvements to design without acknowledging co-factors
+- Only reporting wins — teams that report failures build more credibility over time
+- Reporting with a one-month lag — tie reporting cadence to business review cycles
+- Using design jargon ("improved hierarchy", "cleaner layout") without connecting to user behavior
+## Structuring the Narrative
+Every impact report needs:
+1. **Context**: what was the problem, and why did it matter?
+2. **Intervention**: what did design do?
+3. **Evidence**: what changed in user behavior or product metrics?
+4. **Business value**: what does that change mean in revenue, cost, or risk terms?
+5. **What's next**: what are we working on now, and what do we expect it to achieve?
+## Best Practices
+- Define success metrics before shipping, not after — retrospective metric-picking is unconvincing
+- Partner with data/analytics to get access to the metrics that matter, not just the ones design can self-report
+- Build relationships with finance and product to understand how they measure value — translate into their language
+- Publish a simple, consistent format; stakeholders who see the same structure quarterly start to anticipate it
+- Use impact reporting as a team ritual — it builds the team's evidence-gathering habits over time

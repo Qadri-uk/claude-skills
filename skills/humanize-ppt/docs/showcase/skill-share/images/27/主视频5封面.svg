@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="主视频 5 文案工作流封面">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#181410"/>
+      <stop offset=".55" stop-color="#28221a"/>
+      <stop offset="1" stop-color="#443829"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#efe4cf" stop-opacity=".14"/>
+      <stop offset="1" stop-color="#efe4cf" stop-opacity=".05"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <g fill="none" stroke="#efe4cf" stroke-opacity=".12">
+    <path d="M120 168H1480"/>
+    <path d="M120 732H1480"/>
+    <path d="M250 96V804"/>
+    <path d="M1350 96V804"/>
+  </g>
+  <text x="130" y="108" fill="#efe4cf" fill-opacity=".58" font-family="monospace" font-size="24" letter-spacing="10">COPY WORKFLOW</text>
+  <g transform="translate(170 322)" fill="#efe4cf">
+    <rect width="250" height="150" fill="url(#card)" stroke="#efe4cf" stroke-opacity=".36"/>
+    <text x="30" y="52" font-family="monospace" font-size="20" letter-spacing="8" fill-opacity=".56">01 · INPUT</text>
+    <text x="30" y="104" font-family="serif" font-size="42">原始文案</text>
+  </g>
+  <g transform="translate(510 292)" fill="#efe4cf">
+    <rect width="270" height="210" fill="url(#card)" stroke="#efe4cf" stroke-opacity=".42"/>
+    <text x="32" y="56" font-family="monospace" font-size="20" letter-spacing="8" fill-opacity=".56">02 · STYLE</text>
+    <text x="32" y="118" font-family="serif" font-size="44">卡兹克</text>
+    <text x="32" y="160" font-family="sans-serif" font-size="21" fill-opacity=".62">生成长文和感觉</text>
+  </g>
+  <g transform="translate(860 292)" fill="#efe4cf">
+    <rect width="310" height="210" fill="url(#card)" stroke="#efe4cf" stroke-opacity=".42"/>
+    <text x="32" y="56" font-family="monospace" font-size="20" letter-spacing="8" fill-opacity=".56">03 · TONE</text>
+    <text x="32" y="118" font-family="serif" font-size="44">humanizer-zh</text>
+    <text x="32" y="160" font-family="sans-serif" font-size="21" fill-opacity=".62">增加真人感</text>
+  </g>
+  <g transform="translate(1260 322)" fill="#efe4cf">
+    <rect width="250" height="150" fill="url(#card)" stroke="#efe4cf" stroke-opacity=".36"/>
+    <text x="30" y="52" font-family="monospace" font-size="20" letter-spacing="8" fill-opacity=".56">04 · OUTPUT</text>
+    <text x="30" y="104" font-family="serif" font-size="42">结果对比</text>
+  </g>
+  <g stroke="#efe4cf" stroke-opacity=".42" stroke-width="2" fill="none" stroke-linecap="round">
+    <path d="M420 397H510"/>
+    <path d="M780 397H860"/>
+    <path d="M1170 397H1260"/>
+  </g>
+  <g fill="#efe4cf" opacity=".68">
+    <circle cx="420" cy="397" r="5"/>
+    <circle cx="510" cy="397" r="5"/>
+    <circle cx="780" cy="397" r="5"/>
+    <circle cx="860" cy="397" r="5"/>
+    <circle cx="1170" cy="397" r="5"/>
+    <circle cx="1260" cy="397" r="5"/>
+  </g>
+  <g transform="translate(800 650)" fill="#efe4cf" text-anchor="middle">
+    <text x="0" y="0" font-family="monospace" font-size="24" letter-spacing="9" fill-opacity=".64">MAIN VIDEO 5 · 20-30S</text>
+  </g>
+</svg>

@@ -1,0 +1,3206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skill：把 AI 从聊天框带进真实工作流</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ============ 主题色(默认:🖋 墨水经典) ============
+       切换主题:从 references/themes.md 复制对应的 :root 块
+       整体替换这几行(--ink / --ink-rgb / --paper / --paper-rgb)
+       其他地方散落的 rgba() 都走 var(--ink-rgb) / var(--paper-rgb),无需逐处改 */
+    --ink:#0a0a0b;
+    --ink-rgb:10,10,11;
+    --paper:#f1efea;
+    --paper-rgb:241,239,234;
+    --paper-tint:#e8e5de;
+    --ink-tint:#18181a;
+
+    /* ============ 字体(跨主题固定) ============ */
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --serif-en:"Playfair Display","Source Serif 4",Georgia,serif;
+    --serif-body-en:"Source Serif 4",Georgia,serif;
+    --serif-zh:"Noto Serif SC",source-han-serif-sc,serif;
+    --sans-zh:"Noto Sans SC",source-han-sans-sc,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:var(--sans-zh);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+  /* ============ WebGL 双背景 ============ */
+  canvas.bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;transition:opacity 1.2s ease}
+  canvas#bg-light{opacity:0}
+  canvas#bg-dark{opacity:1}
+  body.light-bg canvas#bg-light{opacity:1}
+  body.light-bg canvas#bg-dark{opacity:0}
+
+  /* ============ Deck 容器 + 翻页 ============ */
+  /* width: NSLIDES * 100vw，会在 JS 里动态矫正 */
+  #deck{position:fixed;inset:0;width:10000vw;height:100vh;display:flex;flex-wrap:nowrap;transition:transform .9s cubic-bezier(.77,0,.175,1);z-index:10;will-change:transform}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;position:relative;padding:6vh 6vw 10vh 6vw;display:flex;flex-direction:column;overflow:hidden}
+  .slide.light{color:var(--ink)}
+  .slide.dark{color:var(--paper)}
+
+  /* 默认页：遮罩较厚，保证文字可读 */
+  .slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;transition:background .7s ease}
+  .slide.light::before{background:rgba(var(--paper-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.dark::before{background:rgba(var(--ink-rgb),.78);backdrop-filter:blur(3px)}
+  /* Hero 页：遮罩大幅降低，让 WebGL 背景明显透出 */
+  .slide.hero.light::before{background:rgba(var(--paper-rgb),.16);backdrop-filter:none}
+  .slide.hero.dark::before{background:rgba(var(--ink-rgb),.12);backdrop-filter:none}
+  /* Hero 页顶底微弱渐隐，保证 chrome/foot 区域可读 */
+  .slide.hero::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .slide.hero.light::after{background:linear-gradient(180deg,rgba(var(--paper-rgb),.28) 0%,rgba(var(--paper-rgb),0) 14%,rgba(var(--paper-rgb),0) 86%,rgba(var(--paper-rgb),.28) 100%)}
+  .slide.hero.dark::after{background:linear-gradient(180deg,rgba(var(--ink-rgb),.32) 0%,rgba(var(--ink-rgb),0) 14%,rgba(var(--ink-rgb),0) 86%,rgba(var(--ink-rgb),.32) 100%)}
+
+  /* ============ Magazine chrome：顶部 meta + 底部 foot ============ */
+  .chrome{display:flex;justify-content:space-between;align-items:flex-start;font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.7}
+  .chrome .left,.chrome .right{display:flex;gap:2.4em;align-items:center}
+  .chrome .sep{width:40px;height:1px;background:currentColor;opacity:.4}
+  .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+  .foot .title{font-family:var(--serif-zh);font-weight:400;letter-spacing:.05em;text-transform:none;opacity:.75;font-size:13px}
+
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;padding:6px 14px;border:1px solid currentColor;opacity:.85}
+  .rule{width:100%;height:1px;background:currentColor;opacity:.25;margin:3vh 0}
+  .rule.v{width:1px;height:100%;margin:0}
+
+  /* ============ 字体规则 ============
+     · 衬线（Noto Serif SC / Playfair）：大标题、重点金句、数字
+     · 非衬线（Noto Sans SC）：正文描述、body、补充说明
+     · 等宽（IBM Plex Mono）：kicker、meta 小标签、foot 右侧
+  */
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.6;margin-bottom:2.6vh}
+  .display{font-family:var(--serif-en);font-weight:700;font-size:11vw;line-height:.92;letter-spacing:-.025em}
+  .display-zh{font-family:var(--serif-zh);font-weight:700;font-size:7.8vw;line-height:1.04;letter-spacing:-.005em}
+  .h1-zh{font-family:var(--serif-zh);font-weight:700;font-size:4.6vw;line-height:1.12;letter-spacing:-.005em}
+  .h2-zh{font-family:var(--serif-zh);font-weight:600;font-size:3.2vw;line-height:1.2;letter-spacing:0}
+  .h3-zh{font-family:var(--serif-zh);font-weight:500;font-size:1.9vw;line-height:1.35}
+  .body-zh{font-family:var(--sans-zh);font-weight:400;font-size:max(15px,1.22vw);line-height:1.75;opacity:.82;letter-spacing:.01em}
+  .body-serif{font-family:var(--serif-zh);font-weight:400;font-size:max(15px,1.3vw);line-height:1.65;opacity:.88}
+  .lead{font-family:var(--serif-zh);font-weight:400;font-size:1.9vw;line-height:1.4;opacity:.85}
+  .meta{font-family:var(--mono);font-size:max(11px,.88vw);letter-spacing:.16em;text-transform:uppercase;opacity:.6}
+  .big-num{font-family:var(--serif-en);font-weight:800;font-size:10vw;line-height:.85;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .mid-num{font-family:var(--serif-en);font-weight:700;font-size:5.5vw;line-height:.88;letter-spacing:-.02em;font-feature-settings:"tnum"}
+  .ghost{font-family:var(--serif-en);font-weight:900;font-size:34vw;line-height:.8;opacity:.06;letter-spacing:-.04em;position:absolute;font-feature-settings:"tnum"}
+  em{font-style:italic;font-family:var(--serif-en)}
+  .en{font-family:var(--serif-en);font-style:italic;font-weight:500}
+
+  /* ============ 布局工具 ============ */
+  .col{display:flex;flex-direction:column;gap:2.4vh}
+  .row{display:flex;align-items:center;gap:3vw}
+  .grid-6{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4vw 6vw;flex:1;align-content:center;padding:2vh 0}
+  .grid-9{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3vh 4vw;flex:1;align-content:center}
+  .grid-4{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:4vh 6vw;flex:1;align-content:center}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:4vw;flex:1;align-content:center}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:4vw;flex:1;align-items:center}
+  .split-55{display:grid;grid-template-columns:55fr 45fr;gap:5vw;flex:1;align-items:stretch}
+  .fill{flex:1}
+  .center{align-items:center;justify-content:center;text-align:center}
+  .bottom-left{position:absolute;left:6vw;bottom:9vh;max-width:50vw}
+  .bottom-right{position:absolute;right:6vw;bottom:9vh;max-width:50vw;text-align:right}
+  .top-right{position:absolute;right:6vw;top:6vh;text-align:right}
+
+  /* ============ Stat（数字矩阵） ============ */
+  .stat{display:flex;flex-direction:column;gap:1vh;align-items:flex-start}
+  .stat .n{font-family:var(--serif-en);font-weight:800;font-size:8vw;line-height:.88;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .stat .l{font-family:var(--sans-zh);font-size:max(13px,1.05vw);opacity:.7;margin-top:1vh;font-weight:400;line-height:1.5}
+  .stat .m{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.5;margin-bottom:.2vh}
+
+  /* ============ Callout（引用框） ============ */
+  .callout{padding:3vh 2.4vw;border-left:3px solid currentColor;position:relative;font-family:var(--serif-zh);font-size:max(15px,1.2vw);line-height:1.55;opacity:.92}
+  .slide.light .callout{background:rgba(var(--ink-rgb),.05)}
+  .slide.dark .callout{background:rgba(var(--paper-rgb),.06)}
+  .callout .cite{display:block;margin-top:1.6vh;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6}
+  .callout .q-big{font-family:var(--serif-zh);font-weight:600;font-size:max(17px,1.6vw);line-height:1.42}
+
+  /* ============ Platform（平台卡） ============ */
+  .plat{display:flex;flex-direction:column;justify-content:flex-end;padding:2vh 0;border-top:1px solid currentColor;border-color:rgba(127,127,127,.35)}
+  .plat .name{font-family:var(--serif-zh);font-weight:700;font-size:1.8vw;margin-bottom:.6vh}
+  .plat .nb{font-family:var(--serif-en);font-weight:700;font-size:3.2vw;letter-spacing:-.02em;line-height:1;font-feature-settings:"tnum"}
+  .plat .sub{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.55;margin-top:.6vh}
+  .plat .fill{font-family:var(--sans-zh);font-weight:300;font-size:2.4vw;opacity:.28;letter-spacing:-.01em;line-height:1}
+
+  /* ============ Rowline（表格行） ============ */
+  .rowline{display:grid;grid-template-columns:1fr 2fr 1fr;gap:2vw;padding:2.2vh 0;border-top:1px solid currentColor;align-items:center;border-color:rgba(127,127,127,.25)}
+  .rowline:last-child{border-bottom:1px solid currentColor;border-color:rgba(127,127,127,.25)}
+  .rowline .k{font-family:var(--serif-zh);font-weight:700;font-size:1.7vw}
+  .rowline .v{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.2vw);opacity:.85;line-height:1.55}
+  .rowline .m{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;justify-self:end}
+
+  /* ============ Pillar（支柱卡片） ============ */
+  .pillar{display:flex;flex-direction:column;gap:1.8vh}
+  .pillar .ic{font-family:var(--serif-en);font-style:italic;font-size:2.6vw;opacity:.45;font-weight:400}
+  .pillar .ic svg{width:2.8vw;height:2.8vw;stroke-width:1.2;opacity:.7}
+  .pillar .t{font-family:var(--serif-zh);font-weight:700;font-size:2.4vw;line-height:1.1}
+  .pillar .d{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.1vw);opacity:.76;line-height:1.6}
+
+  /* ============ Signature / Highlight ============ */
+  .sign{font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:2vw;opacity:.7}
+  .hi{position:relative;display:inline}
+  .slide.dark .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--paper-rgb),.15);z-index:-1}
+  .slide.light .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--ink-rgb),.08);z-index:-1}
+
+  /* ============ Icons（Lucide via CDN） ============ */
+  .ico{width:1em;height:1em;display:inline-block;vertical-align:-.12em;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .ico-lg,.ico-md,.ico-sm{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+  .ico-lg{width:2.6vw;height:2.6vw;stroke-width:1.2;display:inline-block}
+  .ico-md{width:1.8vw;height:1.8vw;stroke-width:1.3;display:inline-block;vertical-align:-.4em}
+  .ico-sm{width:1.1vw;height:1.1vw;stroke-width:1.4;display:inline-block;vertical-align:-.15em;opacity:.7}
+
+  /* ============ 图片占位（虚线框，提示设计师位置） ============ */
+  .img-slot{border:1.5px dashed rgba(127,127,127,.4);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1vh;padding:2vh 2vw;font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;opacity:.55;position:relative;aspect-ratio:16/9;width:100%;max-height:56vh;margin-inline:auto;box-sizing:border-box}
+  .img-slot::before{content:"";position:absolute;inset:8px;border:1px solid currentColor;opacity:.2}
+  .img-slot .plus{font-size:2vw;font-weight:300;opacity:.5;letter-spacing:0}
+  .img-slot .label{position:relative;z-index:2;text-align:center}
+  .img-slot.r-4x3{aspect-ratio:4/3}
+  .img-slot.r-3x2{aspect-ratio:3/2}
+  .img-slot.r-1x1{aspect-ratio:1/1}
+
+  /* ============ 图片实填框（关键：固定高度 + 只裁底部） ============
+     重要约束：高度用内联 height:Nvh 精确控制，不要用 aspect-ratio（会撑破布局）
+     object-position:top center 保证严禁裁剪顶部和左右，只裁剪底部
+  */
+  .frame-img{overflow:hidden;position:relative;background:rgba(0,0,0,.04);box-sizing:border-box;width:100%;border-radius:4px}
+  .slide.dark .frame-img{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12)}
+  .frame-img > img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+  .frame-cap{display:flex;justify-content:space-between;align-items:baseline;gap:1vw;margin-top:.8vh;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.72}
+  .frame-cap .pf{font-family:var(--serif-zh);font-weight:600;font-size:max(13px,1vw);letter-spacing:.04em;text-transform:none;opacity:.94}
+  .frame-cap .nb{font-family:var(--serif-en);font-style:italic;font-size:max(15px,1.2vw);letter-spacing:.02em;text-transform:none;opacity:.88}
+  .frame-cap .idx{font-family:var(--mono);opacity:.5}
+  figure.tile{display:flex;flex-direction:column;margin:0;min-width:0}
+  figure.tile > .frame-img{flex:0 0 auto}
+
+  /* ============ 导航 ============ */
+  #nav{position:fixed;left:50%;bottom:2.6vh;transform:translateX(-50%);z-index:30;display:flex;gap:10px;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  #nav .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s ease;border:0;padding:0}
+  #nav .dot:hover{background:rgba(255,255,255,.5);transform:scale(1.15)}
+  #nav .dot.active{background:rgba(255,255,255,.95);width:22px;border-radius:999px}
+  body.light-bg #nav{background:rgba(255,255,255,.25)}
+  body.light-bg #nav .dot{background:rgba(var(--ink-rgb),.25)}
+  body.light-bg #nav .dot.active{background:rgba(var(--ink-rgb),.9)}
+  #hint{position:fixed;bottom:3vh;right:3vw;z-index:30;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.4;mix-blend-mode:difference;color:#aaa}
+
+  /* ============================================================
+     ============ LAYOUTS API · 面向 agent 的类（v2）============
+     所有 layouts.md 中的骨架都基于下面这套命名。
+     如果你在 layouts.md 里看到某个类，它必须在下面有定义。
+     ============================================================ */
+
+  /* ---------- .frame：每页主内容容器 ---------- */
+  .frame{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  /* 当 .frame 同时加了 grid 类时，grid 的 display:grid 覆盖 flex */
+  .frame.grid-2-7-5,
+  .frame.grid-2-6-6,
+  .frame.grid-2-8-4,
+  .frame.grid-3-3,
+  .frame.grid-6{display:grid}
+
+  /* ---------- 标题层级（API 名称，衬线为主） ---------- */
+  .h-hero{
+    font-family:var(--serif-zh);
+    font-weight:900;
+    font-size:10vw;
+    line-height:.96;
+    letter-spacing:-.02em;
+  }
+  .h-xl{
+    font-family:var(--serif-zh);
+    font-weight:700;
+    font-size:6.2vw;
+    line-height:1.08;
+    letter-spacing:-.01em;
+  }
+  .h-sub{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:3.1vw;
+    line-height:1.25;
+    letter-spacing:0;
+    opacity:.7;
+  }
+  .h-md{
+    font-family:var(--serif-zh);
+    font-weight:600;
+    font-size:2.3vw;
+    line-height:1.3;
+  }
+  /* 英文标题专用（Playfair 衬线） */
+  .h-hero-en,.h-xl-en{font-family:var(--serif-en);letter-spacing:-.025em}
+
+  /* ---------- lead 引语 ---------- */
+  .lead{
+    font-family:var(--serif-zh);
+    font-weight:400;
+    font-size:1.75vw;
+    line-height:1.5;
+    opacity:.86;
+  }
+
+  /* ---------- meta-row 底部元数据 ---------- */
+  .meta-row{
+    display:flex;
+    gap:1.2em;
+    align-items:baseline;
+    flex-wrap:wrap;
+    font-family:var(--mono);
+    font-size:max(12px,.92vw);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- stat-card（数据大字报用） ---------- */
+  .stat-card{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    align-items:flex-start;
+    padding-top:1.6vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.3);
+  }
+  .stat-card .stat-label{
+    font-family:var(--mono);
+    font-size:max(10px,.78vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.55;
+  }
+  .stat-card .stat-nb{
+    font-family:var(--serif-en);
+    font-weight:800;
+    font-size:5.8vw;
+    line-height:.9;
+    letter-spacing:-.03em;
+    font-feature-settings:"tnum";
+    margin-top:.4vh;
+  }
+  .stat-card .stat-nb .stat-unit{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:.38em;
+    letter-spacing:0;
+    opacity:.72;
+    margin-left:.14em;
+  }
+  .stat-card .stat-note{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(13px,1.05vw);
+    line-height:1.5;
+    opacity:.72;
+    margin-top:.6vh;
+  }
+  /* 当 stat-card 用于 grid-4（2x2），数字适度放大；若页面有标题+引文在上方，可内联 style 覆盖为更小值 */
+  .grid-4 .stat-card .stat-nb{font-size:5vw}
+  /* 当只有 3 个，字也可以稍大 */
+  .grid-3 .stat-card .stat-nb{font-size:6.8vw}
+
+  /* ---------- pipeline（流水线） ---------- */
+  .pipeline-section{
+    margin-top:4.4vh;
+    padding-top:2.8vh;
+    border-top:1px dashed rgba(127,127,127,.32);
+  }
+  .pipeline-section:first-of-type{
+    border-top:0;
+    padding-top:0;
+    margin-top:3vh;
+  }
+  .pipeline-label{
+    font-family:var(--mono);
+    font-size:max(11px,.85vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.62;
+    margin-bottom:2.2vh;
+  }
+  .pipeline{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:1.2vw;
+  }
+  .pipeline[data-cols="3"]{grid-template-columns:repeat(3,1fr)}
+  .pipeline[data-cols="4"]{grid-template-columns:repeat(4,1fr)}
+  .pipeline[data-cols="6"]{grid-template-columns:repeat(6,1fr)}
+  .step{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    padding-top:1.4vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.35);
+  }
+  .step-nb{
+    font-family:var(--serif-en);
+    font-style:italic;
+    font-weight:500;
+    font-size:1.15vw;
+    opacity:.45;
+  }
+  .step-title{
+    font-family:var(--sans-zh);
+    font-weight:700;
+    font-size:1.55vw;
+    letter-spacing:.01em;
+    line-height:1.2;
+  }
+  .step-desc{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(12px,.95vw);
+    line-height:1.45;
+    opacity:.72;
+  }
+
+  /* ---------- 网格（layouts.md 所用） ---------- */
+  /* 这些类独立挂到任何容器上都能生效，不依赖 .frame 复合选择器 */
+  .grid-2-7-5{display:grid;grid-template-columns:7fr 5fr;gap:3vw 4vh;align-items:start}
+  .grid-2-6-6{display:grid;grid-template-columns:1fr 1fr;gap:3vw 4vh;align-items:start}
+  .grid-2-8-4{display:grid;grid-template-columns:8fr 4fr;gap:3vw 4vh;align-items:start}
+  .grid-3-3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-auto-rows:minmax(0,1fr);
+    gap:2.4vh 2vw;
+  }
+  /* grid-6 已在旧样式里定义为 3x2，这里仅补 align */
+
+  /* ---------- 图片 frame-img（layouts.md 主命名） ---------- */
+  /* 在旧样式里已定义，这里补 img-cap 命名别名与增强 */
+  figure.frame-img{margin:0;display:flex;flex-direction:column;min-width:0}
+  .img-cap{
+    display:block;
+    margin-top:.8vh;
+    font-family:var(--mono);
+    font-size:max(10px,.8vw);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+  /* callout src 命名别名 */
+  .callout-src{
+    display:block;
+    margin-top:1.6vh;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- chrome & foot 补位（layouts.md 简单写法） ---------- */
+  .chrome{font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.2em;text-transform:uppercase;opacity:.62}
+  .foot{font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.18em;text-transform:uppercase;opacity:.5}
+
+  /* ============ 动效系统(Motion One 驱动) ============
+     所有 [data-anim] 元素默认隐藏,进入页面时由 JS 逐个揭示。
+     - cascade(默认):按 DOM 顺序 stagger 120ms 淡入 + y:16→0
+     - hero(hero 页自动):慢一点的 stagger 180ms
+     - quote(含 [data-anim="line"]):逐行 600ms 淡入
+     - directional(含 [data-anim="left|right"]):左→分隔线→右
+     - pipeline(data-animate="pipeline"):Space/→ 手动推进
+     Motion One 没加载成功时(CDN 断 + 本地丢),所有 [data-anim] 会兜底显示。
+  */
+  [data-anim]{opacity:0}
+  [data-anim="left"]{transform:translateX(-24px)}
+  [data-anim="right"]{transform:translateX(24px)}
+  [data-anim="line"]{opacity:0;transform:translateY(10px)}
+  [data-animate="pipeline"] [data-anim]{opacity:.64}
+  [data-animate="stage-pipeline"] [data-anim="step"]{
+    opacity:.28;
+    transform:translateY(10px);
+    filter:grayscale(1);
+    transition:opacity .35s ease, transform .35s ease, filter .35s ease, box-shadow .35s ease, background .35s ease, border-color .35s ease;
+  }
+  [data-animate="stage-pipeline"] [data-anim="step"].is-active{
+    opacity:1 !important;
+    transform:translateY(-8px);
+    filter:none;
+    border-top-color:rgba(var(--paper-rgb),.92) !important;
+    background:rgba(var(--paper-rgb),.16) !important;
+    box-shadow:0 0 0 1px rgba(var(--paper-rgb),.24),0 18px 48px rgba(255,255,255,.08);
+  }
+  [data-animate="stage-pipeline"] .stack-step.is-active{
+    border-color:rgba(var(--paper-rgb),.58) !important;
+    background:rgba(var(--paper-rgb),.105) !important;
+    box-shadow:0 0 0 1px rgba(var(--paper-rgb),.2),0 18px 44px rgba(255,255,255,.075);
+  }
+
+  /* ============ Video overlay（按页稳定素材路径） ============ */
+  .video-card{position:relative;min-height:58vh;display:flex;flex-direction:column;justify-content:space-between;gap:1.4vh;cursor:pointer}
+  .video-card .video-frame{position:relative;width:100%;height:43vh;overflow:hidden;border:1px solid currentColor;background:rgba(var(--paper-rgb),.06)}
+  .video-card video{width:100%;height:100%;object-fit:cover;object-position:center;display:block;filter:saturate(.92) contrast(.96)}
+  .video-card .video-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;z-index:1}
+  .video-card .video-frame::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(var(--ink-rgb),0) 52%,rgba(var(--ink-rgb),.48) 100%);pointer-events:none}
+  .video-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:74px;height:74px;border:1px solid currentColor;border-radius:50%;display:grid;place-items:center;background:rgba(var(--ink-rgb),.34);backdrop-filter:blur(10px);z-index:2}
+  .video-play::before{content:"";width:0;height:0;border-top:12px solid transparent;border-bottom:12px solid transparent;border-left:18px solid currentColor;margin-left:4px}
+  .video-card:hover .video-frame{background:rgba(var(--paper-rgb),.09)}
+  .video-card:hover .video-play{background:rgba(var(--paper-rgb),.12)}
+  .video-meta{display:flex;justify-content:space-between;gap:1vw;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;opacity:.72}
+  #videoOverlay{position:fixed;inset:0;z-index:100;display:none;background:rgba(0,0,0,.92);align-items:center;justify-content:center;padding:5vh 5vw}
+  #videoOverlay.open{display:flex}
+  #videoOverlay video{max-width:100%;max-height:86vh;width:100%;background:#000}
+  #videoOverlay .close{position:absolute;right:3vw;top:3vh;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.08);color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:10px 14px;cursor:pointer}
+  #videoOverlay .close:hover{background:rgba(255,255,255,.16)}
+
+  /* ---------- 响应式降级 ---------- */
+  @media (max-width:900px){
+    .display{font-size:16vw}
+    .display-zh{font-size:12vw}
+    .h1-zh{font-size:7vw}
+    .h-hero{font-size:14vw}
+    .h-xl{font-size:9vw}
+    .pipeline{grid-template-columns:repeat(2,1fr)}
+    .grid-2-7-5,.grid-2-6-6,.grid-2-8-4{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-dark" class="bg"></canvas>
+<canvas id="bg-light" class="bg"></canvas>
+<div id="hint">← → 翻页 · ESC 索引</div>
+
+<div id="deck">
+
+<!-- ============================================================
+     SLIDES 插入区 · 在此处填充所有 <section class="slide ..."> 页面
+     每页模板参考 references/page-patterns.md
+     页面组件参考 references/components.md
+     ============================================================ -->
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>Skill Workflow · Opening</div>
+    <div>01 / 35</div>
+  </div>
+  <div class="frame" style="display:grid; gap:4vh; align-content:center; min-height:80vh">
+    <div class="kicker" data-anim>团队工作流 · AI Agent</div>
+    <h1 class="h-hero" style="font-size:6.7vw; line-height:1.04; max-width:82vw" data-anim>
+      Skill：把 AI<br>从聊天框带进<br>真实工作流
+    </h1>
+    <h2 class="h-sub" style="max-width:62vw" data-anim>
+      从找 Skill、做 Skill，到组合成团队工作流
+    </h2>
+    <p class="lead" style="max-width:58vw" data-anim>
+      为什么大家都在用 AI Agent，有的人只是多了一个助手，有的人却把它用成了一套团队协作系统。
+    </p>
+  </div>
+  <div class="foot">
+    <div></div>
+    <div>— 2026.04 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>Opening · The Answer</div>
+    <div>02 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:5.4vh; display:grid; grid-template-columns:.8fr 1.2fr; gap:4.8vw; align-items:center">
+    <div class="col" style="gap:3.6vh; transform:translateY(-.2vh)">
+      <h2 class="h-xl" style="font-size:4.62vw; line-height:1.08; max-width:44vw" data-anim>
+        真正拉开距离，<br>靠的是 Skill。
+      </h2>
+      <div class="callout" style="font-size:1.14vw; line-height:1.72; max-width:37vw; padding:0 0 0 1.9vw; background:transparent" data-anim>
+        一句话发起任务，Hermes 调度联网和文档 Skill，最终产出新人入门手册。
+      </div>
+    </div>
+    <button class="video-card" type="button" data-video-src="videos/03/主视频1.mp4" data-video-poster="images/03/主视频1封面.png" data-video-title="主视频 1 · Hermes 工作流预告" data-anim style="appearance:none;border:0;background:transparent;color:inherit;text-align:left;gap:0;justify-content:center">
+      <div class="video-frame" style="aspect-ratio:16/9;height:auto">
+        <img class="video-poster" src="images/03/主视频1封面.png" alt="主视频 1 首帧封面">
+        <video src="videos/03/主视频1.mp4" poster="images/03/主视频1封面.png" preload="metadata" muted playsinline></video>
+        <div class="video-play" aria-hidden="true"></div>
+      </div>
+    </button>
+  </div>
+  <div class="foot">
+    <div>Skill 是接口</div>
+    <div>Hermes · Skill · Workflow</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="stage-pipeline">
+  <div class="chrome">
+    <div>Main Path · Four Stages</div>
+    <div>03 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:6vh">
+    <h2 class="h-xl" style="font-size:5vw; max-width:82vw" data-anim>
+      团队用 Skill，通常会经历四个阶段
+    </h2>
+    <p class="lead" style="max-width:62vw; margin-top:2vh" data-anim>
+      从找到现成能力开始，逐步沉淀、组合，最后让它持续工作。
+    </p>
+
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1.8vw; align-items:end; margin-top:6vh; min-height:36vh">
+      <div data-anim="step" style="min-height:22vh; border-top:1px solid currentColor; padding:2.6vh 1.6vw; background:rgba(var(--paper-rgb),.055); display:flex; flex-direction:column; justify-content:space-between">
+        <div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2.6vh">
+            <div class="meta">Stage 01</div>
+            <i data-lucide="search" class="ico-md"></i>
+          </div>
+          <div class="q-big" style="font-size:2.15vw; line-height:1.2">找到合适的 Skill</div>
+        </div>
+        <p class="body-zh" style="font-size:1.02vw; line-height:1.55; opacity:.82">先问：有没有现成能力已经把这件事做掉。</p>
+      </div>
+
+      <div data-anim="step" style="min-height:26vh; border-top:1px solid currentColor; padding:2.6vh 1.6vw; background:rgba(var(--paper-rgb),.075); display:flex; flex-direction:column; justify-content:space-between">
+        <div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2.6vh">
+            <div class="meta">Stage 02</div>
+            <i data-lucide="wrench" class="ico-md"></i>
+          </div>
+          <div class="q-big" style="font-size:2.15vw; line-height:1.2">自己做一个</div>
+        </div>
+        <p class="body-zh" style="font-size:1.02vw; line-height:1.55; opacity:.82">现成 Skill 不贴合，就把自己的流程封装出来。</p>
+      </div>
+
+      <div data-anim="step" style="min-height:30vh; border-top:1px solid currentColor; padding:2.6vh 1.6vw; background:rgba(var(--paper-rgb),.095); display:flex; flex-direction:column; justify-content:space-between">
+        <div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2.6vh">
+            <div class="meta">Stage 03</div>
+            <i data-lucide="git-branch" class="ico-md"></i>
+          </div>
+          <div class="q-big" style="font-size:2.15vw; line-height:1.2">组合成工作流</div>
+        </div>
+        <p class="body-zh" style="font-size:1.02vw; line-height:1.55; opacity:.82">多个 Skill 按顺序、条件和规则协作。</p>
+      </div>
+
+      <div data-anim="step" style="min-height:34vh; border-top:1px solid currentColor; padding:2.6vh 1.6vw; background:rgba(var(--paper-rgb),.12); display:flex; flex-direction:column; justify-content:space-between">
+        <div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2.6vh">
+            <div class="meta">Stage 04</div>
+            <i data-lucide="calendar-clock" class="ico-md"></i>
+          </div>
+          <div class="q-big" style="font-size:2.15vw; line-height:1.2">批量化和定时化</div>
+        </div>
+        <p class="body-zh" style="font-size:1.02vw; line-height:1.55; opacity:.82">让稳定能力持续运行，变成团队习惯。</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>主线收束 · 从单点能力到持续工作流</div>
+    <div>Find · Build · Compose · Schedule</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="concept-map">
+  <div class="chrome">
+    <div>Concept Map · Roles</div>
+    <div>04 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" style="font-size:1.08vw; letter-spacing:.18em" data-anim>先把位置摆清楚。</div>
+    <h2 class="h-xl" style="font-size:4.7vw; max-width:74vw" data-anim>
+      这些概念到底怎么配合？
+    </h2>
+
+    <div style="position:relative; flex:1; min-height:58vh; margin-top:2vh">
+      <div data-anim="center" style="position:absolute; left:50%; top:48%; transform:translate(-50%,-50%); width:24vw; min-height:18vh; border:1px solid currentColor; display:flex; flex-direction:column; justify-content:center; padding:3vh 2vw; background:rgba(var(--paper-rgb),.08)">
+        <div class="meta" style="margin-bottom:1.2vh">Dispatcher</div>
+        <div class="h-md" style="font-size:3.2vw">OpenClaw</div>
+        <p class="body-zh" style="font-size:1.02vw; line-height:1.55; margin-top:1.3vh">接任务、拆任务、派任务</p>
+      </div>
+
+      <div data-anim="corner" style="position:absolute; left:50%; top:7%; transform:translateX(-50%); width:22vw; border-top:1px solid currentColor; padding-top:1.8vh">
+        <div class="meta">Large Model</div>
+        <div class="h-md" style="font-size:2vw; margin-top:.8vh">大模型</div>
+        <p class="body-zh" style="font-size:.98vw; line-height:1.5">理解你到底想干嘛</p>
+      </div>
+
+      <div data-anim="corner" style="position:absolute; left:50%; bottom:6%; transform:translateX(-50%); width:22vw; border-top:1px solid currentColor; padding-top:1.8vh">
+        <div class="meta">Execution Unit</div>
+        <div class="h-md" style="font-size:2vw; margin-top:.8vh">Skill</div>
+        <p class="body-zh" style="font-size:.98vw; line-height:1.5">把某一类事情真正做完</p>
+      </div>
+
+      <div data-anim="corner" style="position:absolute; right:3vw; top:39%; width:22vw; border-left:2px solid currentColor; padding-left:2vw">
+        <div class="meta">Connector</div>
+        <div class="h-md" style="font-size:2vw; margin-top:.8vh">MCP</div>
+        <p class="body-zh" style="font-size:.98vw; line-height:1.5">把外部数据、工具和系统接进来</p>
+      </div>
+
+      <div data-anim="corner" style="position:absolute; left:3vw; top:39%; width:22vw; border-left:2px solid currentColor; padding-left:2vw">
+        <div class="meta">Policy</div>
+        <div class="h-md" style="font-size:2vw; margin-top:.8vh">Rules</div>
+        <p class="body-zh" style="font-size:.98vw; line-height:1.5">告诉 Agent 什么情况该用哪套方法</p>
+      </div>
+
+      <div data-anim="sidecar" style="position:absolute; right:3vw; bottom:2%; width:25vw; border:1px dashed currentColor; padding:2.2vh 1.8vw; opacity:.86">
+        <div class="meta">Sidecar · Repair</div>
+        <div class="h-md" style="font-size:1.8vw; margin-top:.8vh">Codex App</div>
+        <p class="body-zh" style="font-size:.94vw; line-height:1.5">本地 OpenClaw 出问题时，负责排查、修复和重跑</p>
+      </div>
+
+      <div style="position:absolute; left:50%; top:32%; width:1px; height:8vh; background:currentColor; opacity:.35"></div>
+      <div style="position:absolute; left:50%; top:58%; width:1px; height:9vh; background:currentColor; opacity:.35"></div>
+      <div style="position:absolute; left:27vw; top:48%; width:18vw; height:1px; background:currentColor; opacity:.28"></div>
+      <div style="position:absolute; right:25vw; top:48%; width:18vw; height:1px; background:currentColor; opacity:.28"></div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>概念关系图 · Codex App 是旁路修复节点</div>
+    <div>Model · OpenClaw · MCP · Skill</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>Analogy · App Home</div>
+    <div>05 / 35</div>
+  </div>
+  <div class="frame grid-2-7-5" style="padding-top:6vh; align-items:center">
+    <div class="col" style="gap:3vh">
+      <div class="kicker" style="font-size:1.08vw; letter-spacing:.18em" data-anim>把抽象概念放进日常经验。</div>
+      <h2 class="h-xl" style="font-size:5.2vw; max-width:52vw" data-anim>
+        Skill 很像<br>手机里的 App
+      </h2>
+      <p class="lead" style="max-width:46vw" data-anim>
+        你不需要知道每个 App 底层怎么写，但你知道拍照该调用相机，发消息该调用聊天工具。
+      </p>
+      <div class="callout" style="font-size:1.08vw; max-width:43vw" data-anim>
+        OpenClaw 像调度台，模型负责理解意图，MCP 负责连接外部能力，Skill 负责把某类事情做完。
+      </div>
+    </div>
+
+    <div style="display:grid; place-items:center" data-anim>
+      <div style="width:25vw; min-width:310px; aspect-ratio:9/16; border:1px solid currentColor; border-radius:34px; padding:2.4vh 1.4vw; background:rgba(var(--ink-rgb),.06); position:relative">
+        <div style="position:absolute; left:50%; top:1.2vh; transform:translateX(-50%); width:5vw; height:5px; border-radius:999px; background:currentColor; opacity:.24"></div>
+        <div class="meta" style="margin-top:2.6vh; margin-bottom:2vh">OpenClaw · Skill Home</div>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:2.2vh 1vw">
+          <div style="display:flex; flex-direction:column; gap:.9vh; align-items:center; text-align:center" data-anim>
+            <div style="width:4.8vw; height:4.8vw; min-width:58px; min-height:58px; display:grid; place-items:center; border:1px solid currentColor; background:rgba(var(--paper-rgb),.45)">
+              <i data-lucide="video" class="ico-md"></i>
+            </div>
+            <div class="meta" style="font-size:10px; letter-spacing:.08em">视频分析</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:.9vh; align-items:center; text-align:center" data-anim>
+            <div style="width:4.8vw; height:4.8vw; min-width:58px; min-height:58px; display:grid; place-items:center; border:1px solid currentColor; background:rgba(var(--paper-rgb),.45)">
+              <i data-lucide="pen-line" class="ico-md"></i>
+            </div>
+            <div class="meta" style="font-size:10px; letter-spacing:.08em">文案生成</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:.9vh; align-items:center; text-align:center" data-anim>
+            <div style="width:4.8vw; height:4.8vw; min-width:58px; min-height:58px; display:grid; place-items:center; border:1px solid currentColor; background:rgba(var(--paper-rgb),.45)">
+              <i data-lucide="send" class="ico-md"></i>
+            </div>
+            <div class="meta" style="font-size:10px; letter-spacing:.08em">飞书同步</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:.9vh; align-items:center; text-align:center" data-anim>
+            <div style="width:4.8vw; height:4.8vw; min-width:58px; min-height:58px; display:grid; place-items:center; border:1px solid currentColor; background:rgba(var(--paper-rgb),.45)">
+              <i data-lucide="presentation" class="ico-md"></i>
+            </div>
+            <div class="meta" style="font-size:10px; letter-spacing:.08em">PPT 生成</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:.9vh; align-items:center; text-align:center" data-anim>
+            <div style="width:4.8vw; height:4.8vw; min-width:58px; min-height:58px; display:grid; place-items:center; border:1px solid currentColor; background:rgba(var(--paper-rgb),.45)">
+              <i data-lucide="messages-square" class="ico-md"></i>
+            </div>
+            <div class="meta" style="font-size:10px; letter-spacing:.08em">评论分析</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:.9vh; align-items:center; text-align:center; opacity:.48" data-anim>
+            <div style="width:4.8vw; height:4.8vw; min-width:58px; min-height:58px; display:grid; place-items:center; border:1px dashed currentColor">
+              <i data-lucide="plus" class="ico-md"></i>
+            </div>
+            <div class="meta" style="font-size:10px; letter-spacing:.08em">更多 Skill</div>
+          </div>
+        </div>
+        <div style="position:absolute; left:50%; bottom:1.4vh; transform:translateX(-50%); width:4vw; height:5px; border-radius:999px; background:currentColor; opacity:.18"></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>手机 App 类比 · 每个 Skill 完成一类事</div>
+    <div>OpenClaw · Skill Home</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>Analogy · Skill Chain</div>
+    <div>06 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:6vh">
+    <div class="kicker" style="font-size:1.08vw; letter-spacing:.18em">不止一步。</div>
+    <h2 class="h-xl" style="font-size:4.8vw; max-width:82vw">
+      一句话背后，可能是一串 Skill 在工作
+    </h2>
+    <div class="pipeline-section" style="margin-top:7vh">
+      <div class="pipeline-label">从输入到结果</div>
+      <div class="pipeline" data-cols="5">
+        <div class="step">
+          <div class="step-nb">01</div>
+          <div class="step-title">你说一句话</div>
+          <div class="step-desc">提出一个真实任务</div>
+        </div>
+        <div class="step">
+          <div class="step-nb">02</div>
+          <div class="step-title">模型理解意图</div>
+          <div class="step-desc">判断你到底想要什么</div>
+        </div>
+        <div class="step">
+          <div class="step-nb">03</div>
+          <div class="step-title">OpenClaw 调度</div>
+          <div class="step-desc">决定该调用哪个 Skill</div>
+        </div>
+        <div class="step">
+          <div class="step-nb">04</div>
+          <div class="step-title">多个 Skill 串联</div>
+          <div class="step-desc">读文件、整理、生成、同步</div>
+        </div>
+        <div class="step">
+          <div class="step-nb">05</div>
+          <div class="step-title">结果交回来</div>
+          <div class="step-desc">进入文档或团队消息</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout" style="font-size:1.1vw; max-width:52vw; margin-top:5vh">
+      现实里的任务很少只有一步。OpenClaw 的价值，是把多个 Skill 串成可以持续工作的流程。
+    </div>
+  </div>
+  <div class="foot">
+    <div>横向流程</div>
+    <div>Input · Intent · Dispatch · Skills · Result</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="directional">
+  <div class="chrome">
+    <div>Department Cases · Fast Scan</div>
+    <div>07 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:6vh">
+    <h2 class="h-xl" style="font-size:5.1vw; max-width:82vw" data-anim>
+      Skill 不只是技术部门的东西
+    </h2>
+    <p class="lead" style="max-width:62vw; margin-top:2vh" data-anim>
+      只要有重复工作，只要有流程，就有机会被封装成 Skill。
+    </p>
+
+    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:1.4vw; margin-top:6.5vh; align-items:stretch">
+      <div class="stat-card" style="min-height:31vh; padding:3vh 1.5vw; display:flex; flex-direction:column; justify-content:space-between">
+        <div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:3vh">
+            <div class="stat-label">01 · Content</div>
+            <i data-lucide="film" class="ico-md"></i>
+          </div>
+          <div class="stat-nb" style="font-size:2.2vw; line-height:1.18">内容部门</div>
+        </div>
+        <p class="body-zh" style="font-size:1.02vw; line-height:1.55">批量粗剪几百小时视频素材</p>
+      </div>
+
+      <div class="stat-card" style="min-height:31vh; padding:3vh 1.5vw; display:flex; flex-direction:column; justify-content:space-between">
+        <div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:3vh">
+            <div class="stat-label">02 · Brand</div>
+            <i data-lucide="palette" class="ico-md"></i>
+          </div>
+          <div class="stat-nb" style="font-size:2.2vw; line-height:1.18">视觉品牌</div>
+        </div>
+        <p class="body-zh" style="font-size:1.02vw; line-height:1.55">批量生成视频、海报和文案</p>
+      </div>
+
+      <div class="stat-card" style="min-height:31vh; padding:3vh 1.5vw; display:flex; flex-direction:column; justify-content:space-between">
+        <div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:3vh">
+            <div class="stat-label">03 · Product</div>
+            <i data-lucide="smartphone" class="ico-md"></i>
+          </div>
+          <div class="stat-nb" style="font-size:2.2vw; line-height:1.18">产品部门</div>
+        </div>
+        <p class="body-zh" style="font-size:1.02vw; line-height:1.55">用手机先跑一轮市场调研</p>
+      </div>
+
+      <div class="stat-card" style="min-height:31vh; padding:3vh 1.5vw; display:flex; flex-direction:column; justify-content:space-between">
+        <div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:3vh">
+            <div class="stat-label">04 · Ops</div>
+            <i data-lucide="radar" class="ico-md"></i>
+          </div>
+          <div class="stat-nb" style="font-size:2.2vw; line-height:1.18">运营部门</div>
+        </div>
+        <p class="body-zh" style="font-size:1.02vw; line-height:1.55">定时看用户情绪，复盘反馈</p>
+      </div>
+
+      <div class="stat-card" style="min-height:31vh; padding:3vh 1.5vw; display:flex; flex-direction:column; justify-content:space-between">
+        <div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:3vh">
+            <div class="stat-label">05 · HR</div>
+            <i data-lucide="users-round" class="ico-md"></i>
+          </div>
+          <div class="stat-nb" style="font-size:2.2vw; line-height:1.18">HR</div>
+        </div>
+        <p class="body-zh" style="font-size:1.02vw; line-height:1.55">分析 JD、候选人和面试题</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>部门案例快闪 · 重复工作都可能变成 Skill</div>
+    <div>Content · Brand · Product · Ops · HR</div>
+  </div>
+</section>
+
+<section class="slide hero light" data-animate="hero">
+  <div class="chrome">
+    <div>Stage 01 · Find Existing Skill</div>
+    <div>08 / 35</div>
+  </div>
+  <div class="frame grid-2-7-5" style="padding-top:7vh; align-items:center">
+    <div class="col" style="gap:3vh">
+      <div class="kicker" style="font-size:1.18vw; letter-spacing:.18em" data-anim>第一阶段</div>
+      <h2 class="h-xl" style="font-size:5.6vw; max-width:58vw" data-anim>
+        遇到问题，<br>先找现成能力
+      </h2>
+      <p class="lead" style="max-width:47vw" data-anim>
+        第一反应是先问：有没有已经封装好的 Skill。
+      </p>
+    </div>
+
+    <div style="display:grid; place-items:center" data-anim>
+      <figure style="width:43vw; min-width:520px; margin:0">
+        <div style="aspect-ratio:4/3; border:1px solid currentColor; background:rgba(var(--paper-rgb),.08); overflow:hidden">
+          <img src="images/11/主图01.jpg" alt="ClawHub 搜索视频相关 Skill 的真实案例" style="width:100%; height:100%; object-fit:cover; display:block">
+        </div>
+      </figure>
+    </div>
+  </div>
+  <div class="foot">
+    <div>第一阶段 · 先找有没有现成 Skill</div>
+    <div>Search · Reuse · Start Small</div>
+  </div>
+</section>
+
+<section class="slide hero light">
+  <div class="chrome">
+    <div>Stage 01 · Real Constraint</div>
+    <div>09 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:6vh">
+    <div class="kicker" data-anim>真实痛点不是“模型不够聪明”。</div>
+    <h2 class="h-xl" style="font-size:5vw; max-width:86vw" data-anim>
+      长视频任务，不能无脑塞给模型
+    </h2>
+
+    <div style="margin-top:6vh; border-top:1px solid currentColor; border-bottom:1px solid currentColor; padding:4vh 0 3.2vh" data-anim>
+      <div style="display:grid; grid-template-columns:18vw 1fr; gap:3vw; align-items:end">
+        <div>
+          <div class="meta">Raw Material</div>
+          <div style="font-family:var(--serif-en); font-size:8.5vw; font-weight:800; letter-spacing:-.05em; line-height:.86">100h</div>
+        </div>
+        <div style="position:relative; height:13vh">
+          <div style="position:absolute; left:0; right:0; top:50%; height:1px; background:currentColor; opacity:.42"></div>
+          <div style="position:absolute; left:0; top:50%; transform:translateY(-50%); width:1px; height:7vh; background:currentColor"></div>
+          <div style="position:absolute; left:24%; top:50%; transform:translateY(-50%); width:1px; height:4vh; background:currentColor; opacity:.45"></div>
+          <div style="position:absolute; left:49%; top:50%; transform:translateY(-50%); width:1px; height:4vh; background:currentColor; opacity:.45"></div>
+          <div style="position:absolute; left:74%; top:50%; transform:translateY(-50%); width:1px; height:4vh; background:currentColor; opacity:.45"></div>
+          <div style="position:absolute; right:0; top:50%; transform:translateY(-50%); width:1px; height:7vh; background:currentColor"></div>
+          <div style="position:absolute; left:0; bottom:0" class="meta">00:00</div>
+          <div style="position:absolute; right:0; bottom:0" class="meta">100:00:00</div>
+          <div style="position:absolute; left:42%; top:0; font-family:var(--serif-zh); font-size:2vw; font-weight:700">一整条时间轴</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1.5vw; margin-top:5.5vh">
+      <div class="stat-card" data-anim style="min-height:20vh; padding:2.5vh 1.5vw; display:flex; flex-direction:column; justify-content:space-between">
+        <div style="display:flex; align-items:center; justify-content:space-between">
+          <div class="stat-label">01 · Length</div>
+          <i data-lucide="clock-8" class="ico-md"></i>
+        </div>
+        <div class="stat-nb" style="font-size:2.15vw; line-height:1.16">视频太长</div>
+      </div>
+      <div class="stat-card" data-anim style="min-height:20vh; padding:2.5vh 1.5vw; display:flex; flex-direction:column; justify-content:space-between">
+        <div style="display:flex; align-items:center; justify-content:space-between">
+          <div class="stat-label">02 · Context</div>
+          <i data-lucide="brain" class="ico-md"></i>
+        </div>
+        <div class="stat-nb" style="font-size:2.15vw; line-height:1.16">模型一次吃不下</div>
+      </div>
+      <div class="stat-card" data-anim style="min-height:20vh; padding:2.5vh 1.5vw; display:flex; flex-direction:column; justify-content:space-between">
+        <div style="display:flex; align-items:center; justify-content:space-between">
+          <div class="stat-label">03 · Human</div>
+          <i data-lucide="eye" class="ico-md"></i>
+        </div>
+        <div class="stat-nb" style="font-size:2.15vw; line-height:1.16">人工看太慢</div>
+      </div>
+      <div class="stat-card" data-anim style="min-height:20vh; padding:2.5vh 1.5vw; display:flex; flex-direction:column; justify-content:space-between">
+        <div style="display:flex; align-items:center; justify-content:space-between">
+          <div class="stat-label">04 · Cost</div>
+          <i data-lucide="upload-cloud" class="ico-md"></i>
+        </div>
+        <div class="stat-nb" style="font-size:2.15vw; line-height:1.16">上传成本高</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>第一阶段痛点 · 不能无脑塞给模型</div>
+    <div>Length · Context · Time · Cost</div>
+  </div>
+</section>
+
+<section class="slide hero light" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 01 · Search Path</div>
+    <div>10 / 35</div>
+  </div>
+  <div class="frame" style="display:grid; grid-template-columns:55fr 45fr; gap:5vw; padding-top:6vh; align-items:center">
+    <div class="col" style="gap:3vh" data-anim="left">
+      <div>
+        <div class="kicker">从问题回到动作。</div>
+        <h2 class="h-xl" style="font-size:4.5vw; max-width:52vw">
+          第一步，先搜有没有现成 Skill
+        </h2>
+      </div>
+
+      <figure style="margin:0; width:100%">
+        <div style="aspect-ratio:4/3; border:1px solid currentColor; overflow:hidden; background:rgba(var(--ink-rgb),.05)">
+          <img src="images/13/主图02.png" alt="ClawHub 搜索视频理解 Skill 的结果页面" style="width:100%; height:100%; object-fit:cover; display:block">
+        </div>
+        <figcaption class="meta" style="margin-top:1.2vh">主图02 · ClawHub / 视频理解</figcaption>
+      </figure>
+    </div>
+
+    <div class="col" style="gap:3.6vh">
+      <div class="callout" style="font-size:1.15vw; line-height:1.55">
+        这一步不急着自己写方案，先把问题拆成能搜索的词。
+      </div>
+
+      <div>
+        <div class="meta" style="margin-bottom:1.6vh">Search Keywords</div>
+        <div style="display:flex; flex-wrap:wrap; gap:1vh .8vw">
+          <span class="tag">视频</span>
+          <span class="tag">本地视频理解</span>
+          <span class="tag">视频查找</span>
+          <span class="tag">视频抽帧</span>
+          <span class="tag">FFmpeg</span>
+        </div>
+      </div>
+
+      <div style="display:grid; gap:1.1vh">
+        <div class="rowline" style="grid-template-columns:1.1fr 1.7fr auto; padding:1.6vh 0">
+          <div class="k" style="font-size:1.35vw">下载量</div>
+          <div class="v" style="font-size:1vw">是不是有人真的用过</div>
+          <div class="m">01</div>
+        </div>
+        <div class="rowline" style="grid-template-columns:1.1fr 1.7fr auto; padding:1.6vh 0">
+          <div class="k" style="font-size:1.35vw">安全性</div>
+          <div class="v" style="font-size:1vw">权限和风险是否可接受</div>
+          <div class="m">02</div>
+        </div>
+        <div class="rowline" style="grid-template-columns:1.1fr 1.7fr auto; padding:1.6vh 0">
+          <div class="k" style="font-size:1.35vw">用途明确</div>
+          <div class="v" style="font-size:1vw">说明能否对应当前任务</div>
+          <div class="m">03</div>
+        </div>
+        <div class="rowline" style="grid-template-columns:1.1fr 1.7fr auto; padding:1.6vh 0">
+          <div class="k" style="font-size:1.35vw">本地处理</div>
+          <div class="v" style="font-size:1vw">能不能避开上传成本</div>
+          <div class="m">04</div>
+        </div>
+        <div class="rowline" style="grid-template-columns:1.1fr 1.7fr auto; padding:1.6vh 0">
+          <div class="k" style="font-size:1.35vw">API 成本</div>
+          <div class="v" style="font-size:1vw">是否依赖外部付费能力</div>
+          <div class="m">05</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>第一阶段操作</div>
+    <div></div>
+  </div>
+</section>
+
+<section class="slide hero light">
+  <div class="chrome">
+    <div>Stage 01 · Read Less</div>
+    <div>11 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" style="font-size:1.08vw; letter-spacing:.18em" data-anim>说明书不用自己读。</div>
+    <h2 class="h-xl" style="font-size:4.1vw; max-width:86vw; white-space:nowrap" data-anim>
+      把 Skill 说明丢给 OpenClaw
+    </h2>
+
+    <div style="display:grid; grid-template-columns:48fr 52fr; gap:3.6vw; margin-top:2.2vh; align-items:stretch">
+      <div data-anim style="min-height:50vh; border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--ink-rgb),.035); padding:2.4vh 2vw; overflow:hidden; position:relative">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(var(--ink-rgb),.18); padding-bottom:1.4vh">
+          <div class="meta">Skill README</div>
+        </div>
+        <div style="display:grid; gap:.9vh; margin-top:1.7vh; font-family:var(--mono); font-size:.86vw; line-height:1.46; opacity:.74">
+          <p>## Video Understanding Skill</p>
+          <p>Use when the user needs to inspect local video, extract frames, summarize key moments, or prepare visual evidence for model reasoning.</p>
+          <p>Inputs: local file path, URL, frame interval, output directory, transcript option, model mode, cost control, language preference.</p>
+          <p>Dependencies: ffmpeg, ffprobe, optional speech recognition, local cache, metadata parser, frame sampler, summary writer.</p>
+          <p>Steps: validate media, inspect duration, sample frames, generate index, run description pass, merge timestamps, write markdown report.</p>
+          <p>Warnings: long videos may require chunking. External APIs may increase cost. Local processing is preferred when privacy matters.</p>
+          <p>Output: image sequence, timestamp notes, summary, suggested next action, reusable task log.</p>
+        </div>
+        <div class="ghost" style="right:-4vw; bottom:-6vh; font-size:14vw; opacity:.035">Skill</div>
+      </div>
+
+      <div style="display:grid; grid-template-rows:auto 1fr; gap:1.8vh; align-content:start">
+        <div class="callout" data-anim style="font-size:1.05vw; line-height:1.42; padding:1.45vh 1.7vw">
+          先让 OpenClaw 把长说明书压成判断，再决定要不要跑。
+        </div>
+
+        <div style="display:grid; grid-template-columns:1.2fr .82fr; gap:1.8vw; align-items:start">
+          <div style="display:grid; gap:.75vh">
+            <div class="rowline" data-anim style="grid-template-columns:.9fr 1.8fr auto; padding:1.05vh 0">
+              <div class="k" style="font-size:1.2vw">能做什么</div>
+              <div class="v" style="font-size:.95vw">先知道这个 Skill 大概解决哪类问题</div>
+              <div class="m">01</div>
+            </div>
+            <div class="rowline" data-anim style="grid-template-columns:.9fr 1.8fr auto; padding:1.05vh 0">
+              <div class="k" style="font-size:1.2vw">怎么运行</div>
+              <div class="v" style="font-size:.95vw">让 OpenClaw 总结输入、依赖和执行步骤</div>
+              <div class="m">02</div>
+            </div>
+            <div class="rowline" data-anim style="grid-template-columns:.9fr 1.8fr auto; padding:1.05vh 0">
+              <div class="k" style="font-size:1.2vw">是否适合</div>
+              <div class="v" style="font-size:.95vw">对照当前任务，判断有没有成本或权限问题</div>
+              <div class="m">03</div>
+            </div>
+            <div class="rowline" data-anim style="grid-template-columns:.9fr 1.8fr auto; padding:1.05vh 0">
+              <div class="k" style="font-size:1.2vw">最小跑法</div>
+              <div class="v" style="font-size:.95vw">先给一个最小可运行命令，再逐步加复杂度</div>
+              <div class="m">04</div>
+            </div>
+          </div>
+
+          <button class="video-card" type="button" data-video-src="videos/14/主视频1.mp4" data-video-poster="images/14/主视频1封面.png" data-video-title="主视频 1 · 说明书总结演示" style="appearance:none;border:0;background:transparent;color:inherit;text-align:left;min-height:0;gap:1.4vh; margin-top:.4vh">
+            <div class="video-frame" style="aspect-ratio:16/9;height:auto">
+              <img class="video-poster" src="images/14/主视频1封面.png" alt="说明书总结演示视频首帧">
+              <video src="videos/14/主视频1.mp4" poster="images/14/主视频1封面.png" muted preload="metadata" playsinline></video>
+              <div class="video-play" aria-hidden="true" style="width:58px;height:58px"></div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>第一阶段操作 · 说明书交给 OpenClaw 判断</div>
+    <div>Manual · Summary · Fit · Minimum Run</div>
+  </div>
+</section>
+
+<section class="slide hero light" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 01 · Transform Input</div>
+    <div>12 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>FFmpeg · Frame Sampling</div>
+    <h2 class="h-xl" style="font-size:4.35vw; max-width:82vw; white-space:nowrap" data-anim>
+      把长视频变成中间结果
+    </h2>
+
+    <div style="display:grid; grid-template-columns:59fr 41fr; gap:4vw; margin-top:3vh; align-items:start">
+      <button class="video-card" type="button" data-video-src="videos/15/主视频2.mp4" data-video-poster="images/15/主视频2封面.png" data-video-title="主视频 2 · FFmpeg 抽帧案例" data-anim="left" style="appearance:none;border:0;background:transparent;color:inherit;text-align:left;min-height:0;justify-content:center;gap:1.4vh">
+        <div class="video-frame" style="aspect-ratio:16/9;height:auto">
+          <img class="video-poster" src="images/15/主视频2封面.png" alt="FFmpeg 抽帧案例视频首帧">
+          <video src="videos/15/主视频2.mp4" poster="images/15/主视频2封面.png" muted preload="metadata" playsinline></video>
+          <div class="video-play" aria-hidden="true"></div>
+        </div>
+      </button>
+
+      <div data-anim="right" style="display:grid; gap:2.2vh">
+        <div class="callout" style="font-size:1.18vw; line-height:1.55; padding:2.2vh 1.8vw">
+          Skill 的价值，不只是调用工具；它会把任务改造成模型能处理的形态。
+        </div>
+
+        <div style="border-top:1px solid rgba(var(--ink-rgb),.24); border-bottom:1px solid rgba(var(--ink-rgb),.24); padding:2.4vh 0">
+          <div class="meta" style="margin-bottom:1.6vh">From Video To Frames</div>
+          <div style="display:flex; align-items:center; gap:1vw">
+            <div style="font-family:var(--serif-zh); font-size:3.4vw; line-height:1">20min</div>
+            <div style="height:1px; flex:1; background:rgba(var(--ink-rgb),.26); position:relative">
+              <span style="position:absolute; left:0; top:-5px; width:10px; height:10px; border-radius:50%; background:currentColor"></span>
+              <span style="position:absolute; left:33%; top:-5px; width:10px; height:10px; border-radius:50%; background:currentColor; opacity:.7"></span>
+              <span style="position:absolute; left:66%; top:-5px; width:10px; height:10px; border-radius:50%; background:currentColor; opacity:.7"></span>
+              <span style="position:absolute; right:0; top:-5px; width:10px; height:10px; border-radius:50%; background:currentColor"></span>
+            </div>
+            <div style="font-family:var(--serif-zh); font-size:3.4vw; line-height:1">&lt;100</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-top:1.1vh; font-family:var(--mono); font-size:.72vw; letter-spacing:.14em; text-transform:uppercase; opacity:.62">
+            <span>Raw Video</span>
+            <span>1 frame / 15s</span>
+            <span>Image Set</span>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:.8vw">
+          <div style="height:7.4vh; border:1px solid rgba(var(--ink-rgb),.24); background:rgba(var(--ink-rgb),.045)"></div>
+          <div style="height:7.4vh; border:1px solid rgba(var(--ink-rgb),.24); background:rgba(var(--ink-rgb),.065)"></div>
+          <div style="height:7.4vh; border:1px solid rgba(var(--ink-rgb),.24); background:rgba(var(--ink-rgb),.085)"></div>
+          <div style="height:7.4vh; border:1px solid rgba(var(--ink-rgb),.24); background:rgba(var(--ink-rgb),.105)"></div>
+        </div>
+
+        <div class="rowline" style="grid-template-columns:1fr auto; padding:1.4vh 0">
+          <div class="v" style="font-size:1vw">任务从“无法直接处理”，变成“可以逐步理解”。</div>
+          <div class="m">Result</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>第一阶段案例 · 视频 Skill 改变任务形态</div>
+    <div>FFmpeg · Frames · Summary · Model Input</div>
+  </div>
+</section>
+
+<section class="slide hero light" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 01 · Meta Skill</div>
+    <div>13 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <h2 class="h-xl" style="font-size:3.85vw; max-width:86vw; white-space:nowrap" data-anim>
+      连“找 Skill”，也可以变成 Skill
+    </h2>
+
+    <div style="display:grid; grid-template-columns:56fr 44fr; gap:4.4vw; margin-top:3vh; align-items:stretch">
+      <div data-anim="left" style="border-top:1px solid rgba(var(--ink-rgb),.32); border-bottom:1px solid rgba(var(--ink-rgb),.32); padding:2.4vh 0; display:grid; gap:1.05vh">
+        <div class="meta" style="margin-bottom:.8vh">find-skill Skill · 5-step loop</div>
+        <div class="rowline" style="grid-template-columns:auto 1fr auto; padding:1.18vh 0">
+          <div class="m" style="opacity:.72">01</div>
+          <div>
+            <div class="k" style="font-size:1.12vw">理解问题</div>
+            <div class="v" style="font-size:.9vw; margin-top:.3vh">先判断你现在到底要解决什么</div>
+          </div>
+          <div class="meta">Input</div>
+        </div>
+        <div class="rowline" style="grid-template-columns:auto 1fr auto; padding:1.18vh 0">
+          <div class="m" style="opacity:.72">02</div>
+          <div>
+            <div class="k" style="font-size:1.12vw">拆出关键词</div>
+            <div class="v" style="font-size:.9vw; margin-top:.3vh">把自然语言变成可搜索的能力标签</div>
+          </div>
+          <div class="meta">Query</div>
+        </div>
+        <div class="rowline" style="grid-template-columns:auto 1fr auto; padding:1.18vh 0">
+          <div class="m" style="opacity:.72">03</div>
+          <div>
+            <div class="k" style="font-size:1.12vw">找候选 Skill</div>
+            <div class="v" style="font-size:.9vw; margin-top:.3vh">去聚合站里找到可能可用的能力</div>
+          </div>
+          <div class="meta">Search</div>
+        </div>
+        <div class="rowline" style="grid-template-columns:auto 1fr auto; padding:1.18vh 0">
+          <div class="m" style="opacity:.72">04</div>
+          <div>
+            <div class="k" style="font-size:1.12vw">总结用途和限制</div>
+            <div class="v" style="font-size:.9vw; margin-top:.3vh">先看它能不能跑、值不值得跑</div>
+          </div>
+          <div class="meta">Fit</div>
+        </div>
+        <div class="rowline" style="grid-template-columns:auto 1fr auto; padding:1.18vh 0">
+          <div class="m" style="opacity:.72">05</div>
+          <div>
+            <div class="k" style="font-size:1.12vw">推荐当前用法</div>
+            <div class="v" style="font-size:.9vw; margin-top:.3vh">把最小跑法交给 OpenClaw 执行</div>
+          </div>
+          <div class="meta">Run</div>
+        </div>
+      </div>
+
+      <div data-anim="right" style="display:flex; flex-direction:column; justify-content:space-between; min-height:47vh">
+        <div>
+          <div class="callout" style="font-size:1.05vw; line-height:1.55; padding:2.2vh 1.8vw">
+            刚刚的搜索、判断、总结和执行，本身就是一条稳定流程。
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 15vw; gap:1.5vw; align-items:end; margin-top:3.2vh">
+            <div style="font-family:var(--serif-zh); font-size:3.55vw; line-height:1.12; letter-spacing:0">
+              很多流程，<br>本身也可以<br>变成 Skill。
+            </div>
+            <button class="video-card" type="button" data-video-src="videos/15/主视频2.mp4" data-video-poster="images/16/主视频2封面.png" data-video-title="主视频 2 · 搜索过程也能被封装" style="appearance:none;border:0;background:transparent;color:inherit;text-align:left;min-height:0;gap:.8vh">
+              <div class="video-frame" style="aspect-ratio:16/9;height:auto">
+                <img class="video-poster" src="images/16/主视频2封面.png" alt="搜索过程封装视频首帧">
+                <div class="video-play" aria-hidden="true" style="width:52px;height:52px"></div>
+              </div>
+            </button>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:1vw; opacity:.72">
+          <div style="height:1px; background:currentColor; opacity:.36"></div>
+          <div class="meta">Search Process Becomes Capability</div>
+          <div style="height:1px; background:currentColor; opacity:.36"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>认知升级 · 搜索过程也能被封装</div>
+    <div>Input · Query · Candidates · Fit · Run</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 02 · Make Your Own</div>
+    <div>14 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:9vh">
+    <div class="kicker" data-anim>From User To Builder</div>
+    <div style="display:grid; grid-template-columns:62fr 38fr; gap:5vw; align-items:center">
+      <div data-anim="left">
+        <h2 class="h-xl" style="font-size:5.75vw; line-height:1.08; letter-spacing:0; max-width:70vw">
+          第二阶段：<br>没有现成 Skill，<br>就自己做一个
+        </h2>
+        <p class="body-zh" style="font-size:1.35vw; line-height:1.75; max-width:54vw; margin-top:3.2vh">
+          当现成 Skill 覆盖不了你的场景时，就把自己的方法封装成新的 Skill。
+        </p>
+      </div>
+
+      <div data-anim="right" style="display:grid; gap:3vh">
+        <div style="border:1px solid rgba(var(--paper-rgb),.42); background:rgba(var(--paper-rgb),.055); padding:3vh 2.2vw">
+          <div class="meta">01 · Search</div>
+          <div style="font-family:var(--serif-zh); font-size:2.7vw; line-height:1.1; margin-top:2vh">找到一部分</div>
+          <div class="body-zh" style="font-size:.98vw; line-height:1.6; opacity:.72; margin-top:1.6vh">现成能力能覆盖方向，但不一定贴合你的环境。</div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:1vw; opacity:.72">
+          <div style="height:1px; background:currentColor; opacity:.34"></div>
+          <div class="meta">Turn Method Into Package</div>
+          <div style="height:1px; background:currentColor; opacity:.34"></div>
+        </div>
+        <div style="border:1px solid rgba(var(--paper-rgb),.72); background:rgba(var(--paper-rgb),.11); padding:3vh 2.2vw">
+          <div class="meta">02 · Package</div>
+          <div style="font-family:var(--serif-zh); font-size:2.7vw; line-height:1.1; margin-top:2vh">封装成能力</div>
+          <div class="body-zh" style="font-size:.98vw; line-height:1.6; opacity:.78; margin-top:1.6vh">把你的判断、步骤和约束写进 Skill，让它可复用。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>第二阶段开场 · 从使用者进入创造者</div>
+    <div>Search · Method · Package · Reuse</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 02 · Why Build</div>
+    <div>15 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:6vh">
+    <div class="kicker" data-anim>Real Constraint · Cost And Environment</div>
+    <h2 class="h-xl" style="font-size:4.35vw; max-width:88vw; line-height:1.12" data-anim>
+      现成 Skill 不一定刚好适合你的成本和环境
+    </h2>
+
+    <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:3.2vw; margin-top:4.8vh; align-items:stretch">
+      <div data-anim="left" style="border-top:1px solid rgba(var(--ink-rgb),.42); border-bottom:1px solid rgba(var(--ink-rgb),.42); padding:3vh 0; display:flex; flex-direction:column; justify-content:space-between; min-height:44vh">
+        <div>
+          <div class="meta">Existing Skill · API Route</div>
+          <div style="font-family:var(--serif-zh); font-size:4.2vw; line-height:1; margin-top:2vh">成本会放大</div>
+        </div>
+        <div style="display:grid; gap:1.3vh">
+          <div class="rowline" style="grid-template-columns:1fr auto; padding:1.1vh 0">
+            <div class="v" style="font-size:1.05vw">自动剪辑类 Skill 有些要走 API</div>
+            <div class="m">01</div>
+          </div>
+          <div class="rowline" style="grid-template-columns:1fr auto; padding:1.1vh 0">
+            <div class="v" style="font-size:1.05vw">视频一长，调用成本就会变高</div>
+            <div class="m">02</div>
+          </div>
+        </div>
+      </div>
+
+      <div data-anim="divider" style="width:1px; background:rgba(var(--ink-rgb),.24); min-height:44vh"></div>
+
+      <div data-anim="right" style="border-top:1px solid rgba(var(--ink-rgb),.42); border-bottom:1px solid rgba(var(--ink-rgb),.42); padding:3vh 0; display:flex; flex-direction:column; justify-content:space-between; min-height:44vh">
+        <div>
+          <div class="meta">Own Skill · Local Route</div>
+          <div style="font-family:var(--serif-zh); font-size:4.2vw; line-height:1; margin-top:2vh">先做基础粗剪</div>
+        </div>
+        <div style="display:grid; gap:1.3vh">
+          <div class="rowline" style="grid-template-columns:1fr auto; padding:1.1vh 0">
+            <div class="v" style="font-size:1.05vw">团队只需要先删掉明显没用的片段</div>
+            <div class="m">03</div>
+          </div>
+          <div class="rowline" style="grid-template-columns:1fr auto; padding:1.1vh 0">
+            <div class="v" style="font-size:1.05vw">精修可以留给剪映或其他剪辑工具</div>
+            <div class="m">04</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div data-anim style="margin-top:3.6vh; display:grid; grid-template-columns:1fr; gap:3vw; align-items:start">
+      <p class="body-zh" style="font-size:1.28vw; line-height:1.7; margin:0; max-width:56vw">
+        自建 Skill 不是为了炫技，而是让能力贴合自己的成本、素材和工作环境。
+      </p>
+    </div>
+  </div>
+  <div class="foot">
+    <div>自建动机 · 成本、环境和真实需求</div>
+    <div>API Cost · Long Video · Local Rough Cut · Fine Edit</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 02 · Local Rough Cut</div>
+    <div>16 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:7.2vh">
+    <h2 class="h-xl" style="font-size:4.08vw; max-width:84vw; white-space:nowrap" data-anim>
+      一个实用的本地粗剪 Skill 可以怎么做
+    </h2>
+
+    <div style="display:grid; grid-template-columns:50fr 50fr; gap:4.2vw; margin-top:6vh; align-items:start">
+      <div data-anim="left" style="display:grid; gap:2vh">
+        <div class="callout" style="font-size:1.08vw; line-height:1.55; padding:2.15vh 1.8vw">
+          先问 OpenClaw：基于本地环境给一个低成本视频粗剪方案。<br>
+          它先给路线，再把路线拆成可执行步骤。
+        </div>
+
+        <div style="border-top:1px solid rgba(var(--paper-rgb),.3); border-bottom:1px solid rgba(var(--paper-rgb),.3); padding:2.2vh 0">
+          <div class="meta" style="margin-bottom:1.5vh">OpenClaw Route</div>
+          <div style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.95vw; align-items:stretch">
+            <div style="border:1px solid rgba(var(--paper-rgb),.42); background:rgba(var(--paper-rgb),.055); padding:1.7vh .95vw; min-height:21vh; display:flex; flex-direction:column; justify-content:space-between">
+              <div class="meta">01 · Input</div>
+              <div>
+                <div style="font-family:var(--serif-zh); font-size:1.62vw; line-height:1.12; white-space:nowrap">视频输入</div>
+                <div class="body-zh" style="font-size:.84vw; line-height:1.48; opacity:.72; margin-top:1vh">素材先进本地流程。</div>
+              </div>
+            </div>
+            <div style="border:1px solid rgba(var(--paper-rgb),.5); background:rgba(var(--paper-rgb),.07); padding:1.7vh .95vw; min-height:21vh; display:flex; flex-direction:column; justify-content:space-between">
+              <div class="meta">02 · Detect</div>
+              <div>
+                <div style="font-family:var(--serif-zh); font-size:1.62vw; line-height:1.12; white-space:nowrap">静音检测</div>
+                <div class="body-zh" style="font-size:.84vw; line-height:1.48; opacity:.72; margin-top:1vh">先找停顿和空白。</div>
+              </div>
+            </div>
+            <div style="border:1px solid rgba(var(--paper-rgb),.58); background:rgba(var(--paper-rgb),.085); padding:1.7vh .95vw; min-height:21vh; display:flex; flex-direction:column; justify-content:space-between">
+              <div class="meta">03 · ASR</div>
+              <div>
+                <div style="font-family:var(--serif-zh); font-size:1.62vw; line-height:1.12; white-space:nowrap">识别废片段</div>
+                <div class="body-zh" style="font-size:.84vw; line-height:1.48; opacity:.74; margin-top:1vh">去掉无效重复段。</div>
+              </div>
+            </div>
+            <div style="border:1px solid rgba(var(--paper-rgb),.42); background:rgba(var(--paper-rgb),.055); padding:1.7vh .95vw; min-height:21vh; display:flex; flex-direction:column; justify-content:space-between">
+              <div class="meta">04 · Output</div>
+              <div>
+                <div style="font-family:var(--serif-zh); font-size:1.62vw; line-height:1.12; white-space:nowrap">初剪结果</div>
+                <div class="body-zh" style="font-size:.84vw; line-height:1.48; opacity:.72; margin-top:1vh">交出可精修素材。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="video-card" type="button" data-video-src="videos/20/主视频3.mp4" data-video-poster="images/20/主视频3封面.png" data-video-title="主视频 3 · 本地粗剪方案" data-anim="right" style="appearance:none;border:0;background:transparent;color:inherit;text-align:left;min-height:0;justify-content:center;gap:1.6vh">
+        <div class="video-frame" style="aspect-ratio:16/9;height:auto">
+          <img class="video-poster" src="images/20/主视频3封面.png" alt="本地粗剪方案视频首帧">
+          <div class="video-play" aria-hidden="true"></div>
+        </div>
+        <div class="video-meta" style="font-size:10px; letter-spacing:.15em; opacity:.62">
+          <span>LOCAL INPUT · DETECT · ROUGH CUT</span>
+          <span>FULLSCREEN</span>
+        </div>
+      </button>
+    </div>
+  </div>
+  <div class="foot">
+    <div>方案雏形 · 只讲输入、处理、输出</div>
+    <div>Input · Detect · ASR · Rough Cut</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 02 · Package Skill</div>
+    <div>17 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:6vh">
+    <h2 class="h-xl" style="font-size:4.55vw; max-width:86vw; line-height:1.1" data-anim>
+      把流程封装起来，才会变成团队能力
+    </h2>
+
+    <div style="display:grid; grid-template-columns:43fr 57fr; gap:4.2vw; margin-top:4vh; align-items:start">
+      <div data-anim="left" style="display:flex; flex-direction:column; min-height:48vh; justify-content:space-between">
+        <div>
+          <div class="callout" style="font-size:1.24vw; line-height:1.62; padding:2.4vh 2vw">
+            经验被封装后，才会变成团队资产。
+          </div>
+          <div style="margin-top:3vh; border-top:1px solid rgba(var(--paper-rgb),.32); border-bottom:1px solid rgba(var(--paper-rgb),.32); padding:2.2vh 0">
+            <div class="meta" style="margin-bottom:1.8vh">OpenClaw Continues The Packaging</div>
+            <div style="display:grid; gap:1.1vh">
+              <div class="rowline" style="grid-template-columns:1fr auto; padding:.9vh 0">
+                <div class="v" style="font-size:.98vw">补 Skill 说明</div>
+                <div class="m">README</div>
+              </div>
+              <div class="rowline" style="grid-template-columns:1fr auto; padding:.9vh 0">
+                <div class="v" style="font-size:.98vw">补输入输出参数</div>
+                <div class="m">PARAMS</div>
+              </div>
+              <div class="rowline" style="grid-template-columns:1fr auto; padding:.9vh 0">
+                <div class="v" style="font-size:.98vw">补运行条件和错误处理</div>
+                <div class="m">RULES</div>
+              </div>
+              <div class="rowline" style="grid-template-columns:1fr auto; padding:.9vh 0">
+                <div class="v" style="font-size:.98vw">打包成 ZIP，让同事接着用</div>
+                <div class="m">HAND OFF</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:1vw; opacity:.7">
+          <div style="height:1px; background:currentColor; opacity:.32"></div>
+          <div class="meta">Document · Package · Reuse</div>
+          <div style="height:1px; background:currentColor; opacity:.32"></div>
+        </div>
+      </div>
+
+      <button class="video-card" type="button" data-video-src="videos/21/主视频3.mp4" data-video-poster="images/21/主视频3封面.png" data-video-title="主视频 3 · 封装成 Skill" data-anim="right" style="appearance:none;border:0;background:transparent;color:inherit;text-align:left;min-height:0;justify-content:center">
+        <div class="video-frame" style="aspect-ratio:16/9;height:auto">
+          <img class="video-poster" src="images/21/主视频3封面.png" alt="封装成 Skill 视频首帧">
+          <div class="video-play" aria-hidden="true"></div>
+        </div>
+      </button>
+    </div>
+  </div>
+  <div class="foot">
+    <div>经验沉淀 · 从一次性方案到团队资产</div>
+    <div>README · Params · Rules · ZIP · Reuse</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 02 · Range</div>
+    <div>18 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:7vh">
+    <div class="kicker" data-anim>Low Floor · High Ceiling</div>
+    <h2 class="h-xl" style="font-size:5.45vw; max-width:86vw; line-height:1.08" data-anim>
+      Skill 的下限很低，<br>上限很高
+    </h2>
+
+    <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:3.4vw; margin-top:5.2vh; align-items:stretch">
+      <div data-anim="left" style="border-top:1px solid rgba(var(--paper-rgb),.34); border-bottom:1px solid rgba(var(--paper-rgb),.34); padding:3vh 0; min-height:31vh; display:flex; flex-direction:column; justify-content:space-between">
+        <div>
+          <div class="meta">Low Floor</div>
+          <div style="font-family:var(--serif-zh); font-size:3.8vw; line-height:1.08; margin-top:2vh">
+            一段<br>文本提示语
+          </div>
+        </div>
+        <p class="body-zh" style="font-size:1.05vw; line-height:1.65; opacity:.76; margin:0; max-width:26vw">
+          简单的时候，它只是把一类任务的写法固定下来。
+        </p>
+      </div>
+
+      <div data-anim="divider" style="width:1px; background:rgba(var(--paper-rgb),.28); min-height:31vh"></div>
+
+      <div data-anim="right" style="border-top:1px solid rgba(var(--paper-rgb),.34); border-bottom:1px solid rgba(var(--paper-rgb),.34); padding:3vh 0; min-height:31vh; display:flex; flex-direction:column; justify-content:space-between">
+        <div>
+          <div class="meta">High Ceiling</div>
+          <div style="font-family:var(--serif-zh); font-size:3.8vw; line-height:1.08; margin-top:2vh">
+            一整套<br>工程能力
+          </div>
+        </div>
+        <p class="body-zh" style="font-size:1.05vw; line-height:1.65; opacity:.76; margin:0; max-width:28vw">
+          复杂的时候，它可以把工具、依赖、流程和交付方式装进去。
+        </p>
+      </div>
+    </div>
+
+    <div data-anim style="margin-top:4vh; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:1.2vw; opacity:.72">
+      <div style="height:1px; background:currentColor; opacity:.32"></div>
+      <div class="meta">Prompt · Script · Workflow · System</div>
+      <div style="height:1px; background:currentColor; opacity:.32"></div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>第二阶段金句 · 不必一开始就做复杂工程</div>
+    <div>Prompt · Engineering · Automation</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 02 · Office System</div>
+    <div>19 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:6vh">
+    <div class="kicker" data-anim>Skill Ceiling · Office Actions</div>
+    <h2 class="h-xl" style="font-size:4.15vw; max-width:88vw; line-height:1.12" data-anim>
+      办公系统做成 CLI（命令行界面）之后，<br>Agent 可以通过 Skill 操控
+    </h2>
+
+    <div style="display:grid; grid-template-columns:47fr 53fr; gap:4.5vw; margin-top:4vh; align-items:center">
+      <div data-anim="left" style="display:flex; flex-direction:column; gap:3vh">
+        <div class="callout" style="font-size:1.16vw; line-height:1.58; padding:2.3vh 2vw">
+          Skill 的上限不只是写文案，而是把办公动作接进 Agent。
+        </div>
+        <div style="border-top:1px solid rgba(var(--paper-rgb),.3); border-bottom:1px solid rgba(var(--paper-rgb),.3); padding:2.5vh 0">
+          <div class="meta" style="margin-bottom:1.6vh">What Changes</div>
+          <p class="body-zh" style="font-size:1.18vw; line-height:1.7; opacity:.82; margin:0">
+            群聊、文档、日程、资料整理，都可以成为 OpenClaw 调用的能力。
+          </p>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:1vw; opacity:.72">
+          <div style="height:1px; background:currentColor; opacity:.32"></div>
+          <div class="meta">Team System Becomes Tool Surface</div>
+          <div style="height:1px; background:currentColor; opacity:.32"></div>
+        </div>
+      </div>
+
+      <div data-anim="right" style="min-height:42vh; display:flex; align-items:center; justify-content:flex-end">
+        <div style="width:min(43vw,820px); flex:none; position:relative">
+          <img src="images/23/办公系统连接图.png" alt="OpenClaw 连接飞书办公模块" style="display:block; width:100%; aspect-ratio:16/9; object-fit:cover; opacity:.96; filter:contrast(1.04) saturate(.95)">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>上限展示 · 办公动作接进 Agent</div>
+    <div>IM · Docs · Calendar · Project · Group</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 02 · Office Actions</div>
+    <div>20 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:4.5vh">
+    <div class="kicker" data-anim>Office Skill · Action Surface</div>
+    <h2 class="h-xl" style="font-size:4.25vw; max-width:78vw; line-height:1.1" data-anim>
+      从群聊、项目到资料整合，<br>都可以被接进来
+    </h2>
+
+    <div style="display:grid; grid-template-columns:53fr 47fr; gap:4.2vw; margin-top:4.5vh; align-items:start">
+      <div data-anim="left" style="display:grid; gap:1.6vh">
+        <div style="border-top:1px solid rgba(var(--ink-rgb),.42); padding-top:2vh">
+          <div class="meta">Three Office Actions</div>
+        </div>
+        <div style="display:grid; gap:1.4vh">
+          <div style="display:grid; grid-template-columns:auto 1fr auto; gap:1.3vw; align-items:center; min-height:12vh; padding:2vh 0; border-bottom:1px solid rgba(var(--ink-rgb),.22)">
+            <div class="meta" style="font-size:.92vw">01</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:2.2vw; line-height:1.12">群聊管理</div>
+              <p class="body-zh" style="font-size:1vw; line-height:1.55; opacity:.76; margin:.8vh 0 0">总结每天群聊重点，批量下载图片和文件。</p>
+            </div>
+            <svg class="ico-lg" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
+          </div>
+          <div style="display:grid; grid-template-columns:auto 1fr auto; gap:1.3vw; align-items:center; min-height:12vh; padding:2vh 0; border-bottom:1px solid rgba(var(--ink-rgb),.22)">
+            <div class="meta" style="font-size:.92vw">02</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:2.2vw; line-height:1.12">项目立项</div>
+              <p class="body-zh" style="font-size:1vw; line-height:1.55; opacity:.76; margin:.8vh 0 0">安排会议、排期、同步云文档。</p>
+            </div>
+            <svg class="ico-lg" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div style="display:grid; grid-template-columns:auto 1fr auto; gap:1.3vw; align-items:center; min-height:12vh; padding:2vh 0; border-bottom:1px solid rgba(var(--ink-rgb),.22)">
+            <div class="meta" style="font-size:.92vw">03</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:2.2vw; line-height:1.12">资料整合</div>
+              <p class="body-zh" style="font-size:1vw; line-height:1.55; opacity:.76; margin:.8vh 0 0">拉取外部信息，生成表格，更新旧文档。</p>
+            </div>
+            <svg class="ico-lg" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="M9 18h6"/><path d="M9 12h2"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <button class="video-card" type="button" data-video-src="videos/24/主视频4.mp4" data-video-poster="images/24/主视频4封面.png" data-video-title="主视频 4 · 飞书办公接入" data-anim="right" style="appearance:none;border:0;background:transparent;color:inherit;text-align:left;min-height:0;gap:1.35vh">
+        <div class="video-frame" style="aspect-ratio:16/9;height:auto; border-color:rgba(var(--paper-rgb),.28); background:rgba(var(--paper-rgb),.055)">
+          <img class="video-poster" src="images/24/主视频4封面.png" alt="飞书办公接入视频封面">
+          <video muted playsinline preload="metadata" src="videos/24/主视频4.mp4"></video>
+          <div class="video-play" aria-hidden="true" style="background:rgba(var(--paper-rgb),.36); border-color:rgba(var(--paper-rgb),.5); color:var(--paper)"></div>
+        </div>
+        <div style="border-left:3px solid currentColor; background:rgba(var(--paper-rgb),.07); font-family:var(--serif-zh); font-size:1.02vw; line-height:1.48; padding:1.2vh 1.5vw; margin-top:.45vh">
+          从飞书群发起任务，生成云文档；敏感动作先确认再回发。
+        </div>
+      </button>
+    </div>
+  </div>
+  <div class="foot">
+    <div>飞书动作 · 群聊 / 项目 / 资料</div>
+    <div>IM · PROJECT · DOCS · CONFIRM · RETURN</div>
+  </div>
+</section>
+
+<section class="slide hero light" data-animate="hero">
+  <div class="chrome">
+    <div>Stage 03 · Workflow</div>
+    <div>21 / 35</div>
+  </div>
+  <div class="frame" style="display:grid; gap:4vh; align-content:center; min-height:78vh">
+    <div>
+      <div class="kicker" data-anim>Third Stage · Skill Workflow</div>
+      <h2 class="h-xl" style="font-size:5.85vw; max-width:86vw; line-height:1.06" data-anim>
+        第三阶段：<br>组合多个 Skill，开始做工作流
+      </h2>
+    </div>
+
+    <div data-anim style="display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:1.2vw; max-width:78vw">
+      <div style="height:1px; background:currentColor; opacity:.32"></div>
+      <div class="meta">Skill · Condition · Sequence · Result</div>
+      <div style="height:1px; background:currentColor; opacity:.32"></div>
+    </div>
+
+    <div data-anim style="display:grid; grid-template-columns:repeat(4,1fr); gap:1.2vw; max-width:76vw">
+      <div style="border-top:1px solid rgba(var(--paper-rgb),.34); padding-top:2vh">
+        <div class="meta">01 · INPUT</div>
+        <div style="font-family:var(--serif-zh); font-size:2.1vw; line-height:1.15; margin-top:1.6vh">任务进入</div>
+      </div>
+      <div style="border-top:1px solid rgba(var(--paper-rgb),.34); padding-top:2vh">
+        <div class="meta">02 · ROUTE</div>
+        <div style="font-family:var(--serif-zh); font-size:2.1vw; line-height:1.15; margin-top:1.6vh">条件判断</div>
+      </div>
+      <div style="border-top:1px solid rgba(var(--paper-rgb),.34); padding-top:2vh">
+        <div class="meta">03 · SKILLS</div>
+        <div style="font-family:var(--serif-zh); font-size:2.1vw; line-height:1.15; margin-top:1.6vh">多个 Skill 接力</div>
+      </div>
+      <div style="border-top:1px solid rgba(var(--paper-rgb),.34); padding-top:2vh">
+        <div class="meta">04 · OUTPUT</div>
+        <div style="font-family:var(--serif-zh); font-size:2.1vw; line-height:1.15; margin-top:1.6vh">结果回流</div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>第三阶段 · 组合多个 Skill</div>
+    <div>WORKFLOW · CONDITION · SEQUENCE · RESULT</div>
+  </div>
+</section>
+
+<section class="slide hero light" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 03 · Branching</div>
+    <div>22 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:4.8vh">
+    <div class="kicker" data-anim>Why Workflow · Conditional Route</div>
+    <h2 class="h-xl" style="font-size:4.75vw; max-width:82vw; line-height:1.1" data-anim>
+      现实工作经常有<br>条件分支
+    </h2>
+
+    <div style="display:grid; grid-template-columns:36fr 64fr; gap:4.6vw; margin-top:4.2vh; align-items:center">
+      <div data-anim="left" style="display:flex; flex-direction:column; gap:2.6vh">
+        <div class="callout" style="font-size:1.18vw; line-height:1.58; padding:2.2vh 1.9vw">
+          单个 Skill 再好，也不可能覆盖所有情况。
+        </div>
+        <div style="border-top:1px solid rgba(var(--ink-rgb),.34); border-bottom:1px solid rgba(var(--ink-rgb),.34); padding:2.4vh 0">
+          <div class="meta" style="margin-bottom:1.3vh">Route First</div>
+          <p class="body-zh" style="font-size:1.1vw; line-height:1.68; opacity:.8; margin:0">
+            同样是文字生成，长文案、短文案、广告语、品牌物料，背后的判断逻辑和处理方式都不一样。
+          </p>
+        </div>
+        <div class="meta">One Request · Different Paths</div>
+      </div>
+
+      <div data-anim="right" style="position:relative; min-height:45vh">
+        <div style="position:absolute; left:50%; top:44%; transform:translate(-50%,-50%); width:12vw; min-width:170px; aspect-ratio:1/1; border:1px solid rgba(var(--ink-rgb),.42); border-radius:50%; display:grid; place-items:center; text-align:center; background:rgba(var(--paper-rgb),.22); z-index:2">
+          <div>
+            <div class="meta">TASK</div>
+            <div style="font-family:var(--serif-zh); font-size:1.9vw; line-height:1.12; margin-top:1vh">写一段文案</div>
+          </div>
+        </div>
+
+        <div style="position:absolute; left:0; top:2%; width:23vw; min-height:15vh; border-top:1px solid rgba(var(--ink-rgb),.42); padding:2vh 1.4vw; background:rgba(var(--ink-rgb),.03); z-index:2">
+          <div class="meta">IF · LONG FORM</div>
+          <div style="font-family:var(--serif-zh); font-size:2.05vw; line-height:1.14; margin-top:1.4vh">长文案</div>
+          <p class="body-zh" style="font-size:.95vw; line-height:1.5; opacity:.72; margin:.9vh 0 0">先梳理结构，再生成正文。</p>
+        </div>
+
+        <div style="position:absolute; right:0; top:2%; width:23vw; min-height:15vh; border-top:1px solid rgba(var(--ink-rgb),.42); padding:2vh 1.4vw; background:rgba(var(--ink-rgb),.03); z-index:2">
+          <div class="meta">IF · SHORT COPY</div>
+          <div style="font-family:var(--serif-zh); font-size:2.05vw; line-height:1.14; margin-top:1.4vh">短文案</div>
+          <p class="body-zh" style="font-size:.95vw; line-height:1.5; opacity:.72; margin:.9vh 0 0">直接给多版本，快速筛选。</p>
+        </div>
+
+        <div style="position:absolute; left:50%; bottom:0; transform:translateX(-50%); width:23vw; min-height:15vh; border-top:1px solid rgba(var(--ink-rgb),.42); padding:2vh 1.4vw; background:rgba(var(--ink-rgb),.03); z-index:2">
+          <div class="meta">IF · TAGLINE</div>
+          <div style="font-family:var(--serif-zh); font-size:2.05vw; line-height:1.14; margin-top:1.4vh">广告语</div>
+          <p class="body-zh" style="font-size:.95vw; line-height:1.5; opacity:.72; margin:.9vh 0 0">先抓卖点，再压缩成一句话。</p>
+        </div>
+
+        <svg viewBox="0 0 600 360" style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:1" aria-hidden="true">
+          <path d="M300 168 C230 115 185 96 118 84" fill="none" stroke="currentColor" stroke-opacity=".32" stroke-width="1.3"/>
+          <path d="M300 168 C370 115 415 96 482 84" fill="none" stroke="currentColor" stroke-opacity=".32" stroke-width="1.3"/>
+          <path d="M300 205 C300 252 300 286 300 318" fill="none" stroke="currentColor" stroke-opacity=".32" stroke-width="1.3"/>
+          <circle cx="300" cy="168" r="4" fill="currentColor" opacity=".42"/>
+          <circle cx="118" cy="84" r="4" fill="currentColor" opacity=".36"/>
+          <circle cx="482" cy="84" r="4" fill="currentColor" opacity=".36"/>
+          <circle cx="300" cy="318" r="4" fill="currentColor" opacity=".36"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>组合必要性 · 单个 Skill 不够</div>
+    <div>LONG FORM · SHORT COPY · TAGLINE</div>
+  </div>
+</section>
+
+<section class="slide hero light" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 03 · Copy Workflow</div>
+    <div>23 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:4.7vh">
+    <div class="kicker" data-anim>Case · Copywriting Workflow</div>
+    <h2 class="h-xl" style="font-size:4.65vw; max-width:86vw; line-height:1.1" data-anim>
+      同一个文案任务，<br>也可以串联两个 Skill
+    </h2>
+
+    <div style="display:grid; grid-template-columns:38fr 62fr; gap:4.4vw; margin-top:4.3vh; align-items:start">
+      <div data-anim="left" style="display:flex; flex-direction:column; gap:2vh">
+        <div class="callout" style="font-size:1.14vw; line-height:1.58; padding:2vh 1.9vw">
+          我的做法不是让长文和短文分开走，而是先用卡兹克生成长文，再用 Humanizer 增加真人感。
+        </div>
+
+        <div style="display:grid; gap:1.1vh; margin-top:.6vh">
+          <div style="display:grid; grid-template-columns:auto 1fr; gap:1.2vw; align-items:start; border-top:1px solid rgba(var(--paper-rgb),.32); padding:1.65vh 0">
+            <div class="meta">01</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.95vw; line-height:1.16">卡兹克生成长文</div>
+              <p class="body-zh" style="font-size:.98vw; line-height:1.5; opacity:.72; margin:.55vh 0 0">先把风格、语气和素材展开。</p>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:auto 1fr; gap:1.2vw; align-items:start; border-top:1px solid rgba(var(--paper-rgb),.24); padding:1.65vh 0">
+            <div class="meta">02</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.95vw; line-height:1.16">Humanizer 增加真人感</div>
+              <p class="body-zh" style="font-size:.98vw; line-height:1.5; opacity:.72; margin:.55vh 0 0">保留感觉，再压到可用长度。</p>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:auto 1fr; gap:1.2vw; align-items:start; border-top:1px solid rgba(var(--paper-rgb),.24); border-bottom:1px solid rgba(var(--paper-rgb),.32); padding:1.65vh 0">
+            <div class="meta">03</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.95vw; line-height:1.16">避开公式化广告语</div>
+              <p class="body-zh" style="font-size:.98vw; line-height:1.5; opacity:.72; margin:.55vh 0 0">直接走 Humanizer 会太模板。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="video-card" type="button" data-video-src="videos/27/主视频5.mp4" data-video-poster="images/27/主视频5封面.png" data-video-title="主视频 5 · 文案工作流案例" data-anim="right" style="appearance:none;border:0;background:transparent;color:inherit;text-align:left;min-height:0;justify-content:center">
+        <div class="video-frame" style="aspect-ratio:16/9;height:auto; border-color:rgba(var(--ink-rgb),.28); background:rgba(var(--ink-rgb),.045)">
+          <img class="video-poster" src="images/27/主视频5封面.png" alt="文案工作流视频封面">
+          <video muted playsinline preload="metadata" src="videos/27/主视频5.mp4"></video>
+          <div class="video-play" aria-hidden="true" style="background:rgba(var(--paper-rgb),.42); color:var(--ink)"></div>
+        </div>
+      </button>
+    </div>
+  </div>
+  <div class="foot">
+    <div>文案案例 · 多 Skill 组合</div>
+    <div>KHAZIX · LONG COPY · HUMANIZER · COMPRESS</div>
+  </div>
+</section>
+
+<section class="slide hero light" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 03 · Brand Delivery</div>
+    <div>24 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:4.7vh">
+    <div class="kicker" data-anim>Extension · From Copy To Brand</div>
+    <h2 class="h-xl" style="font-size:4.55vw; max-width:86vw; line-height:1.1" data-anim>
+      文案工作流后面，<br>还能接视觉生成
+    </h2>
+
+    <div style="display:grid; grid-template-columns:40fr 60fr; gap:4.6vw; margin-top:4.2vh; align-items:start">
+      <div data-anim="left" style="display:flex; flex-direction:column; gap:2.2vh">
+        <div class="callout" style="font-size:1.12vw; line-height:1.54; padding:1.55vh 1.8vw">
+        当文案流程稳定以后，后面接的还可以是一整套品牌物料的连续交付。
+        </div>
+
+        <div style="display:grid; gap:1.4vh; margin-top:.4vh">
+          <div style="display:grid; grid-template-columns:auto 1fr; gap:1.2vw; align-items:center; border-top:1px solid rgba(var(--ink-rgb),.34); padding:1.18vh 0">
+            <div class="meta">01</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.9vw; line-height:1.16">稳定文案工作流</div>
+              <p class="body-zh" style="font-size:.98vw; line-height:1.5; opacity:.76; margin:.55vh 0 0">长文、短文、发布文案先有统一基底。</p>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:auto 1fr; gap:1.2vw; align-items:center; border-top:1px solid rgba(var(--ink-rgb),.22); padding:1.18vh 0">
+            <div class="meta">02</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.9vw; line-height:1.16">接入视觉生成</div>
+              <p class="body-zh" style="font-size:.98vw; line-height:1.5; opacity:.76; margin:.55vh 0 0">海报、AI 视频、展示物料、品牌网页继续往后接。</p>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:auto 1fr; gap:1.2vw; align-items:center; border-top:1px solid rgba(var(--ink-rgb),.22); border-bottom:1px solid rgba(var(--ink-rgb),.34); padding:1.18vh 0">
+            <div class="meta">03</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.9vw; line-height:1.16">形成品牌交付系统</div>
+              <p class="body-zh" style="font-size:.98vw; line-height:1.5; opacity:.76; margin:.55vh 0 0">不是生成几段文字，而是连续产出物料。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div data-anim="right" style="display:grid; gap:1.15vh; margin-top:-4.1vh">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(var(--ink-rgb),.25); padding-bottom:1.4vh">
+          <div class="meta">Brand Video Wall</div>
+          <div class="meta">4 Clips · 5-9s</div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.15vw">
+          <button class="video-card" type="button" data-video-src="videos/28/品牌海报.mp4" data-video-poster="images/28/品牌海报封面.png" data-video-title="品牌海报 · 5-9s" style="appearance:none;aspect-ratio:16/9;height:auto;min-height:0;border:1px solid rgba(var(--ink-rgb),.25);background:transparent;color:var(--ink);padding:0;display:block;text-align:left;overflow:hidden">
+            <div class="video-frame" style="height:100%;border:0;background:rgba(var(--ink-rgb),.05)">
+              <video muted playsinline autoplay loop preload="metadata" poster="images/28/品牌海报封面.png" src="videos/28/品牌海报.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
+              <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(211,201,181,.08),rgba(211,201,181,.52));z-index:1"></div>
+              <div style="position:relative;z-index:2;height:100%;padding:1.55vh 1.35vw;display:flex;flex-direction:column;justify-content:space-between">
+                <div class="meta">01 · POSTER</div>
+                <div>
+                  <div style="font-family:var(--serif-zh); font-size:1.85vw; line-height:1.12">品牌海报</div>
+                  <p class="body-zh" style="font-size:.82vw; line-height:1.35; opacity:.72; margin:.45vh 0 0">主视觉、标题、发布节奏统一。</p>
+                </div>
+              </div>
+              <div class="video-play" aria-hidden="true" style="width:46px;height:46px;background:rgba(var(--paper-rgb),.36);color:var(--ink)"></div>
+            </div>
+          </button>
+          <button class="video-card" type="button" data-video-src="videos/28/AI视频.mp4" data-video-poster="images/28/AI视频封面.png" data-video-title="AI 视频 · 5-9s" style="appearance:none;aspect-ratio:16/9;height:auto;min-height:0;border:1px solid rgba(var(--ink-rgb),.25);background:transparent;color:var(--ink);padding:0;display:block;text-align:left;overflow:hidden">
+            <div class="video-frame" style="height:100%;border:0;background:rgba(var(--ink-rgb),.05)">
+              <video muted playsinline autoplay loop preload="metadata" poster="images/28/AI视频封面.png" src="videos/28/AI视频.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
+              <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(211,201,181,.08),rgba(211,201,181,.52));z-index:1"></div>
+              <div style="position:relative;z-index:2;height:100%;padding:1.55vh 1.35vw;display:flex;flex-direction:column;justify-content:space-between">
+                <div class="meta">02 · AI VIDEO</div>
+                <div>
+                  <div style="font-family:var(--serif-zh); font-size:1.85vw; line-height:1.12">AI 视频</div>
+                  <p class="body-zh" style="font-size:.82vw; line-height:1.35; opacity:.72; margin:.45vh 0 0">用同一套文案生成分镜和提示词。</p>
+                </div>
+              </div>
+              <div class="video-play" aria-hidden="true" style="width:46px;height:46px;background:rgba(var(--paper-rgb),.36);color:var(--ink)"></div>
+            </div>
+          </button>
+          <button class="video-card" type="button" data-video-src="videos/28/展示物料.mp4" data-video-poster="images/28/展示物料封面.png" data-video-title="展示物料 · 5-9s" style="appearance:none;aspect-ratio:16/9;height:auto;min-height:0;border:1px solid rgba(var(--ink-rgb),.25);background:transparent;color:var(--ink);padding:0;display:block;text-align:left;overflow:hidden">
+            <div class="video-frame" style="height:100%;border:0;background:rgba(var(--ink-rgb),.05)">
+              <video muted playsinline autoplay loop preload="metadata" poster="images/28/展示物料封面.png" src="videos/28/展示物料.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
+              <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(211,201,181,.08),rgba(211,201,181,.52));z-index:1"></div>
+              <div style="position:relative;z-index:2;height:100%;padding:1.55vh 1.35vw;display:flex;flex-direction:column;justify-content:space-between">
+                <div class="meta">03 · MATERIAL</div>
+                <div>
+                  <div style="font-family:var(--serif-zh); font-size:1.85vw; line-height:1.12">展示物料</div>
+                  <p class="body-zh" style="font-size:.82vw; line-height:1.35; opacity:.72; margin:.45vh 0 0">Remotion 演示动画、提案页、同步页。</p>
+                </div>
+              </div>
+              <div class="video-play" aria-hidden="true" style="width:46px;height:46px;background:rgba(var(--paper-rgb),.36);color:var(--ink)"></div>
+            </div>
+          </button>
+          <button class="video-card" type="button" data-video-src="videos/28/品牌网页.mp4" data-video-poster="images/28/品牌网页封面.png" data-video-title="品牌网页 · 5-9s" style="appearance:none;aspect-ratio:16/9;height:auto;min-height:0;border:1px solid rgba(var(--ink-rgb),.25);background:transparent;color:var(--ink);padding:0;display:block;text-align:left;overflow:hidden">
+            <div class="video-frame" style="height:100%;border:0;background:rgba(var(--ink-rgb),.05)">
+              <video muted playsinline autoplay loop preload="metadata" poster="images/28/品牌网页封面.png" src="videos/28/品牌网页.mp4" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
+              <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(211,201,181,.08),rgba(211,201,181,.52));z-index:1"></div>
+              <div style="position:relative;z-index:2;height:100%;padding:1.55vh 1.35vw;display:flex;flex-direction:column;justify-content:space-between">
+                <div class="meta">04 · WEB PAGE</div>
+                <div>
+                  <div style="font-family:var(--serif-zh); font-size:1.85vw; line-height:1.12">品牌网页</div>
+                  <p class="body-zh" style="font-size:.82vw; line-height:1.35; opacity:.72; margin:.45vh 0 0">联网搜索、文案工作流，最后生成网页。</p>
+                </div>
+              </div>
+              <div class="video-play" aria-hidden="true" style="width:46px;height:46px;background:rgba(var(--paper-rgb),.36);color:var(--ink)"></div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>品牌案例 · 工作流继续往后接</div>
+    <div>COPY · POSTER · VIDEO · MATERIAL · WEB</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 03 · Rules</div>
+    <div>25 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:4.6vh">
+    <div class="kicker" data-anim>Rules · Skill Selection</div>
+    <h2 class="h-xl" style="font-size:4.65vw; max-width:88vw; line-height:1.08" data-anim>
+      Skill 多了以后，<br>真正重要的是调用规则
+    </h2>
+
+    <div style="display:grid; grid-template-columns:43fr 57fr; gap:4.2vw; margin-top:4.1vh; align-items:start">
+      <div data-anim="left" style="display:flex; flex-direction:column; gap:1.2vh">
+        <div class="callout" style="font-size:1.02vw; line-height:1.48; padding:1.3vh 1.65vw">
+          Agent 里装了三十个、五十个 Skill 之后，问题不再是有没有工具，而是该用哪一个。
+        </div>
+        <div style="display:grid; gap:.7vh; margin-top:.15vh">
+          <div style="display:grid; grid-template-columns:auto 1fr; gap:1.1vw; border-top:1px solid rgba(var(--paper-rgb),.32); padding:.9vh 0">
+            <div class="meta">01</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.78vw; line-height:1.14">擅长点会被忘掉</div>
+              <p class="body-zh" style="font-size:.88vw; line-height:1.4; opacity:.72; margin:.35vh 0 0">装得越多，越难记住每个 Skill 适合什么。</p>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:auto 1fr; gap:1.1vw; border-top:1px solid rgba(var(--paper-rgb),.24); padding:.9vh 0">
+            <div class="meta">02</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.78vw; line-height:1.14">功能重叠越来越多</div>
+              <p class="body-zh" style="font-size:.88vw; line-height:1.4; opacity:.72; margin:.35vh 0 0">相似能力同时出现，模型会在入口之间摇摆。</p>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:auto 1fr; gap:1.1vw; border-top:1px solid rgba(var(--paper-rgb),.24); padding:.9vh 0">
+            <div class="meta">03</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.78vw; line-height:1.14">同一任务有多种做法</div>
+              <p class="body-zh" style="font-size:.88vw; line-height:1.4; opacity:.72; margin:.35vh 0 0">不是所有路径都一样稳，也不都适合交付。</p>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:auto 1fr; gap:1.1vw; border-top:1px solid rgba(var(--paper-rgb),.24); border-bottom:1px solid rgba(var(--paper-rgb),.32); padding:.9vh 0">
+            <div class="meta">04</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.78vw; line-height:1.14">规则决定什么时候用谁</div>
+              <p class="body-zh" style="font-size:.88vw; line-height:1.4; opacity:.72; margin:.35vh 0 0">把选择逻辑写清楚，Agent 才不会靠猜。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div data-anim="right" style="position:relative; height:47vh; border:1px solid rgba(var(--paper-rgb),.18); background:rgba(var(--paper-rgb),.035); overflow:hidden">
+        <svg viewBox="0 0 900 520" style="position:absolute; inset:0; width:100%; height:100%" aria-hidden="true">
+          <defs>
+            <filter id="softGlow29" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="6" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <g fill="none">
+            <ellipse cx="450" cy="250" rx="318" ry="188" stroke="#efe4cf" stroke-opacity=".32" stroke-width="1.4"/>
+            <ellipse cx="450" cy="250" rx="250" ry="142" stroke="#efe4cf" stroke-opacity=".16" stroke-width="1" stroke-dasharray="5 12"/>
+          </g>
+
+          <g fill="none" stroke="#efe4cf" stroke-linecap="round">
+            <path d="M205 134 C284 88 340 88 445 108" stroke-opacity=".28" stroke-width="1.2"/>
+            <path d="M445 108 C550 96 626 116 697 151" stroke-opacity=".26" stroke-width="1.2"/>
+            <path d="M697 151 C744 195 766 232 758 292" stroke-opacity=".22" stroke-width="1.1"/>
+            <path d="M758 292 C722 350 662 382 575 396" stroke-opacity=".3" stroke-width="1.4"/>
+            <path d="M575 396 C474 424 391 416 322 392" stroke-opacity=".24" stroke-width="1.1"/>
+            <path d="M322 392 C230 374 168 332 156 288" stroke-opacity=".22" stroke-width="1.1"/>
+            <path d="M156 288 C138 220 160 171 205 134" stroke-opacity=".2" stroke-width="1"/>
+            <path d="M205 134 C280 205 330 234 430 258" stroke-opacity=".18" stroke-width="1"/>
+            <path d="M430 258 C528 218 610 190 697 151" stroke-opacity=".2" stroke-width="1.1"/>
+            <path d="M322 392 C350 330 386 292 430 258" stroke-opacity=".26" stroke-width="1.2"/>
+            <path d="M430 258 C482 318 522 360 575 396" stroke-opacity=".22" stroke-width="1.1"/>
+            <path d="M156 288 C245 278 336 270 430 258" stroke-opacity=".16" stroke-width="1"/>
+            <path d="M430 258 C540 266 650 278 758 292" stroke-opacity=".16" stroke-width="1"/>
+          </g>
+
+          <g fill="#efe4cf" fill-opacity=".5">
+            <circle cx="205" cy="134" r="3.8"/><circle cx="445" cy="108" r="3.8"/>
+            <circle cx="697" cy="151" r="3.8"/><circle cx="758" cy="292" r="3.8"/>
+            <circle cx="575" cy="396" r="3.8"/><circle cx="322" cy="392" r="3.8"/>
+            <circle cx="156" cy="288" r="3.8"/><circle cx="430" cy="258" r="3.8"/>
+          </g>
+
+          <g fill="#efe4cf" font-family="IBM Plex Mono, monospace" font-size="17" letter-spacing="4.5" text-anchor="middle" opacity=".72">
+            <text x="205" y="142">SKILL 01</text>
+            <text x="445" y="115">SKILL 08</text>
+            <text x="697" y="158">SKILL 17</text>
+            <text x="758" y="299">SKILL 29</text>
+            <text x="575" y="403">SKILL 34</text>
+            <text x="322" y="399">SKILL 42</text>
+            <text x="156" y="295">SKILL 50</text>
+            <text x="430" y="265">SKILL 21</text>
+          </g>
+
+          <g text-anchor="middle">
+            <text x="450" y="216" fill="#efe4cf" fill-opacity=".2" font-family="Noto Serif SC, serif" font-size="96" filter="url(#softGlow29)">Rules</text>
+            <text x="450" y="306" fill="#efe4cf" fill-opacity=".58" font-family="IBM Plex Mono, monospace" font-size="19" letter-spacing="8">RULE BOUNDARY</text>
+          </g>
+        </svg>
+
+        <div style="position:absolute; left:7%; bottom:6%; right:7%; display:flex; justify-content:space-between; border-top:1px solid rgba(var(--paper-rgb),.14); padding-top:1.1vh">
+          <div class="meta">Capability</div>
+          <div class="meta">Overlap</div>
+          <div class="meta">Context</div>
+          <div class="meta">Rule</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Rules 登场 · Skill 多了以后</div>
+    <div>CAPABILITY · OVERLAP · CONTEXT · RULE</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 03 · Rule Evidence</div>
+    <div>26 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:4.7vh">
+    <div class="kicker" data-anim>Process Evidence · Hermes Review</div>
+    <h2 class="h-xl" style="font-size:4.35vw; max-width:88vw; line-height:1.1" data-anim>
+      先让 Hermes 回顾你的习惯，<br>再把工作流写进 Rules
+    </h2>
+
+    <div style="display:grid; grid-template-columns:58fr 42fr; gap:3.8vw; margin-top:3.4vh; align-items:start">
+      <div data-anim="left" style="display:grid; align-content:start; gap:1.1vh">
+        <button class="video-card" type="button" data-video-src="videos/24/主视频4.mp4" data-video-poster="images/30/主视频4封面.png" data-video-title="主视频 4 · 工作流判断临时视频" style="appearance:none;border:0;background:transparent;color:inherit;text-align:left;min-height:0;gap:1vh">
+          <div class="video-frame" style="aspect-ratio:16/9;height:auto; border-color:rgba(var(--paper-rgb),.28); background:rgba(var(--paper-rgb),.055)">
+            <img class="video-poster" src="images/30/主视频4封面.png" alt="OpenClaw 工作流判断视频封面">
+            <video muted playsinline preload="metadata" src="videos/24/主视频4.mp4"></video>
+            <div class="video-play" aria-hidden="true" style="background:rgba(var(--paper-rgb),.36); border-color:rgba(var(--paper-rgb),.5); color:var(--paper)"></div>
+          </div>
+        </button>
+      </div>
+
+      <div data-anim="right" style="display:grid; gap:1.35vh">
+        <div class="callout" style="font-size:1.04vw; line-height:1.5; padding:1.25vh 1.5vw">
+          不同功能的 Skill，要先被串成工作流，再沉淀成规则。
+        </div>
+
+        <div style="display:grid; gap:1.05vh">
+          <div style="border:1px solid rgba(var(--ink-rgb),.2); background:rgba(var(--paper-rgb),.34); padding:1.15vh 1.3vw">
+            <div class="meta">01 · Review Habit</div>
+            <div style="font-family:var(--serif-zh); font-size:1.78vw; line-height:1.15; margin-top:.9vh">回顾习惯</div>
+            <p class="body-zh" style="font-size:.92vw; line-height:1.45; opacity:.74; margin:.55vh 0 0">Hermes 先回顾你过去怎么拆任务、确认和交付。</p>
+          </div>
+          <div style="border:1px solid rgba(var(--ink-rgb),.2); background:rgba(var(--paper-rgb),.34); padding:1.15vh 1.3vw">
+            <div class="meta">02 · Assign Skill</div>
+            <div style="font-family:var(--serif-zh); font-size:1.78vw; line-height:1.15; margin-top:.9vh">分配 Skill</div>
+            <p class="body-zh" style="font-size:.92vw; line-height:1.45; opacity:.74; margin:.55vh 0 0">每一步匹配一个最合适的 Skill。</p>
+          </div>
+          <div style="border:1px solid rgba(var(--ink-rgb),.2); background:rgba(var(--paper-rgb),.34); padding:1.15vh 1.3vw">
+            <div class="meta">03 · Write Rules</div>
+            <div style="font-family:var(--serif-zh); font-size:1.78vw; line-height:1.15; margin-top:.9vh">写进 Rules</div>
+            <p class="body-zh" style="font-size:.92vw; line-height:1.45; opacity:.74; margin:.55vh 0 0">把调用顺序、确认节点、发布或回传位置固定下来。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Rules 工作流判断 · 不同功能先串联</div>
+    <div>FEISHU · JUDGE · SKILLS · RULES · RETURN</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 03 · Rule Example</div>
+    <div>27 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:4.7vh">
+    <div class="kicker" data-anim>Example · Overlap Management</div>
+    <h2 class="h-xl" style="font-size:4.55vw; max-width:88vw; line-height:1.1" data-anim>
+      Skills功能重叠时，<br>让 OpenClaw 帮你分工
+    </h2>
+
+    <div style="display:grid; grid-template-columns:28fr 72fr; gap:3.6vw; margin-top:3.2vh; align-items:start">
+      <div data-anim="left" style="display:flex; flex-direction:column; gap:1.15vh">
+        <div style="display:grid; gap:.8vh; margin-top:.15vh">
+          <div style="border-top:1px solid rgba(var(--ink-rgb),.34); padding-top:1.05vh">
+            <div class="meta">01 · Decide First</div>
+            <div style="font-family:var(--serif-zh); font-size:1.7vw; line-height:1.15; margin-top:.5vh">先判断分工</div>
+          </div>
+          <div style="border-top:1px solid rgba(var(--ink-rgb),.24); padding-top:1.05vh">
+            <div class="meta">02 · Write Rules</div>
+            <div style="font-family:var(--serif-zh); font-size:1.7vw; line-height:1.15; margin-top:.5vh">把边界写进规则</div>
+          </div>
+          <div style="border-top:1px solid rgba(var(--ink-rgb),.24); border-bottom:1px solid rgba(var(--ink-rgb),.34); padding:1.05vh 0">
+            <div class="meta">03 · Return Stable</div>
+            <div style="font-family:var(--serif-zh); font-size:1.7vw; line-height:1.15; margin-top:.5vh">满意后回到稳定流程</div>
+          </div>
+        </div>
+        <div class="meta">Judge · Route · Execute · Return</div>
+      </div>
+
+      <div data-anim="right" style="display:grid; gap:1.2vh">
+        <div style="display:grid; grid-template-columns:24fr 46fr 30fr; gap:1vw; border-bottom:1px solid rgba(var(--ink-rgb),.34); padding-bottom:1vh">
+          <div class="meta">Task Type</div>
+          <div class="meta">Recommended Route</div>
+          <div class="meta">Why</div>
+        </div>
+
+        <div style="border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--paper-rgb),.32); padding:1.75vh 1.65vw">
+          <div style="display:grid; grid-template-columns:24fr 46fr 30fr; gap:1vw; align-items:start">
+            <div>
+              <div class="meta">01 · EXCEL</div>
+              <div style="font-family:var(--serif-zh); font-size:1.85vw; line-height:1.1; margin-top:.65vh">表格处理</div>
+            </div>
+            <div style="display:grid; gap:.8vh">
+              <div style="border-left:2px solid currentColor; padding-left:1vw">
+                <div style="font-family:var(--serif-zh); font-size:1.28vw; line-height:1.18">单文件精修</div>
+                <div class="meta" style="margin-top:.45vh">ws-excel</div>
+              </div>
+              <div style="border-left:2px solid rgba(var(--ink-rgb),.34); padding-left:1vw">
+                <div style="font-family:var(--serif-zh); font-size:1.28vw; line-height:1.18">批量表格处理</div>
+                <div class="meta" style="margin-top:.45vh">skywork-excel</div>
+              </div>
+            </div>
+            <p class="body-zh" style="font-size:.9vw; line-height:1.42; opacity:.74; margin:0">一个看细节，一个跑规模；先判断任务大小。</p>
+          </div>
+        </div>
+
+        <div style="border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--paper-rgb),.32); padding:1.75vh 1.65vw">
+          <div style="display:grid; grid-template-columns:24fr 46fr 30fr; gap:1vw; align-items:start">
+            <div>
+              <div class="meta">02 · PPT</div>
+              <div style="font-family:var(--serif-zh); font-size:1.85vw; line-height:1.1; margin-top:.65vh">PPT 生成</div>
+            </div>
+            <div style="display:grid; gap:.8vh">
+              <div style="border-left:2px solid currentColor; padding-left:1vw">
+                <div style="font-family:var(--serif-zh); font-size:1.28vw; line-height:1.18">稳定内容和交付</div>
+                <div class="meta" style="margin-top:.45vh">openclaw-slides</div>
+              </div>
+              <div style="border-left:2px solid rgba(var(--ink-rgb),.34); padding-left:1vw">
+                <div style="font-family:var(--serif-zh); font-size:1.28vw; line-height:1.18">多模板版本探索</div>
+                <div class="meta" style="margin-top:.45vh">ppt-master</div>
+              </div>
+            </div>
+            <p class="body-zh" style="font-size:.9vw; line-height:1.42; opacity:.74; margin:0">探索阶段多出版本；定稿后回到稳定流程。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Rules 示例 · 功能重叠时先分工</div>
+    <div>JUDGE · ROUTE · EXECUTE · RETURN</div>
+  </div>
+</section>
+
+<section class="slide hero light" data-animate="chapter">
+  <div class="chrome">
+    <div>Stage 04 · Batch & Schedule</div>
+    <div>28 / 35</div>
+  </div>
+  <div class="frame" style="display:grid; grid-template-columns:54fr 46fr; gap:5vw; align-items:center">
+    <div>
+      <div class="kicker" data-anim>Scale · From Once To Always</div>
+      <h2 class="h-hero" style="font-size:6.2vw; line-height:.98; max-width:52vw" data-anim>
+        第四阶段：<br>批量化和定时化
+      </h2>
+      <p class="lead" style="font-size:1.35vw; line-height:1.75; max-width:43vw; margin-top:3vh" data-anim>
+        跑通一次，只是开始。真正放大价值，要靠批量运行和定时运行。
+      </p>
+      <div class="meta-row" style="margin-top:4vh" data-anim>
+        <span>Single Run</span>
+        <span>Batch Run</span>
+        <span>Scheduled Run</span>
+      </div>
+    </div>
+
+    <div data-anim="right" style="position:relative; min-height:61vh">
+      <svg viewBox="0 0 720 620" style="width:100%; height:61vh; display:block; overflow:visible" role="img" aria-label="一个任务变成一批任务，再进入日历定时任务">
+        <defs>
+          <linearGradient id="card32" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="currentColor" stop-opacity=".16"/>
+            <stop offset="1" stop-color="currentColor" stop-opacity=".035"/>
+          </linearGradient>
+        </defs>
+
+        <g transform="translate(46 196)">
+          <rect width="176" height="176" fill="url(#card32)" stroke="currentColor" stroke-opacity=".42"/>
+          <text x="24" y="42" fill="currentColor" fill-opacity=".68" font-family="IBM Plex Mono, monospace" font-size="17" letter-spacing="7">01 · TASK</text>
+          <text x="24" y="108" fill="currentColor" font-family="Noto Serif SC, serif" font-size="38">一次</text>
+          <text x="24" y="145" fill="currentColor" fill-opacity=".58" font-family="Noto Sans SC, sans-serif" font-size="17">先把流程跑通</text>
+        </g>
+
+        <g transform="translate(322 118)">
+          <rect width="236" height="202" fill="url(#card32)" stroke="currentColor" stroke-opacity=".42"/>
+          <g transform="translate(28 34)" fill="none" stroke="currentColor" stroke-opacity=".54">
+            <rect width="64" height="42"/>
+            <rect x="82" y="0" width="64" height="42" opacity=".7"/>
+            <rect x="41" y="62" width="64" height="42" opacity=".84"/>
+            <rect x="123" y="62" width="64" height="42" opacity=".52"/>
+          </g>
+          <text x="24" y="164" fill="currentColor" font-family="Noto Serif SC, serif" font-size="38">一批</text>
+          <text x="24" y="188" fill="currentColor" fill-opacity=".58" font-family="Noto Sans SC, sans-serif" font-size="17">同类任务规模化</text>
+        </g>
+
+        <g transform="translate(374 402)">
+          <rect width="274" height="124" fill="url(#card32)" stroke="currentColor" stroke-opacity=".42"/>
+          <text x="24" y="38" fill="currentColor" fill-opacity=".68" font-family="IBM Plex Mono, monospace" font-size="16" letter-spacing="6">03 · SCHEDULE</text>
+          <text x="24" y="86" fill="currentColor" font-family="Noto Serif SC, serif" font-size="34">持续工作</text>
+          <text x="170" y="86" fill="currentColor" fill-opacity=".58" font-family="Noto Sans SC, sans-serif" font-size="17">按时间自动跑</text>
+        </g>
+
+        <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-opacity=".42">
+          <path d="M232 284 C266 284 286 238 320 220"/>
+          <path d="M442 328 C442 366 488 374 512 400"/>
+        </g>
+        <g fill="currentColor" opacity=".72">
+          <circle cx="232" cy="284" r="5"/>
+          <circle cx="322" cy="220" r="5"/>
+          <circle cx="442" cy="328" r="5"/>
+          <circle cx="512" cy="400" r="5"/>
+        </g>
+        <text x="262" y="250" fill="currentColor" fill-opacity=".48" font-family="IBM Plex Mono, monospace" font-size="15" letter-spacing="5">REPEAT</text>
+        <text x="482" y="374" fill="currentColor" fill-opacity=".48" font-family="IBM Plex Mono, monospace" font-size="15" letter-spacing="5">SCHEDULE</text>
+        <text x="78" y="570" fill="currentColor" fill-opacity=".48" font-family="IBM Plex Mono, monospace" font-size="18" letter-spacing="8">RUN ONCE · RUN MANY · RUN ALWAYS</text>
+      </svg>
+    </div>
+  </div>
+  <div class="foot">
+    <div>第四阶段 · 规模和持续性</div>
+    <div>BATCH · SCHEDULE · CONTINUITY</div>
+  </div>
+</section>
+
+<section class="slide hero light" data-animate="directional">
+  <div class="chrome">
+    <div>Meta Case · Made By Skill</div>
+    <div>29 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:4.4vh">
+    <div class="kicker" data-anim>Real Case · This Deck</div>
+    <h2 class="h-xl" style="font-size:4.2vw; max-width:86vw; line-height:1.08" data-anim>
+      这份 PPT，<br>就是用 Skill 批量做出来的
+    </h2>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:3.2vw; margin-top:3vh; align-items:start">
+      <div data-anim="left" style="border-top:1px solid rgba(var(--ink-rgb),.38); padding-top:1.25vh">
+        <div class="meta" style="padding-left:.7vw">Before · 图生模型做 PPT</div>
+        <div style="margin-top:1.2vh; border:1px solid rgba(var(--ink-rgb),.24); background:rgba(var(--ink-rgb),.035); padding:.7vh; height:25vh; overflow:hidden">
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(2,1fr); gap:.45vw; height:100%">
+            <img src="images/41/旧图01.png" alt="旧版 Canvas PPT 第 1 张" style="width:100%; height:100%; object-fit:contain; display:block; background:rgba(var(--paper-rgb),.72)">
+            <img src="images/41/旧图02.png" alt="旧版 Canvas PPT 第 2 张" style="width:100%; height:100%; object-fit:contain; display:block; background:rgba(var(--paper-rgb),.72)">
+            <img src="images/41/旧图03.png" alt="旧版 Canvas PPT 第 3 张" style="width:100%; height:100%; object-fit:contain; display:block; background:rgba(var(--paper-rgb),.72)">
+            <img src="images/41/旧图04.png" alt="旧版 Canvas PPT 第 4 张" style="width:100%; height:100%; object-fit:contain; display:block; background:rgba(var(--paper-rgb),.72)">
+            <img src="images/41/旧图05.png" alt="旧版 Canvas PPT 第 5 张" style="width:100%; height:100%; object-fit:contain; display:block; background:rgba(var(--paper-rgb),.72)">
+            <img src="images/41/旧图06.png" alt="旧版 Canvas PPT 第 6 张" style="width:100%; height:100%; object-fit:contain; display:block; background:rgba(var(--paper-rgb),.72)">
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:.8vw; margin-top:1.05vh">
+          <div class="body-zh" style="font-size:.9vw; line-height:1.38; border-left:2px solid rgba(var(--ink-rgb),.42); padding-left:.8vw">画风不统一</div>
+          <div class="body-zh" style="font-size:.9vw; line-height:1.38; border-left:2px solid rgba(var(--ink-rgb),.32); padding-left:.8vw">修改成本高</div>
+          <div class="body-zh" style="font-size:.9vw; line-height:1.38; border-left:2px solid rgba(var(--ink-rgb),.24); padding-left:.8vw">文字堆在图里</div>
+          <div class="body-zh" style="font-size:.9vw; line-height:1.38; border-left:2px solid rgba(var(--ink-rgb),.18); padding-left:.8vw">讲起来不顺</div>
+        </div>
+      </div>
+
+      <div data-anim="right" style="border-top:1px solid rgba(var(--ink-rgb),.38); padding-top:1.25vh">
+        <div class="meta" style="padding-left:.7vw">After · Skill 做 PPT</div>
+        <div style="margin-top:1.2vh; border:1px solid rgba(var(--ink-rgb),.24); background:rgba(var(--ink-rgb),.035); padding:.7vh; height:25vh; overflow:hidden">
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(2,1fr); gap:.45vw; height:100%">
+            <img src="images/41/after-01.png" alt="当前 PPT 第 1 页缩略图" style="width:100%; height:100%; object-fit:contain; display:block; background:rgba(var(--paper-rgb),.72)">
+            <img src="images/41/after-23.png" alt="当前 PPT 第 23 页缩略图" style="width:100%; height:100%; object-fit:contain; display:block; background:rgba(var(--paper-rgb),.72)">
+            <img src="images/41/after-30.png" alt="当前 PPT 第 30 页缩略图" style="width:100%; height:100%; object-fit:contain; display:block; background:rgba(var(--paper-rgb),.72)">
+            <img src="images/41/after-37.png" alt="当前 PPT 第 37 页缩略图" style="width:100%; height:100%; object-fit:contain; display:block; background:rgba(var(--paper-rgb),.72)">
+            <img src="images/41/after-40.png" alt="当前 PPT 第 40 页缩略图" style="width:100%; height:100%; object-fit:contain; display:block; background:rgba(var(--paper-rgb),.72)">
+            <div style="border:1px solid rgba(var(--ink-rgb),.18); display:flex; flex-direction:column; justify-content:center; padding:1vh .75vw; background:rgba(var(--paper-rgb),.5)">
+              <div class="meta">35 Pages</div>
+              <div style="font-family:var(--serif-zh); font-size:1.25vw; line-height:1.12; margin-top:.5vh">持续迭代</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:.8vw; margin-top:1.05vh">
+          <div class="body-zh" style="font-size:.9vw; line-height:1.38; border-left:2px solid rgba(var(--ink-rgb),.42); padding-left:.8vw">页面结构</div>
+          <div class="body-zh" style="font-size:.9vw; line-height:1.38; border-left:2px solid rgba(var(--ink-rgb),.32); padding-left:.8vw">配色主题</div>
+          <div class="body-zh" style="font-size:.9vw; line-height:1.38; border-left:2px solid rgba(var(--ink-rgb),.24); padding-left:.8vw">素材占位符</div>
+          <div class="body-zh" style="font-size:.9vw; line-height:1.38; border-left:2px solid rgba(var(--ink-rgb),.18); padding-left:.8vw">备份和迭代</div>
+        </div>
+      </div>
+    </div>
+
+    <div data-anim style="margin-top:2.2vh; border-top:1px solid rgba(var(--ink-rgb),.32); border-bottom:1px solid rgba(var(--ink-rgb),.32); padding:1.6vh 0; display:grid; grid-template-columns:29fr 71fr; gap:2vw; align-items:center">
+      <div class="meta">Case Conclusion</div>
+      <div style="font-family:var(--serif-zh); font-size:2.05vw; line-height:1.18">
+        Skill 不只生成一页内容，也能承接一整套持续迭代的交付流程。
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>真实案例 · 这份 PPT 本身就是 Skill 批量工作流结果</div>
+    <div>BEFORE · AFTER · SKILL</div>
+  </div>
+</section>
+
+<section class="slide hero light" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 04 · Batch Workflow</div>
+    <div>30 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:4.8vh">
+    <div class="kicker" data-anim>Scale Up · Repeat The Whole Workflow</div>
+    <h2 class="h-xl" style="font-size:4.45vw; max-width:88vw; line-height:1.1" data-anim>
+      批量化不只重复单个能力，<br>也可以重复整条工作流
+    </h2>
+
+    <div style="display:grid; grid-template-columns:40fr 60fr; gap:4.5vw; margin-top:3.7vh; align-items:stretch">
+      <div data-anim="left" style="display:flex; flex-direction:column; gap:1.2vh">
+        <div class="callout" style="font-size:1.05vw; line-height:1.5; padding:1.25vh 1.5vw">
+          一条工作流稳定之后，重复运行的就不再是某一个 Skill，而是一整串动作。
+        </div>
+
+        <div style="display:grid; gap:1vh; margin-top:.35vh">
+          <div style="border-top:1px solid rgba(var(--ink-rgb),.34); padding-top:1.05vh">
+            <div class="meta">01 · Not One Skill</div>
+            <div style="font-family:var(--serif-zh); font-size:1.62vw; line-height:1.16; margin-top:.55vh">不是只重复一个按钮</div>
+            <p class="body-zh" style="font-size:.94vw; line-height:1.45; opacity:.74; margin:.4vh 0 0">单个能力可以批量跑，工作流也可以批量跑。</p>
+          </div>
+          <div style="border-top:1px solid rgba(var(--ink-rgb),.24); padding-top:1.05vh">
+            <div class="meta">02 · Mixed Skills</div>
+            <div style="font-family:var(--serif-zh); font-size:1.62vw; line-height:1.16; margin-top:.55vh">多个 Skill 混合执行</div>
+            <p class="body-zh" style="font-size:.94vw; line-height:1.45; opacity:.74; margin:.4vh 0 0">抓数据、选素材、读评论、整理洞察，可以串成一条流程。</p>
+          </div>
+          <div style="border-top:1px solid rgba(var(--ink-rgb),.24); border-bottom:1px solid rgba(var(--ink-rgb),.34); padding:1.05vh 0">
+            <div class="meta">03 · Reusable Loop</div>
+            <div style="font-family:var(--serif-zh); font-size:1.62vw; line-height:1.16; margin-top:.55vh">让流程自己重复</div>
+            <p class="body-zh" style="font-size:.94vw; line-height:1.45; opacity:.74; margin:.4vh 0 0">每次换一个话题或平台，仍然跑同一条工作流。</p>
+          </div>
+        </div>
+      </div>
+
+      <div data-anim="right" style="border-top:1px solid rgba(var(--ink-rgb),.32); border-bottom:1px solid rgba(var(--ink-rgb),.32); padding:1.45vh 0; display:flex; flex-direction:column; justify-content:center">
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1vw; align-items:stretch">
+          <div style="min-height:32vh; border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--paper-rgb),.36); padding:1.35vh 1vw; display:flex; flex-direction:column">
+            <div class="meta">01 · Capture Skill</div>
+            <div style="font-family:var(--serif-zh); font-size:1.72vw; line-height:1.12; margin-top:1vh">抓平台<br>数据</div>
+            <p class="body-zh" style="font-size:.82vw; line-height:1.4; opacity:.72; margin:auto 0 0">先把候选内容抓回来。</p>
+          </div>
+          <div style="min-height:32vh; border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--paper-rgb),.3); padding:1.35vh 1vw; display:flex; flex-direction:column">
+            <div class="meta">02 · Rank Skill</div>
+            <div style="font-family:var(--serif-zh); font-size:1.72vw; line-height:1.12; margin-top:1vh">筛选<br>Top 10</div>
+            <p class="body-zh" style="font-size:.82vw; line-height:1.4; opacity:.72; margin:auto 0 0">按播放量、互动和话题筛掉噪音。</p>
+          </div>
+          <div style="min-height:32vh; border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--paper-rgb),.36); padding:1.35vh 1vw; display:flex; flex-direction:column">
+            <div class="meta">03 · Comment Skill</div>
+            <div style="font-family:var(--serif-zh); font-size:1.72vw; line-height:1.12; margin-top:1vh">读评论<br>复写</div>
+            <p class="body-zh" style="font-size:.82vw; line-height:1.4; opacity:.72; margin:auto 0 0">把评论区重写成可读的需求和疑问。</p>
+          </div>
+          <div style="min-height:32vh; border:1px solid rgba(var(--ink-rgb),.28); background:rgba(var(--ink-rgb),.045); padding:1.35vh 1vw; display:flex; flex-direction:column">
+            <div class="meta">04 · Insight Skill</div>
+            <div style="font-family:var(--serif-zh); font-size:1.72vw; line-height:1.12; margin-top:1vh">输出<br>判断</div>
+            <p class="body-zh" style="font-size:.82vw; line-height:1.4; opacity:.72; margin:auto 0 0">给运营或产品一份可行动的结果。</p>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1vw; margin-top:1.3vh">
+          <div class="meta" style="border-top:1px solid rgba(var(--ink-rgb),.24); padding-top:.75vh">Data</div>
+          <div class="meta" style="border-top:1px solid rgba(var(--ink-rgb),.24); padding-top:.75vh">Rank</div>
+          <div class="meta" style="border-top:1px solid rgba(var(--ink-rgb),.24); padding-top:.75vh">Rewrite</div>
+          <div class="meta" style="border-top:1px solid rgba(var(--ink-rgb),.24); padding-top:.75vh">Insight</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>批量化范围 · 从单个 Skill 到整条工作流</div>
+    <div>CAPTURE · RANK · REWRITE · INSIGHT</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="directional">
+  <div class="chrome">
+    <div>Stage 04 · Reliability</div>
+    <div>31 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:5vh">
+    <div class="kicker" data-anim>Reliability · After Automation Starts</div>
+    <h2 class="h-xl" style="font-size:4.65vw; max-width:86vw; line-height:1.08" data-anim>
+      任务开始自动跑以后，<br>谁来负责排障？
+    </h2>
+
+    <div style="display:grid; grid-template-columns:42fr 58fr; gap:4.8vw; margin-top:4vh; align-items:stretch">
+      <div data-anim="left" style="display:flex; flex-direction:column; gap:1.55vh">
+        <div class="callout" style="font-size:1.02vw; line-height:1.65; padding:1.35vh 1.55vw; background:rgba(var(--paper-rgb),.08)">
+          批量化解决规模，持续运行之后，真正关键的会变成稳定性。
+        </div>
+
+        <div style="border-top:1px solid rgba(var(--paper-rgb),.26); padding-top:1.35vh">
+          <div class="meta">Why It Matters</div>
+          <p class="body-zh" style="font-size:1.04vw; line-height:1.78; opacity:.78; margin:1.15vh 0 0">
+            只要任务开始每天自动跑，故障就一定会出现。问题不是会不会出错，而是出错之后谁来快速定位、修复和重跑。
+          </p>
+        </div>
+
+        <div style="display:grid; gap:1.15vh; margin-top:.65vh">
+          <div style="border-left:2px solid rgba(var(--paper-rgb),.7); padding-left:1vw">
+            <div class="meta">Online Check</div>
+            <div class="body-zh" style="font-size:1vw; line-height:1.55; opacity:.78; margin-top:.45vh">Hermes 今天有没有在线。</div>
+          </div>
+          <div style="border-left:2px solid rgba(var(--paper-rgb),.38); padding-left:1vw">
+            <div class="meta">Run Health</div>
+            <div class="body-zh" style="font-size:1vw; line-height:1.55; opacity:.78; margin-top:.45vh">任务有没有卡住，日志有没有异常。</div>
+          </div>
+        </div>
+
+        <div class="meta" style="margin-top:auto">Schedule · Online · Error · Log · Rerun</div>
+      </div>
+
+      <div data-anim="right" style="display:grid; grid-template-columns:40fr 60fr; gap:1.25vw; min-height:44vh">
+        <div style="border:1px solid rgba(var(--paper-rgb),.28); background:rgba(var(--paper-rgb),.055); padding:1.55vh 1.25vw; display:flex; flex-direction:column">
+          <div class="meta">Automatic Run</div>
+          <div style="font-family:var(--serif-zh); font-size:2vw; line-height:1.12; margin-top:1vh">每天早上<br>自动执行</div>
+          <div style="margin-top:auto; display:grid; gap:.85vh">
+            <div style="display:flex; justify-content:space-between; border-top:1px solid rgba(var(--paper-rgb),.22); padding-top:.75vh">
+              <span class="meta">07:30</span><span class="meta">PPT Batch</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-top:1px solid rgba(var(--paper-rgb),.16); padding-top:.75vh">
+              <span class="meta">09:00</span><span class="meta">Comment Scan</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-top:1px solid rgba(var(--paper-rgb),.16); padding-top:.75vh">
+              <span class="meta">18:30</span><span class="meta">Project Review</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; gap:.85vh">
+          <div style="border:1px solid rgba(var(--paper-rgb),.32); background:rgba(var(--paper-rgb),.075); padding:1.2vh 1.1vw; display:grid; grid-template-columns:auto 1fr; gap:1vw; align-items:center">
+            <div class="meta">01</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.45vw; line-height:1.12">Hermes 没有在线</div>
+              <div class="meta" style="margin-top:.45vh">ONLINE CHECK FAILED</div>
+            </div>
+          </div>
+          <div style="border:1px solid rgba(var(--paper-rgb),.24); background:rgba(var(--paper-rgb),.055); padding:1.2vh 1.1vw; display:grid; grid-template-columns:auto 1fr; gap:1vw; align-items:center">
+            <div class="meta">02</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.45vw; line-height:1.12">本地服务没有响应</div>
+              <div class="meta" style="margin-top:.45vh">LOCAL SERVICE TIMEOUT</div>
+            </div>
+          </div>
+          <div style="border:1px solid rgba(var(--paper-rgb),.24); background:rgba(var(--paper-rgb),.055); padding:1.2vh 1.1vw; display:grid; grid-template-columns:auto 1fr; gap:1vw; align-items:center">
+            <div class="meta">03</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.45vw; line-height:1.12">长任务跑到一半卡住</div>
+              <div class="meta" style="margin-top:.45vh">LONG RUN STUCK</div>
+            </div>
+          </div>
+          <div style="border:1px solid rgba(var(--paper-rgb),.24); background:rgba(var(--paper-rgb),.055); padding:1.2vh 1.1vw; display:grid; grid-template-columns:auto 1fr; gap:1vw; align-items:center">
+            <div class="meta">04</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.45vw; line-height:1.12">Skill 执行时报错</div>
+              <div class="meta" style="margin-top:.45vh">SKILL ERROR</div>
+            </div>
+          </div>
+          <div style="border:1px dashed rgba(var(--paper-rgb),.3); background:rgba(var(--paper-rgb),.04); padding:1.2vh 1.1vw; display:grid; grid-template-columns:auto 1fr; gap:1vw; align-items:center">
+            <div class="meta">05</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.45vw; line-height:1.12">日志太长，手动排查很慢</div>
+              <div class="meta" style="margin-top:.45vh">LOGS TOO LONG</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>持续运行以后 · 稳定性变成关键</div>
+    <div>ONLINE · TIMEOUT · STUCK · ERROR · LOGS</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="chapter">
+  <div class="chrome">
+    <div>Closing · Definition</div>
+    <div>32 / 35</div>
+  </div>
+  <div class="frame" style="display:grid; grid-template-columns:49fr 51fr; gap:5vw; align-items:center">
+    <div>
+      <div class="kicker" data-anim>After Four Stages · Definition</div>
+      <h2 class="h-hero" style="font-size:6.6vw; line-height:.96; max-width:49vw" data-anim>
+        Skill 是一个<br>接口层
+      </h2>
+      <p class="lead" style="font-size:1.35vw; line-height:1.75; max-width:42vw; margin-top:3vh" data-anim>
+        它不只是安装包，也不只是提示语模版。它把个人经验、团队流程、软件能力和模型理解力缝在一起。
+      </p>
+      <div class="meta-row" style="margin-top:4vh" data-anim>
+        <span>Experience</span>
+        <span>Workflow</span>
+        <span>Software</span>
+        <span>Model</span>
+      </div>
+    </div>
+
+    <div data-anim="right" style="position:relative; min-height:61vh">
+      <svg viewBox="0 0 720 620" style="width:100%; height:61vh; display:block; overflow:visible" role="img" aria-label="个人经验、团队流程、软件能力和模型理解力汇聚到 Skill 接口层">
+        <defs>
+          <filter id="softGlow37" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="5" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          <linearGradient id="panel37" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#efe4cf" stop-opacity=".16"/>
+            <stop offset="1" stop-color="#efe4cf" stop-opacity=".04"/>
+          </linearGradient>
+        </defs>
+
+        <g transform="translate(44 76)">
+          <rect width="254" height="132" fill="url(#panel37)" stroke="#efe4cf" stroke-opacity=".38"/>
+          <text x="24" y="38" fill="#efe4cf" fill-opacity=".64" font-family="IBM Plex Mono, monospace" font-size="15" letter-spacing="6">01 · EXPERIENCE</text>
+          <text x="24" y="90" fill="#efe4cf" font-family="Noto Serif SC, serif" font-size="34">个人经验</text>
+        </g>
+
+        <g transform="translate(422 76)">
+          <rect width="254" height="132" fill="url(#panel37)" stroke="#efe4cf" stroke-opacity=".38"/>
+          <text x="24" y="38" fill="#efe4cf" fill-opacity=".64" font-family="IBM Plex Mono, monospace" font-size="15" letter-spacing="6">02 · WORKFLOW</text>
+          <text x="24" y="90" fill="#efe4cf" font-family="Noto Serif SC, serif" font-size="34">团队流程</text>
+        </g>
+
+        <g transform="translate(72 282)" filter="url(#softGlow37)">
+          <rect width="576" height="94" fill="url(#panel37)" stroke="#efe4cf" stroke-opacity=".58"/>
+          <text x="288" y="48" fill="#efe4cf" text-anchor="middle" font-family="Noto Serif SC, serif" font-size="38">Skill</text>
+          <text x="288" y="74" fill="#efe4cf" fill-opacity=".58" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="14" letter-spacing="6">INTERFACE LAYER</text>
+        </g>
+
+        <g fill="none" stroke="#efe4cf" stroke-opacity=".22" stroke-width="1.2">
+          <path d="M170 208 L170 282"/>
+          <path d="M550 208 L550 282"/>
+          <path d="M170 376 L170 448"/>
+          <path d="M550 376 L550 448"/>
+        </g>
+
+        <g transform="translate(44 448)">
+          <rect width="254" height="132" fill="url(#panel37)" stroke="#efe4cf" stroke-opacity=".38"/>
+          <text x="24" y="38" fill="#efe4cf" fill-opacity=".64" font-family="IBM Plex Mono, monospace" font-size="15" letter-spacing="6">03 · SOFTWARE</text>
+          <text x="24" y="90" fill="#efe4cf" font-family="Noto Serif SC, serif" font-size="34">软件能力</text>
+        </g>
+
+        <g transform="translate(422 448)">
+          <rect width="254" height="132" fill="url(#panel37)" stroke="#efe4cf" stroke-opacity=".38"/>
+          <text x="24" y="38" fill="#efe4cf" fill-opacity=".64" font-family="IBM Plex Mono, monospace" font-size="15" letter-spacing="6">04 · MODEL</text>
+          <text x="24" y="90" fill="#efe4cf" font-family="Noto Serif SC, serif" font-size="34">模型理解力</text>
+        </g>
+
+      </svg>
+    </div>
+  </div>
+  <div class="foot">
+    <div>总收束 · Skill 的定义</div>
+    <div>INTERFACE · EXPERIENCE · WORKFLOW · MODEL</div>
+  </div>
+</section>
+
+<section class="slide dark" data-animate="directional">
+  <div class="chrome">
+    <div>Codex App · Rescue</div>
+    <div>33 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:4.8vh">
+    <div class="kicker" data-anim>Role · Rescue Layer</div>
+    <h2 class="h-xl" style="font-size:4.65vw; max-width:88vw; line-height:1.08" data-anim>
+      Codex App：<br>OpenClaw 的故障救星
+    </h2>
+
+    <div style="display:grid; grid-template-columns:41fr 59fr; gap:4.7vw; margin-top:3.8vh; align-items:center">
+      <div data-anim="left" style="display:flex; flex-direction:column; gap:1.25vh">
+        <div class="callout" style="font-size:1.02vw; line-height:1.55; padding:1.25vh 1.55vw; background:rgba(var(--paper-rgb),.08)">
+          OpenClaw 负责跑工作流，Codex App 负责救场。
+        </div>
+
+        <div style="border-top:1px solid rgba(var(--paper-rgb),.26); padding-top:1.35vh">
+          <div class="meta">What It Handles</div>
+          <p class="body-zh" style="font-size:1.02vw; line-height:1.6; opacity:.78; margin:1vh 0 0">
+            OpenClaw 卡住了、本地环境坏了、日志看不懂了，这时候让 Codex App 进来排查。
+          </p>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:.85vw; margin-top:.55vh">
+          <div style="border-top:1px solid rgba(var(--paper-rgb),.3); padding-top:1vh">
+            <div class="meta">01 · Check</div>
+            <div style="font-family:var(--serif-zh); font-size:1.45vw; line-height:1.15; margin-top:.5vh">检查在线</div>
+          </div>
+          <div style="border-top:1px solid rgba(var(--paper-rgb),.3); padding-top:1vh">
+            <div class="meta">02 · Locate</div>
+            <div style="font-family:var(--serif-zh); font-size:1.45vw; line-height:1.15; margin-top:.5vh">定位日志</div>
+          </div>
+          <div style="border-top:1px solid rgba(var(--paper-rgb),.3); padding-top:1vh">
+            <div class="meta">03 · Fix</div>
+            <div style="font-family:var(--serif-zh); font-size:1.45vw; line-height:1.15; margin-top:.5vh">修复错误</div>
+          </div>
+          <div style="border-top:1px solid rgba(var(--paper-rgb),.3); padding-top:1vh">
+            <div class="meta">04 · Rerun</div>
+            <div style="font-family:var(--serif-zh); font-size:1.45vw; line-height:1.15; margin-top:.5vh">重跑续跑</div>
+          </div>
+        </div>
+
+        <div class="meta" style="margin-top:auto">Check · Locate · Fix · Rerun</div>
+      </div>
+
+      <button class="video-card" type="button" data-video-src="videos/38/主视频7.mp4" data-video-poster="images/38/主视频7封面.png" data-video-title="主视频 7 · Codex App 故障救场" data-anim="right" style="appearance:none;border:0;background:transparent;color:inherit;text-align:left;min-height:0;justify-content:center">
+        <div class="video-frame" style="aspect-ratio:16/9;height:auto; border-color:rgba(var(--paper-rgb),.3); background:rgba(var(--paper-rgb),.055)">
+          <img class="video-poster" src="images/38/主视频7封面.png" alt="Codex App 故障排查视频封面">
+          <video muted playsinline preload="metadata" poster="images/38/主视频7封面.png" src="videos/38/主视频7.mp4"></video>
+          <div class="video-play" style="left:82%; top:58%"></div>
+        </div>
+      </button>
+    </div>
+  </div>
+  <div class="foot">
+    <div>Codex App 定位 · 故障救星</div>
+    <div>CHECK · LOCATE · FIX · RERUN</div>
+  </div>
+</section>
+
+<section class="slide hero light" data-animate="directional">
+  <div class="chrome">
+    <div>Setup · Codex App First</div>
+    <div>34 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:4.5vh">
+    <div class="kicker" data-anim>Install · Local Agent Environment</div>
+    <h2 class="h-xl" style="font-size:4.05vw; max-width:92vw; line-height:1.08" data-anim>
+      最适合普通人的安装路径：<br>先装 Codex App
+    </h2>
+
+    <div class="callout" data-anim style="font-size:1.12vw; line-height:1.45; padding:1.15vh 1.5vw; margin-top:2.2vh; max-width:74vw">
+      先把 Codex App 装好，再让它替你处理本地 Agent 环境。
+    </div>
+
+    <div style="display:grid; grid-template-columns:55fr 45fr; gap:3.5vw; margin-top:2.4vh; align-items:start">
+      <div data-anim="left" style="border-top:1px solid rgba(var(--ink-rgb),.34); border-bottom:1px solid rgba(var(--ink-rgb),.22); padding:1.7vh 0 1.9vh">
+        <div class="meta" style="padding-left:.85vw">Path · Codex App First</div>
+        <div style="display:grid; gap:.72vh; margin-top:1.45vh">
+          <div style="border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--ink-rgb),.035); padding:.9vh 1vw; display:grid; grid-template-columns:3.8vw 1fr; gap:.85vw; align-items:center">
+            <div class="meta">01</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.42vw; line-height:1.14">安装 Codex App</div>
+              <div class="body-zh" style="font-size:.82vw; line-height:1.35; opacity:.72; margin-top:.28vh">先打开本地工作台。</div>
+            </div>
+          </div>
+          <div style="border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--ink-rgb),.035); padding:.9vh 1vw; display:grid; grid-template-columns:3.8vw 1fr; gap:.85vw; align-items:center">
+            <div class="meta">02</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.42vw; line-height:1.14">自动配置 Agent</div>
+              <div class="body-zh" style="font-size:.82vw; line-height:1.35; opacity:.72; margin-top:.28vh">根据本机环境安装 OpenClaw 和 Hermes Agent。</div>
+            </div>
+          </div>
+          <div style="border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--ink-rgb),.035); padding:.9vh 1vw; display:grid; grid-template-columns:3.8vw 1fr; gap:.85vw; align-items:center">
+            <div class="meta">03</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.42vw; line-height:1.14">接入 CLI Proxy</div>
+              <div class="body-zh" style="font-size:.82vw; line-height:1.35; opacity:.72; margin-top:.28vh">把 Codex 里的 GPT 和 Codex 额度同步给 Agent 使用。</div>
+            </div>
+          </div>
+          <div style="border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--ink-rgb),.035); padding:.9vh 1vw; display:grid; grid-template-columns:3.8vw 1fr; gap:.85vw; align-items:center">
+            <div class="meta">04</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.42vw; line-height:1.14">设置默认模型</div>
+              <div class="body-zh" style="font-size:.82vw; line-height:1.35; opacity:.72; margin-top:.28vh">配置 GPT-5.5 Thinking 高推理模式。</div>
+            </div>
+          </div>
+          <div style="border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--ink-rgb),.035); padding:.9vh 1vw; display:grid; grid-template-columns:3.8vw 1fr; gap:.85vw; align-items:center">
+            <div class="meta">05</div>
+            <div>
+              <div style="font-family:var(--serif-zh); font-size:1.42vw; line-height:1.14">跑最小测试</div>
+              <div class="body-zh" style="font-size:.82vw; line-height:1.35; opacity:.72; margin-top:.28vh">确认 OpenClaw、Hermes Agent 和飞书入口能跑通。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div data-anim="right" style="border-top:1px solid rgba(var(--ink-rgb),.34); border-bottom:1px solid rgba(var(--ink-rgb),.22); padding:1.7vh 0 1.9vh">
+        <div class="meta">Why This Route</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:.9vw; margin-top:1.45vh">
+          <div style="min-height:14vh; border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--ink-rgb),.035); padding:1.1vh 1vw; display:flex; flex-direction:column">
+            <div class="meta">Benefit 01</div>
+            <div style="font-family:var(--serif-zh); font-size:1.32vw; line-height:1.18; margin-top:.7vh">不用纠结命令行</div>
+            <p class="body-zh" style="font-size:.82vw; line-height:1.38; opacity:.72; margin:auto 0 0">安装、配置、排障都先交给 Codex App。</p>
+          </div>
+          <div style="min-height:14vh; border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--ink-rgb),.035); padding:1.1vh 1vw; display:flex; flex-direction:column">
+            <div class="meta">Benefit 02</div>
+            <div style="font-family:var(--serif-zh); font-size:1.32vw; line-height:1.18; margin-top:.7vh">不用管多个终端</div>
+            <p class="body-zh" style="font-size:.82vw; line-height:1.38; opacity:.72; margin:auto 0 0">本地任务、日志、修复集中处理。</p>
+          </div>
+          <div style="min-height:14vh; border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--ink-rgb),.035); padding:1.1vh 1vw; display:flex; flex-direction:column">
+            <div class="meta">Benefit 03</div>
+            <div style="font-family:var(--serif-zh); font-size:1.32vw; line-height:1.18; margin-top:.7vh">先跑基础配置</div>
+            <p class="body-zh" style="font-size:.82vw; line-height:1.38; opacity:.72; margin:auto 0 0">20 美元级别成本，是普通团队跑第一版的经验参考。</p>
+          </div>
+          <div style="min-height:14vh; border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--ink-rgb),.035); padding:1.1vh 1vw; display:flex; flex-direction:column">
+            <div class="meta">Benefit 04</div>
+            <div style="font-family:var(--serif-zh); font-size:1.32vw; line-height:1.18; margin-top:.7vh">后续还能救场</div>
+            <p class="body-zh" style="font-size:.82vw; line-height:1.38; opacity:.72; margin:auto 0 0">OpenClaw 出问题时，Codex App 继续检查、修复和重跑。</p>
+          </div>
+        </div>
+        <div class="meta" style="margin-top:1.3vh; padding-top:1vh; border-top:1px solid rgba(var(--ink-rgb),.2); line-height:1.45">
+          Free 权益和模型可用性以账号当前显示为准；稳定使用高推理模式，更适合付费账号配置。
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="foot">
+    <div>安装路径 · Codex App 先接管本地环境</div>
+    <div>CODEX APP · AGENTS · CLI PROXY · TEST</div>
+  </div>
+</section>
+
+<section class="slide hero light" data-animate="hero">
+  <div class="chrome">
+    <div>Closing · The Question</div>
+    <div>35 / 35</div>
+  </div>
+  <div class="frame" style="padding-top:7vh">
+    <div class="kicker" data-anim>Final Takeaway</div>
+    <h1 class="h-hero" style="font-size:5.25vw; line-height:1.05; max-width:88vw" data-anim>
+      遇到重复工作，<br>先问一句：<br>它能不能变成 Skill？
+    </h1>
+
+    <div data-anim style="margin-top:4.8vh; display:grid; grid-template-columns:50fr 50fr; gap:4vw; align-items:start">
+      <div style="border-top:1px solid rgba(var(--ink-rgb),.34); padding-top:1.45vh">
+        <div class="meta">From One Ability To Workflow</div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:.85vw; margin-top:1.45vh">
+          <div style="border-left:2px solid rgba(var(--ink-rgb),.5); padding-left:.8vw; min-height:10vh">
+            <div class="meta">01</div>
+            <div style="font-family:var(--serif-zh); font-size:1.35vw; line-height:1.18; margin-top:.7vh">找到现成 Skill</div>
+          </div>
+          <div style="border-left:2px solid rgba(var(--ink-rgb),.42); padding-left:.8vw; min-height:10vh">
+            <div class="meta">02</div>
+            <div style="font-family:var(--serif-zh); font-size:1.35vw; line-height:1.18; margin-top:.7vh">封装自己的经验</div>
+          </div>
+          <div style="border-left:2px solid rgba(var(--ink-rgb),.34); padding-left:.8vw; min-height:10vh">
+            <div class="meta">03</div>
+            <div style="font-family:var(--serif-zh); font-size:1.35vw; line-height:1.18; margin-top:.7vh">组合成工作流</div>
+          </div>
+          <div style="border-left:2px solid rgba(var(--ink-rgb),.26); padding-left:.8vw; min-height:10vh">
+            <div class="meta">04</div>
+            <div style="font-family:var(--serif-zh); font-size:1.35vw; line-height:1.18; margin-top:.7vh">批量和定时运行</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid rgba(var(--ink-rgb),.34); padding-top:1.45vh">
+        <div class="meta">The Stable Stack</div>
+        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:.85vw; margin-top:1.45vh">
+          <div style="border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--ink-rgb),.035); padding:1.2vh 1vw; min-height:10vh">
+            <div class="meta">OpenClaw</div>
+            <div class="body-zh" style="font-size:.95vw; line-height:1.38; opacity:.76; margin-top:.7vh">调度 Skill，跑工作流。</div>
+          </div>
+          <div style="border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--ink-rgb),.035); padding:1.2vh 1vw; min-height:10vh">
+            <div class="meta">Codex App</div>
+            <div class="body-zh" style="font-size:.95vw; line-height:1.38; opacity:.76; margin-top:.7vh">巡检、修复、重跑。</div>
+          </div>
+          <div style="border:1px solid rgba(var(--ink-rgb),.22); background:rgba(var(--ink-rgb),.035); padding:1.2vh 1vw; min-height:10vh">
+            <div class="meta">Feishu IM</div>
+            <div class="body-zh" style="font-size:.95vw; line-height:1.38; opacity:.76; margin-top:.7vh">团队入口和结果回流。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>从个人技巧，到团队工作流</div>
+    <div>FIND · PACKAGE · COMBINE · RUN</div>
+  </div>
+</section>
+
+</div>
+
+<div id="nav"></div>
+<div id="videoOverlay" aria-hidden="true">
+  <button class="close" type="button">Close · Esc</button>
+  <video controls playsinline></video>
+</div>
+
+<script>
+/* =============== WebGL 双背景 ===============
+   深色页：Holographic Dispersion（全息色散 · 钛金暗流）—— 彩虹微扰、鼠标径向涟漪
+   浅色页：Spiral Vortex（旋转涡流 · 银色珍珠）—— domain-warp 流动、无中心
+   修改风格请参考 references/webgl-backgrounds.md
+*/
+const VS = `attribute vec2 position;void main(){gl_Position=vec4(position,0.0,1.0);}`;
+
+const FS_DARK = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+vec3 palette(float t,vec3 a,vec3 b,vec3 c,vec3 d){return a+b*cos(6.28318*(c*t+d));}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv*2.0-1.0;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse*2.0-1.0;m.x*=u_resolution.x/u_resolution.y;
+  float md=length(p-m);
+  float mr=sin(md*16.5-u_time*4.6)*exp(-md*3.0);p+=mr*0.105;
+  vec2 p0=p;
+  for(float i=1.0;i<4.0;i++){
+    p.x+=0.125/i*sin(i*3.0*p.y+u_time*0.48)+0.05;
+    p.y+=0.125/i*cos(i*2.0*p.x+u_time*0.36)-0.05;
+  }
+  float r=length(p);float ang=atan(p.y,p.x);
+  vec3 a=vec3(0.12,0.12,0.13);
+  vec3 b=vec3(0.03,0.04,0.05);
+  vec3 c=vec3(1.0,1.0,1.0);
+  vec3 d=vec3(0.1,0.2,0.4);
+  vec3 col=palette(r*1.7+p0.x*0.56+u_time*0.12,a,b,c,d);
+  float disp=sin(r*29.0-u_time*1.85+ang*2.2)*0.5+0.5;
+  col+=vec3(disp*0.022,disp*0.016,disp*0.03);
+  float hi=pow(sin(p.x*4.4+p.y*3.4+u_time*1.12)*0.5+0.5,7.0);
+  col+=hi*0.115;
+  vec3 base=vec3(0.05,0.05,0.06);
+  col=mix(base,col,0.92);
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const FS_LIGHT = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p);
+  float a=hash(i),b=hash(i+vec2(1,0));
+  float c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));
+  vec2 u=f*f*(3.0-2.0*f);
+  return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;
+}
+float fbm(vec2 p){
+  float v=0.0,a=0.5;
+  mat2 m=mat2(0.80,0.60,-0.60,0.80);
+  for(int i=0;i<5;i++){v+=a*noise(p);p=m*p*2.02;a*=0.5;}
+  return v;
+}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse;m.x*=u_resolution.x/u_resolution.y;
+  vec2 md=p-m;float dl=length(md);
+  p+=normalize(md+vec2(0.0001))*exp(-dl*5.0)*0.04;
+  vec2 q=vec2(fbm(p*2.0+u_time*0.085),fbm(p*2.0+vec2(5.2,1.3)+u_time*0.072));
+  vec2 r=vec2(fbm(p*2.25+q*1.45+vec2(1.7,9.2)+u_time*0.062),
+              fbm(p*2.25+q*1.45+vec2(8.3,2.8)+u_time*0.052));
+  float f=fbm(p*2.42+r*1.75);
+  vec3 silverDark=vec3(0.86,0.85,0.84);
+  vec3 paper=vec3(0.955,0.945,0.925);
+  vec3 col=mix(silverDark,paper,f);
+  float ph=r.x*2.45+u_time*0.42;
+  col+=vec3(0.78,0.62,0.92)*sin(ph)*0.075;
+  col+=vec3(0.55,0.72,0.95)*sin(ph*0.8+2.0)*0.068;
+  float hl=smoothstep(0.48,0.92,f);
+  col+=hl*0.085;
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const mouse={x:0.5,y:0.5};
+addEventListener('mousemove',e=>{mouse.x=e.clientX/innerWidth;mouse.y=e.clientY/innerHeight});
+
+function bootGL(canvasId, fsSrc){
+  const canvas=document.getElementById(canvasId);
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:true});
+  if(!gl) return ()=>false;
+  const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh};
+  const prog=gl.createProgram();
+  gl.attachShader(prog,mk(gl.VERTEX_SHADER,VS));
+  gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,fsSrc));
+  gl.linkProgram(prog);gl.useProgram(prog);
+  const buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(prog,'position');
+  gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+  const lRes=gl.getUniformLocation(prog,'u_resolution');
+  const lT=gl.getUniformLocation(prog,'u_time');
+  const lM=gl.getUniformLocation(prog,'u_mouse');
+  const resize=()=>{
+    const d=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=innerWidth*d;canvas.height=innerHeight*d;
+    gl.viewport(0,0,canvas.width,canvas.height);
+  };
+  addEventListener('resize',resize);resize();
+  return (tSec)=>{
+    gl.uniform2f(lRes,canvas.width,canvas.height);
+    gl.uniform1f(lT,tSec);
+    gl.uniform2f(lM,mouse.x,1-mouse.y);
+    gl.drawArrays(gl.TRIANGLES,0,6);
+    return true;
+  };
+}
+const drawDark=bootGL('bg-dark',FS_DARK);
+const drawLight=bootGL('bg-light',FS_LIGHT);
+const t0=Date.now();
+(function loop(){
+  const t=(Date.now()-t0)/1000;
+  drawDark(t);drawLight(t);
+  requestAnimationFrame(loop);
+})();
+
+// =============== 导航（翻页 / 圆点 / 键盘 / 滚轮 / 触屏） ===============
+const deck=document.getElementById('deck');
+const slides=deck.querySelectorAll('.slide');
+const nav=document.getElementById('nav');
+let idx=0,total=slides.length,lock=false;
+
+// 关键：矫正 deck 宽度为 total * 100vw，否则翻页会错位
+deck.style.width=(total*100)+'vw';
+
+slides.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
+  b.onclick=()=>go(i);
+  nav.appendChild(b);
+});
+
+function go(n){
+  if(lock)return;
+  idx=Math.max(0,Math.min(total-1,n));
+  deck.style.transform=`translateX(${-idx*100}vw)`;
+  nav.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  /* 主题切换：优先读 data-theme，其次从 class（light/dark）推断 */
+  const el=slides[idx];
+  const th=el.dataset.theme || (el.classList.contains('light')?'light':(el.classList.contains('dark')?'dark':'dark'));
+  document.body.classList.toggle('light-bg',th==='light');
+  /* 动效：翻页过渡中段触发当前页的入场动画（由 motion-boot 注册） */
+  if(window.__playSlide) setTimeout(()=>window.__playSlide(idx), 450);
+  lock=true;setTimeout(()=>lock=false,700);
+}
+
+/* =============== ESC 索引视图 =============== */
+let overviewOn=false;
+const ov=document.createElement('div');
+ov.id='overview';
+ov.style.cssText='position:fixed;inset:0;z-index:100;background:rgba(var(--ink-rgb),.92);backdrop-filter:blur(12px);display:none;overflow-y:auto;padding:4vh 4vw';
+document.body.appendChild(ov);
+
+function buildOverview(){
+  ov.innerHTML='';
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:2vh 1.6vw;max-width:90vw;margin:0 auto';
+  slides.forEach((s,i)=>{
+    const card=document.createElement('div');
+    card.style.cssText='cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid '+(i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)')+';transition:border-color .2s';
+    card.onmouseenter=()=>card.style.borderColor='rgba(var(--paper-rgb),.6)';
+    card.onmouseleave=()=>card.style.borderColor=i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)';
+    const wrap=document.createElement('div');
+    wrap.style.cssText='width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;pointer-events:none;background:'+(s.classList.contains('light')?'var(--paper)':'var(--ink)');
+    const clone=s.cloneNode(true);
+    clone.style.cssText='width:100vw;height:100vh;transform:scale('+(1/4.5)+');transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none';
+    wrap.appendChild(clone);
+    const label=document.createElement('div');
+    label.style.cssText='padding:6px 10px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--paper);opacity:.7';
+    label.textContent=(i+1)+' / '+total;
+    card.appendChild(wrap);
+    card.appendChild(label);
+    card.onclick=()=>{toggleOverview();go(i)};
+    grid.appendChild(card);
+  });
+  ov.appendChild(grid);
+}
+
+function toggleOverview(){
+  overviewOn=!overviewOn;
+  if(overviewOn){buildOverview();ov.style.display='block';}
+  else{ov.style.display='none';}
+}
+
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){e.preventDefault();toggleOverview();return;}
+  if(overviewOn)return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '||e.key==='ArrowDown'){
+    if(window.__pipeAdvance && window.__pipeAdvance()) return;
+    go(idx+1);
+    return;
+  }
+  if(e.key==='ArrowLeft'||e.key==='PageUp'||e.key==='ArrowUp')go(idx-1);
+  if(e.key==='Home')go(0);
+  if(e.key==='End')go(total-1);
+});
+
+let wheelTO=null,wheelAcc=0;
+addEventListener('wheel',e=>{
+  wheelAcc+=e.deltaY+e.deltaX;
+  if(Math.abs(wheelAcc)>50){
+    if(wheelAcc>0 && window.__pipeAdvance && window.__pipeAdvance()){
+      wheelAcc=0;
+    }else{
+      go(idx+(wheelAcc>0?1:-1));wheelAcc=0;
+    }
+  }
+  clearTimeout(wheelTO);wheelTO=setTimeout(()=>wheelAcc=0,150);
+},{passive:true});
+
+let tx=0,ty=0;
+addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+addEventListener('touchend',e=>{
+  const dx=(e.changedTouches[0].clientX-tx);
+  const dy=(e.changedTouches[0].clientY-ty);
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
+    if(dx<0 && window.__pipeAdvance && window.__pipeAdvance()) return;
+    go(idx+(dx<0?1:-1));
+  }
+},{passive:true});
+
+const videoOverlay=document.getElementById('videoOverlay');
+const overlayVideo=videoOverlay.querySelector('video');
+const overlayClose=videoOverlay.querySelector('.close');
+
+function openVideo(src,poster=''){
+  overlayVideo.src=src;
+  if(poster) overlayVideo.poster=poster;
+  else overlayVideo.removeAttribute('poster');
+  videoOverlay.classList.add('open');
+  videoOverlay.setAttribute('aria-hidden','false');
+  overlayVideo.currentTime=0;
+  overlayVideo.play().catch(()=>{});
+}
+
+function closeVideo(){
+  if(!videoOverlay.classList.contains('open')) return false;
+  overlayVideo.pause();
+  overlayVideo.removeAttribute('src');
+  overlayVideo.removeAttribute('poster');
+  overlayVideo.load();
+  videoOverlay.classList.remove('open');
+  videoOverlay.setAttribute('aria-hidden','true');
+  return true;
+}
+
+document.querySelectorAll('[data-video-src]').forEach(card=>{
+  card.addEventListener('click',e=>{
+    e.preventDefault();
+    openVideo(card.dataset.videoSrc,card.dataset.videoPoster || '');
+  });
+});
+overlayClose.addEventListener('click',closeVideo);
+videoOverlay.addEventListener('click',e=>{
+  if(e.target===videoOverlay) closeVideo();
+});
+addEventListener('keydown',e=>{
+  if(e.key==='Escape' && closeVideo()){
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+},true);
+
+go(0);
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+
+<!-- ============ Motion One 动效引擎（本地优先,CDN 兜底） ============
+     加载策略:先 ./assets/motion.min.js(本地,离线可用),失败 fallback 到 jsDelivr CDN
+     加载完成后挂 window.__playSlide / window.__pipeAdvance,
+     导航脚本会在翻页中段调用 __playSlide(idx),键盘/滚轮/触屏会在翻页前调用 __pipeAdvance()
+     双双失败时会兜底把所有 [data-anim] 设为可见,不让动效破坏阅读
+-->
+<script type="module">
+let motion;
+try {
+  motion = await import('./assets/motion.min.js');
+} catch(e1) {
+  try {
+    motion = await import('https://cdn.jsdelivr.net/npm/motion@11.11.17/+esm');
+  } catch(e2) {
+    console.warn('[motion] local + CDN both failed, disabling animations', e1, e2);
+    document.querySelectorAll('[data-anim]').forEach(el=>{el.style.opacity='1';el.style.transform='none'});
+    document.querySelectorAll('[data-animate="pipeline"] [data-anim]').forEach(el=>el.style.opacity='1');
+  }
+}
+
+if(motion){
+  const { animate, stagger } = motion;
+  const EASE = [.22, 1, .36, 1];
+  const slides = [...document.querySelectorAll('.slide')];
+  let pipeStep = -1;
+  let stageStep = -1;
+  let lastIdx = -1;
+
+  function resetAnims(slide){
+    slide.querySelectorAll('[data-anim]').forEach(el=>{
+      el.style.opacity='';
+      if(!['corner','center','sidecar'].includes(el.dataset.anim)) el.style.transform='';
+      el.classList.remove('is-active');
+    });
+  }
+
+  function playSlide(i){
+    const slide = slides[i];
+    if(!slide) return;
+    lastIdx = i;
+    const recipe = slide.dataset.animate || (slide.classList.contains('hero') ? 'hero' : 'cascade');
+
+    if(recipe === 'pipeline'){
+      pipeStep = -1;
+      slide.querySelectorAll('[data-anim]').forEach(el=>{
+        el.style.opacity='0.64';
+        el.style.transform='none';
+      });
+      return;
+    }
+
+    resetAnims(slide);
+    const all = [...slide.querySelectorAll('[data-anim]')];
+    if(!all.length) return;
+
+    if(recipe === 'concept-map'){
+      const corners = all.filter(el=>el.dataset.anim==='corner');
+      const center = all.filter(el=>el.dataset.anim==='center');
+      const sidecar = all.filter(el=>el.dataset.anim==='sidecar');
+      const others = all.filter(el=>!['corner','center','sidecar'].includes(el.dataset.anim));
+      if(others.length) animate(others, {opacity:[0,1], y:[10,0]}, {duration:.48, delay:stagger(.08, {start:.12}), easing:EASE});
+      if(corners.length) animate(corners, {opacity:[0,1]}, {duration:.58, delay:.35, easing:EASE});
+      if(center.length) animate(center, {opacity:[0,1]}, {duration:.62, delay:.9, easing:EASE});
+      if(sidecar.length) animate(sidecar, {opacity:[0,1]}, {duration:.62, delay:1.28, easing:EASE});
+      return;
+    }
+
+    if(recipe === 'stage-pipeline'){
+      stageStep = -1;
+      const steps = all.filter(el=>el.dataset.anim==='step');
+      const others = all.filter(el=>el.dataset.anim!=='step');
+      steps.forEach(el=>el.classList.remove('is-active'));
+      if(others.length) animate(others, {opacity:[0,1], y:[12,0]}, {duration:.58, delay:stagger(.1, {start:.14}), easing:EASE});
+      return;
+    }
+
+    if(recipe === 'directional'){
+      const lefts  = all.filter(el=>el.dataset.anim==='left');
+      const divs   = all.filter(el=>el.dataset.anim==='divider');
+      const rights = all.filter(el=>el.dataset.anim==='right');
+      const others = all.filter(el=>!['left','right','divider'].includes(el.dataset.anim));
+      if(others.length) animate(others, {opacity:[0,1], y:[12,0]}, {duration:.6, delay:stagger(.1, {start:.15}), easing:EASE});
+      if(lefts.length)  animate(lefts,  {opacity:[0,1], x:[-24,0]}, {duration:.8, delay:.35, easing:EASE});
+      if(divs.length)   animate(divs,   {opacity:[0,.25]},          {duration:.5, delay:.9});
+      if(rights.length) animate(rights, {opacity:[0,1], x:[24,0]},  {duration:.8, delay:1.0, easing:EASE});
+      return;
+    }
+
+    if(recipe === 'quote'){
+      const lines = all.filter(el=>el.dataset.anim==='line');
+      const others = all.filter(el=>el.dataset.anim!=='line');
+      if(others.length) animate(others, {opacity:[0,1], y:[8,0]},    {duration:.6, delay:stagger(.12, {start:.2}), easing:EASE});
+      if(lines.length)  animate(lines,  {opacity:[.35,1], y:[10,0]}, {duration:.8, delay:stagger(.55, {start:.5}), easing:EASE});
+      return;
+    }
+
+    if(recipe === 'hero'){
+      animate(all, {opacity:[0,1], y:[14,0]}, {duration:.9, delay:stagger(.16, {start:.2}), easing:EASE});
+      return;
+    }
+
+    // default: cascade
+    animate(all, {opacity:[0,1], y:[16,0]}, {duration:.75, delay:stagger(.1, {start:.15}), easing:EASE});
+  }
+
+  function pipeAdvance(){
+    const slide = slides[lastIdx];
+    if(!slide) return false;
+    if(slide.dataset.animate === 'stage-pipeline'){
+      const steps = [...slide.querySelectorAll('[data-anim="step"]')];
+      if(stageStep >= steps.length - 1) return false;
+      stageStep++;
+      steps.forEach((step,i)=>step.classList.toggle('is-active', i <= stageStep));
+      animate(steps[stageStep], {opacity:[0.28,1], y:[10,-8]}, {duration:.38, easing:EASE});
+      return true;
+    }
+    if(slide.dataset.animate !== 'pipeline') return false;
+    const steps  = [...slide.querySelectorAll('[data-anim="step"]')];
+    const arrows = [...slide.querySelectorAll('[data-anim="arrow"]')];
+    if(pipeStep >= steps.length - 1) return false;
+    pipeStep++;
+    animate(steps[pipeStep], {opacity:[0.64,1], y:[8,0]}, {duration:.5, easing:EASE});
+    if(pipeStep > 0 && arrows[pipeStep-1]){
+      animate(arrows[pipeStep-1], {opacity:[0.64,.7]}, {duration:.3, delay:.15});
+    }
+    return true;
+  }
+
+  window.__playSlide = playSlide;
+  window.__pipeAdvance = pipeAdvance;
+
+  // 首屏:go(0) 已跑过(同步),没来得及触发动效 → 这里补一下
+  playSlide(0);
+}
+</script>
+</body>
+</html>

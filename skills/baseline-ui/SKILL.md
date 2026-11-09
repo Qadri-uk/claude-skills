@@ -1,69 +1,85 @@
 ---
 name: baseline-ui
-description: |
-  Opinionated UI baseline that deslops AI-generated interfaces: fixes spacing,
-  hierarchy, typography, and small layout issues, and enforces Tailwind CSS,
-  component, interaction, and animation rules. Use as a fast cleanup or polish pass.
-triggers:
-  - "baseline UI"
-  - "animation validation"
-  - "typography scale"
-  - "Tailwind anti-patterns"
-das:
-  category: accessibility-quality
-  upstream: "https://github.com/ibelick/ui-skills"
-  upstream_path: "skills/baseline-ui/SKILL.md"
-  version: latest
-  install: true
+description: Quickly deslop UI code by fixing spacing, hierarchy, typography, and small layout issues. Use when the interface needs a fast cleanup or polish pass.
 ---
 
-# baseline-ui
+# Baseline UI
 
-> Catalogue stub — full skill: [ibelick/ui-skills](https://github.com/ibelick/ui-skills)
+Enforces an opinionated UI baseline to prevent AI-generated interface slop.
 
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
+## How to use
 
-1. **Is the full skill already installed?**
-   - Global: `f=~/.agents/skills/baseline-ui/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/baseline-ui/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `baseline-ui`, invoke it and proceed
-   - `pointer` → go to step 2
+- `/baseline-ui`
+  Apply these constraints to any UI work in this conversation.
 
-2. **Detect scope, then install:**
+- `/baseline-ui <file>`
+  Review the file against all constraints below and output:
+  - violations (quote the exact line/snippet)
+  - why it matters (1 short sentence)
+  - a concrete fix (code-level suggestion)
 
-   ```bash
-   [ -e ~/.agents/skills/baseline-ui ] && echo "global" || echo "project"
-   ```
+## Stack
 
-   **Global:**
-   ```bash
-   npx skills add ibelick/ui-skills --skill baseline-ui -g -y
-   ```
+- MUST use Tailwind CSS defaults unless custom values already exist or are explicitly requested
+- MUST use `motion/react` (formerly `framer-motion`) when JavaScript animation is required
+- SHOULD use `tw-animate-css` for entrance and micro-animations in Tailwind CSS
+- MUST use `cn` utility (`clsx` + `tailwind-merge`) for class logic
 
-   **Project:**
-   ```bash
-   npx skills add ibelick/ui-skills --skill baseline-ui -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
+## Components
 
-**Heads-up**
+- MUST use accessible component primitives for anything with keyboard or focus behavior (`Base UI`, `React Aria`, `Radix`)
+- MUST use the project’s existing component primitives first
+- NEVER mix primitive systems within the same interaction surface
+- SHOULD prefer [`Base UI`](https://base-ui.com/react/components) for new primitives if compatible with the stack
+- MUST add an `aria-label` to icon-only buttons
+- NEVER rebuild keyboard or focus behavior by hand unless explicitly requested
 
-- **License:** MIT
-<!-- das:install:end -->
+## Interaction
 
-## Invoke after install
+- MUST use an `AlertDialog` for destructive or irreversible actions
+- SHOULD use structural skeletons for loading states
+- NEVER use `h-screen`, use `h-dvh`
+- MUST respect `safe-area-inset` for fixed elements
+- MUST show errors next to where the action happens
+- NEVER block paste in `input` or `textarea` elements
 
-- Skill name: `baseline-ui`
-- Slash commands: `/baseline-ui` (apply the baseline to UI work in this conversation), `/baseline-ui <file>` (review a file and list violations with fixes)
-- Trigger phrases: "baseline UI", "animation validation", "typography scale", "Tailwind anti-patterns"
+## Animation
 
-## What it does
+- NEVER add animation unless it is explicitly requested
+- MUST animate only compositor props (`transform`, `opacity`)
+- NEVER animate layout properties (`width`, `height`, `top`, `left`, `margin`, `padding`)
+- SHOULD avoid animating paint properties (`background`, `color`) except for small, local UI (text, icons)
+- SHOULD use `ease-out` on entrance
+- NEVER exceed `200ms` for interaction feedback
+- MUST pause looping animations when off-screen
+- SHOULD respect `prefers-reduced-motion`
+- NEVER introduce custom easing curves unless explicitly requested
+- SHOULD avoid animating large images or full-screen surfaces
 
-Applies an opinionated UI baseline to prevent AI-generated interface slop. The rules are written as MUST / SHOULD / NEVER constraints covering the Tailwind CSS stack, accessible component primitives, interaction patterns (destructive-action dialogs, loading skeletons, safe areas), animation limits (compositor-only properties, short feedback durations, reduced motion), typography (balanced headings, tabular numbers), layout (fixed z-index scale), performance, and design restraint (no purple gradients, no glow as the primary affordance). Given a file, it reports each violation with the offending snippet, why it matters, and a concrete fix.
+## Typography
 
-## When NOT to use
+- MUST use `text-balance` for headings and `text-pretty` for body/paragraphs
+- MUST use `tabular-nums` for data
+- SHOULD use `truncate` or `line-clamp` for dense UI
+- NEVER modify `letter-spacing` (`tracking-*`) unless explicitly requested
 
-- Full WCAG audits or keyboard and screen-reader fixes → use `accessibility-catalogue`
-- Non-Tailwind or non-web UI (SwiftUI, Android) → use `swiftui-design-skill` or `material-3-skill`
-- Persistent critique commands and a larger design toolchain → use `impeccable`
+## Layout
+
+- MUST use a fixed `z-index` scale (no arbitrary `z-*`)
+- SHOULD use `size-*` for square elements instead of `w-*` + `h-*`
+
+## Performance
+
+- NEVER animate large `blur()` or `backdrop-filter` surfaces
+- NEVER apply `will-change` outside an active animation
+- NEVER use `useEffect` for anything that can be expressed as render logic
+
+## Design
+
+- NEVER use gradients unless explicitly requested
+- NEVER use purple or multicolor gradients
+- NEVER use glow effects as primary affordances
+- SHOULD use Tailwind CSS default shadow scale unless explicitly requested
+- MUST give empty states one clear next action
+- SHOULD limit accent color usage to one per view
+- SHOULD use existing theme or Tailwind CSS color tokens before introducing new ones

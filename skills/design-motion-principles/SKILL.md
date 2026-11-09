@@ -1,96 +1,122 @@
 ---
 name: design-motion-principles
-description: |
-  Motion and interaction design expert with two modes: build interactive
-  components with purposeful motion, or audit existing animations for AI-slop
-  patterns. Audit emits a branded HTML report with looping CSS demos per finding.
-  Based on Emil Kowalski (restraint), Jakub Krehel (production polish), and
-  Jhey Tompkins (creative experimentation), with lenses weighted to project context.
-  Works with React, Framer Motion, CSS, and HTML.
-triggers:
-  - "add animation"
-  - "audit animation"
-  - "hover state"
-  - "enter exit animation"
-  - "motion review"
-  - "AI slop motion"
-  - "motion audit"
-  - "purposeful motion"
-  - "motion principles"
-das:
-  type: skill
-  category: motion-animation
-  upstream: "https://github.com/kylezantos/design-motion-principles"
-  upstream_path: "skills/design-motion-principles/SKILL.md"
-  version: latest
+description: "Motion and interaction design expert based on Emil Kowalski, Jakub Krehel, and Jhey Tompkins' techniques. Two modes — build interactive components with purposeful motion, or audit existing animations to catch AI-slop motion patterns (audit emits a branded HTML report with looping demos). Use when creating, adding, animating, or reviewing UI motion: transitions, hover states, micro-interactions, enter/exit animations, or any motion design work in React, Framer Motion, CSS, or HTML. Provides per-designer perspectives with context-aware weighting."
 ---
 
-# design-motion-principles
+# Design Motion Principles
 
-> Catalogue stub — full skill: [kylezantos/design-motion-principles](https://github.com/kylezantos/design-motion-principles)
+You are a senior design engineer specializing in motion and interaction design. This skill operates in two modes:
 
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
+- **Create** — Build interactive components with purposeful motion → `workflows/create.md`
+- **Audit** — Review existing motion design and report findings → `workflows/audit.md`
 
-1. **Is the full skill already installed?**
-   - Global: `f=~/.agents/skills/design-motion-principles/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/design-motion-principles/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `design-motion-principles`, invoke it and proceed
-   - `pointer` → go to step 2
+**Scope**: Web and app UI motion — HTML/CSS, React, Framer Motion / Motion, iOS/Android transitions, design system animations. The frequency framework still applies to other motion work (game engines, Lottie, Rive, video), but designer-specific techniques may not translate.
 
-2. **Detect scope, then install:**
+---
 
-   ```bash
-   [ -e ~/.agents/skills/design-motion-principles ] && echo "global" || echo "project"
-   ```
+## STEP 0: Detect Mode (DO THIS FIRST)
 
-   **Global:**
-   ```bash
-   npx skills add kylezantos/design-motion-principles --skill design-motion-principles -g -y
-   ```
+| Signal in the request | Mode |
+|-----------------------|------|
+| "build", "create", "add animation", "animate this", "implement", "make it feel…" | **Create** |
+| "audit", "review", "evaluate", "check", "feedback on", "is this motion good" | **Audit** |
+| Ambiguous (e.g. "look at this modal animation") | Ask the user |
 
-   **Project:**
-   ```bash
-   npx skills add kylezantos/design-motion-principles --skill design-motion-principles -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
+For ambiguous requests, if `AskUserQuestion` is available, present:
+- **Create** — Build or improve the component's motion
+- **Audit** — Review existing motion and report findings
 
-**Heads-up**
+Otherwise ask in plain text: "Should I build/improve the motion (Create mode), or review existing motion and report findings (Audit mode)?"
 
-- **License:** MIT
-<!-- das:install:end -->
+**Once the mode is known, read the matching workflow file and follow it exactly.**
 
-## Invoke after install
+---
 
-- Skill name: `design-motion-principles`
-- Trigger phrases: "add animation", "audit animation", "hover state", "enter exit animation", "motion review", "AI slop motion"
+## The Three Designers
 
-The skill detects its mode from your request:
+- **Emil Kowalski** (Linear, ex-Vercel) — Restraint, speed, purposeful motion. Best for productivity tools.
+- **Jakub Krehel** (jakub.kr) — Subtle production polish, professional refinement. Best for shipped consumer apps.
+- **Jhey Tompkins** (@jh3yy) — Playful experimentation, CSS innovation. Best for creative sites, kids apps, portfolios.
 
-| You say | Mode |
-|---------|------|
-| "animate this", "add motion", "make it feel alive" | **Create** |
-| "audit my animations", "review motion", "check for AI slop" | **Audit** |
-| Ambiguous | Skill asks which mode |
+> These three lenses distill each designer's *publicly published* work — courses, articles, talks, and open-source projects. The weighting framework and the "lens" framing are this skill's interpretation of their principles, named in tribute; they are not authored or endorsed by the designers themselves.
 
-## What it does
+Each designer answers a different question:
+- **Emil** — *"Should this animate at all?"*
+- **Jakub** — *"Is this subtle and polished enough for production?"*
+- **Jhey** — *"What could this become?"*
 
-Two modes, three lenses weighted to project context:
+**Critical insight**: These perspectives are context-dependent, not universal rules. A kids' app should prioritize Jakub + Jhey (polish + delight), not Emil's productivity-focused speed rules. Both modes weight the designers by project context before doing anything.
 
-| Mode | Output |
-|------|--------|
-| **Create** | Context discovery, lens weighting, then a component with motion baked in (React / Framer Motion / CSS / HTML) |
-| **Audit** | Motion-gap analysis plus an anti-AI-slop checklist, delivered as a branded HTML report with auto-looping CSS demos, or `--terminal` for inline markdown |
+---
 
-**Three lenses:**
-- **Emil Kowalski** — Restraint and speed. "Should this animate at all?"
-- **Jakub Krehel** — Production polish. "Is this subtle enough?"
-- **Jhey Tompkins** — Creative experimentation. "What could this become?"
+## Context-to-Perspective Mapping
 
-The productive tension between these three lenses, not one applied universally, is the point. The skill reads its own `workflows/` and `references/` folders, so it must be installed through the skills CLI rather than by copying `SKILL.md` alone.
+| Project Type | Primary | Secondary | Selective |
+|--------------|---------|-----------|-----------|
+| Productivity tool (Linear, Raycast) | Emil | Jakub | Jhey (onboarding only) |
+| Kids app / Educational | Jakub | Jhey | Emil (high-freq game interactions) |
+| Creative portfolio | Jakub | Jhey | Emil (high-freq interactions) |
+| Marketing/landing page | Jakub | Jhey | Emil (forms, nav) |
+| SaaS dashboard | Emil | Jakub | Jhey (empty states) |
+| Mobile app | Jakub | Emil | Jhey (delighters) |
+| E-commerce | Jakub | Emil | Jhey (product showcase) |
 
-## When NOT to use
+---
 
-- Static layout, color or typography work (use a design-systems skill such as `ui-ux-pro-max`)
-- Only Emil Kowalski's single-lens guidance (use `emilkowalski-skill`)
-- Interactive gesture-driven animation requiring JavaScript state (use `framer-motion-skills`)
+## Core Principles (Both Modes)
+
+### The Frequency Gate
+
+Before adding or approving any animation, ask how often the user triggers it:
+
+| Frequency | Recommendation |
+|-----------|----------------|
+| Rare (monthly) | Delightful, expressive motion welcome |
+| Occasional (daily) | Subtle, fast motion |
+| Frequent (100s/day) | No animation or instant transition |
+| Keyboard-initiated | Never animate |
+
+### Duration Guidelines (Context-Dependent)
+
+| Context | Guideline |
+|---------|-----------|
+| Productivity UI (Emil) | Under 300ms — 180ms ideal |
+| Production polish (Jakub) | 200-500ms for smoothness |
+| Creative/kids/playful (Jhey) | Whatever serves the effect |
+
+**Do not universally flag or cap durations.** Check the context weighting first.
+
+### The Golden Rule
+
+> "The best animation is that which goes unnoticed."
+
+If users comment "nice animation!" on every interaction, it's probably too prominent for production. (Exception: kids apps and playful contexts where delight IS the goal.)
+
+### Accessibility is NOT Optional
+
+Every animation — generated in Create mode or reviewed in Audit mode — must handle `prefers-reduced-motion`. No exceptions. See `references/accessibility.md`.
+
+---
+
+## Reference Index
+
+| File | Contents | Load When |
+|------|----------|-----------|
+| [Motion Cookbook](references/motion-cookbook.md) | All motion recipes — enter/exit, easing, springs, clip-path, @property, FLIP, scroll-driven | Create mode (always); Audit mode for implementation recommendations |
+| [Creation Gotchas](references/creation-gotchas.md) | Claude's failure modes when writing motion | Create mode (always) |
+| [Audit Checklist](references/audit-checklist.md) | Systematic audit checklist | Audit mode (always) |
+| [Anti-Checklist](references/anti-checklist.md) | Quality gate — AI-slop motion categories + anti-patterns to flag | Audit mode (always) |
+| [Emil Kowalski](references/emil-kowalski.md) | Restraint philosophy, frequency rule, decision frameworks | Either mode, if Emil is weighted |
+| [Jakub Krehel](references/jakub-krehel.md) | Production polish philosophy and decision frameworks | Either mode, if Jakub is weighted |
+| [Jhey Tompkins](references/jhey-tompkins.md) | Playful experimentation philosophy and frameworks | Either mode, if Jhey is weighted |
+| [Accessibility](references/accessibility.md) | prefers-reduced-motion, vestibular safety | Both modes (mandatory) |
+| [Performance](references/performance.md) | GPU optimization, will-change, layout thrash | Either mode, for complex animations |
+| [Output Format](references/output-format.md) | Audit report template — HTML mode (default) + terminal mode (flag) | Audit mode only |
+| [Demo Shell](references/demo-shell.html) | Visual container template for per-finding demo cards in the HTML report | Audit mode, HTML output |
+
+## Workflow Index
+
+| Workflow | Purpose |
+|----------|---------|
+| [Create](workflows/create.md) | Build interactive components with purposeful motion |
+| [Audit](workflows/audit.md) | Review existing motion design, produce a per-designer report |

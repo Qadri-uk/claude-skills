@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="Codex App 故障排查视频封面">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1f1b17"/>
+      <stop offset=".55" stop-color="#2c261f"/>
+      <stop offset="1" stop-color="#5f5444"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <rect x="120" y="120" width="1360" height="660" fill="#efe4cf" fill-opacity=".045" stroke="#efe4cf" stroke-opacity=".34"/>
+  <text x="170" y="188" fill="#efe4cf" fill-opacity=".62" font-family="Menlo, monospace" font-size="28" letter-spacing="10">CODEX APP · RESCUE MODE</text>
+  <text x="170" y="300" fill="#efe4cf" font-family="Georgia, 'Noto Serif SC', serif" font-size="84">检查 · 定位 · 修复 · 重跑</text>
+  <g transform="translate(180 405)" font-family="Menlo, monospace" font-size="30" fill="#efe4cf">
+    <text y="0" fill-opacity=".72">01  CHECK OPENCLAW ONLINE</text>
+    <text y="64" fill-opacity=".58">02  READ LOGS AND TRACE FAILURE</text>
+    <text y="128" fill-opacity=".58">03  FIX SKILL / SCRIPT / DEPENDENCY</text>
+    <text y="192" fill-opacity=".58">04  RERUN OR RESUME LONG TASK</text>
+  </g>
+  <text x="170" y="720" fill="#efe4cf" fill-opacity=".44" font-family="Menlo, monospace" font-size="24" letter-spacing="8">OPENCLAW RUNS · CODEX APP RESCUES</text>
+</svg>

@@ -1,67 +1,136 @@
 ---
 name: fixing-accessibility
-description: |
-  Audits and fixes ARIA labels, keyboard navigation, focus management, color
-  contrast, and form error handling. Surfaces issues systematically and applies
-  targeted remediations to bring components up to accessibility standards.
-triggers:
-  - "fixing accessibility"
-  - "ARIA"
-  - "keyboard navigation"
-  - "focus management"
-das:
-  category: accessibility-quality
-  upstream: "https://github.com/ibelick/ui-skills"
-  upstream_path: "skills/fixing-accessibility/SKILL.md"
-  version: latest
-  install: true
+description: Audit and fix HTML accessibility issues including ARIA labels, keyboard navigation, focus management, color contrast, and form errors. Use when adding interactive controls, forms, dialogs, or reviewing WCAG compliance.
 ---
 
 # fixing-accessibility
 
-> Catalogue stub — full skill: [ibelick/ui-skills](https://github.com/ibelick/ui-skills)
+Fix accessibility issues.
 
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
+## how to use
 
-1. **Is the full skill already installed?**
-   - Global: `f=~/.agents/skills/fixing-accessibility/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/fixing-accessibility/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `fixing-accessibility`, invoke it and proceed
-   - `pointer` → go to step 2
+- `/fixing-accessibility`
+  Apply these constraints to any UI work in this conversation.
 
-2. **Detect scope, then install:**
+- `/fixing-accessibility <file>`
+  Review the file against all rules below and report:
+  - violations (quote the exact line or snippet)
+  - why it matters (one short sentence)
+  - a concrete fix (code-level suggestion)
 
-   ```bash
-   [ -e ~/.agents/skills/fixing-accessibility ] && echo "global" || echo "project"
-   ```
+Do not rewrite large parts of the UI. Prefer minimal, targeted fixes.
 
-   **Global:**
-   ```bash
-   npx skills add ibelick/ui-skills --skill fixing-accessibility -g -y
-   ```
+## when to apply
 
-   **Project:**
-   ```bash
-   npx skills add ibelick/ui-skills --skill fixing-accessibility -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
+Reference these guidelines when:
+- adding or changing buttons, links, inputs, menus, dialogs, tabs, dropdowns
+- building forms, validation, error states, helper text
+- implementing keyboard shortcuts or custom interactions
+- working on focus states, focus trapping, or modal behavior
+- rendering icon-only controls
+- adding hover-only interactions or hidden content
 
-**Heads-up**
+## rule categories by priority
 
-- **License:** MIT
-<!-- das:install:end -->
+| priority | category | impact |
+|----------|----------|--------|
+| 1 | accessible names | critical |
+| 2 | keyboard access | critical |
+| 3 | focus and dialogs | critical |
+| 4 | semantics | high |
+| 5 | forms and errors | high |
+| 6 | announcements | medium-high |
+| 7 | contrast and states | medium |
+| 8 | media and motion | low-medium |
+| 9 | tool boundaries | critical |
 
-## Invoke after install
+## quick reference
 
-- Skill name: `fixing-accessibility`
-- Trigger phrases: "fixing accessibility", "accessibility audit", "ARIA", "keyboard navigation", "focus management"
+### 1. accessible names (critical)
 
-## What it does
+- every interactive control must have an accessible name
+- icon-only buttons must have aria-label or aria-labelledby
+- every input, select, and textarea must be labeled
+- links must have meaningful text (no “click here”)
+- decorative icons must be aria-hidden
 
-Audits components for missing or incorrect ARIA labels, broken keyboard navigation paths, focus management gaps, color contrast failures, and inaccessible form error patterns. Applies concrete code-level fixes so components meet accessibility standards without losing visual design intent. Use it when adding interactive controls, forms or dialogs, or when reviewing WCAG compliance.
+### 2. keyboard access (critical)
 
-## When NOT to use
+- do not use div or span as buttons without full keyboard support
+- all interactive elements must be reachable by Tab
+- focus must be visible for keyboard users
+- do not use tabindex greater than 0
+- Escape must close dialogs or overlays when applicable
 
-- Full-site, document (Office/PDF) or markdown accessibility audits with specialist routing — use `accessibility-agents`
-- A structured WCAG 2.2 audit with manual verification steps — use `wcag-audit-patterns`
+### 3. focus and dialogs (critical)
+
+- modals must trap focus while open
+- restore focus to the trigger on close
+- set initial focus inside dialogs
+- opening a dialog should not scroll the page unexpectedly
+
+### 4. semantics (high)
+
+- prefer native elements (button, a, input) over role-based hacks
+- if a role is used, required aria attributes must be present
+- lists must use ul or ol with li
+- do not skip heading levels
+- tables must use th for headers when applicable
+
+### 5. forms and errors (high)
+
+- errors must be linked to fields using aria-describedby
+- required fields must be announced
+- invalid fields must set aria-invalid
+- helper text must be associated with inputs
+- disabled submit actions must explain why
+
+### 6. announcements (medium-high)
+
+- critical form errors should use aria-live
+- loading states should use aria-busy or status text
+- toasts must not be the only way to convey critical information
+- expandable controls must use aria-expanded and aria-controls
+
+### 7. contrast and states (medium)
+
+- ensure sufficient contrast for text and icons
+- hover-only interactions must have keyboard equivalents
+- disabled states must not rely on color alone
+- do not remove focus outlines without a visible replacement
+
+### 8. media and motion (low-medium)
+
+- images must have correct alt text (meaningful or empty)
+- videos with speech should provide captions when relevant
+- respect prefers-reduced-motion for non-essential motion
+- avoid autoplaying media with sound
+
+### 9. tool boundaries (critical)
+
+- prefer minimal changes, do not refactor unrelated code
+- do not add aria when native semantics already solve the problem
+- do not migrate UI libraries unless requested
+
+## common fixes
+
+```html
+<!-- icon-only button: add aria-label -->
+<!-- before --> <button><svg>...</svg></button>
+<!-- after -->  <button aria-label="Close"><svg aria-hidden="true">...</svg></button>
+
+<!-- div as button: use native element -->
+<!-- before --> <div onclick="save()">Save</div>
+<!-- after -->  <button onclick="save()">Save</button>
+
+<!-- form error: link with aria-describedby -->
+<!-- before --> <input id="email" /> <span>Invalid email</span>
+<!-- after -->  <input id="email" aria-describedby="email-err" aria-invalid="true" /> <span id="email-err">Invalid email</span>
+```
+
+## review guidance
+
+- fix critical issues first (names, keyboard, focus, tool boundaries)
+- prefer native HTML before adding aria
+- quote the exact snippet, state the failure, propose a small fix
+- for complex widgets (menu, dialog, combobox), prefer established accessible primitives over custom behavior

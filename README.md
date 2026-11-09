@@ -1,6 +1,6 @@
 # claude-skills
 
-Personal Claude Code skill library: 459 vendored skills for UI/UX, motion, 3D, video,
+Personal Claude Code skill library: 467 vendored skills for UI/UX, motion, 3D, video,
 components, databases, dashboards and SaaS, plus standing instructions that make
 Claude use them proactively. Built by build-skills-repo.sh; re-run it to refresh.
 

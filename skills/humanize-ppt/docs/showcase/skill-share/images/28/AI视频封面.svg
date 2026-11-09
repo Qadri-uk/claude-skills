@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-label="AI 视频封面">
+  <rect width="1280" height="720" fill="#c7c7bd"/>
+  <rect x="96" y="72" width="1088" height="576" fill="#aeb3ae" stroke="#2d3335" stroke-opacity=".35"/>
+  <path d="M190 500 C340 300 520 590 690 360 S980 280 1110 445" fill="none" stroke="#2d3335" stroke-opacity=".28" stroke-width="10"/>
+  <text x="120" y="142" fill="#2d3335" font-family="monospace" font-size="28" letter-spacing="10">02 · AI VIDEO</text>
+  <text x="120" y="520" fill="#191f21" font-family="serif" font-size="92">AI 视频</text>
+  <text x="122" y="574" fill="#2d3335" font-family="sans-serif" font-size="26" opacity=".62">分镜 · 提示词 · 生成片段</text>
+</svg>

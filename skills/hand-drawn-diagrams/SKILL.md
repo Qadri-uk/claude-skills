@@ -1,68 +1,30 @@
 ---
 name: hand-drawn-diagrams
-description: |
-  Generate hand-drawn Excalidraw diagrams from a text prompt. Produces animated SVG,
-  a hosted edit link, and PNG export. Lightweight alternative to excalidraw-diagram
-  with a focus on quick ideation sketches.
-triggers:
-  - "hand drawn diagram"
-  - "sketch diagram"
-  - "excalidraw sketch"
-  - "rough diagram"
-das:
-  category: diagrams
-  upstream: "https://github.com/muthuishere/hand-drawn-diagrams"
-  upstream_path: "SKILL.md"
-  version: latest
-  install: true
+description: "Create hand-drawn Excalidraw diagrams, flows, explainers, wireframes, and page mockups. Default to monochrome sketch output; allow restrained color only for page mockups when the user explicitly wants webpage-like fidelity. Use when the user asks for a diagram, flowchart, wireframe, sketch, visual explanation, mind map, architecture overview, or any Excalidraw-based drawing."
 ---
 
-# hand-drawn-diagrams
+Follow the instructions in `./workflow.md`.
 
-> Catalogue stub — full skill: [muthuishere/hand-drawn-diagrams](https://github.com/muthuishere/hand-drawn-diagrams)
+## Workflow
 
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
+1. **Route** — Read `./steps/step-01-route.md`. Pick one diagram type from the routing table (`references/activation-routing.xml`) based on user intent (teach, brainstorm, UX flow, funnel, technical explainer, medical, creative, or page mockup).
+2. **Draw** — Read `./steps/step-02-draw.md`. Design the diagram using the shared shape grammar (`references/fundamental-shapes.md`), then write the `.excalidraw` JSON file with a non-empty elements array to `/tmp/hand-drawn-diagrams/<slug>/`.
+3. **Validate & Deliver** — Read `./steps/step-03-validate.md`. Run `scripts/validate_excalidraw.py`, then `scripts/open_diagram.py` to generate a hosted edit URL and open it in the browser. Offer animation and PNG as follow-ups.
 
-1. **Is the full skill already installed?**
-   - Global: `f=~/.agents/skills/hand-drawn-diagrams/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/hand-drawn-diagrams/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `hand-drawn-diagrams`, invoke it and proceed
-   - `pointer` → go to step 2
+## Key Rules
 
-2. **Detect scope, then install:**
+- Hand-drawn style, same sketch font, monochrome by default
+- Labels: 1–5 words per shape; max 3 short bullets per container
+- Write `.excalidraw` files to `/tmp/`, not the user's workspace (unless they ask)
+- Always validate before generating URLs — never share an empty diagram
+- Rendering priority: Chrome DevTools MCP (fast) → Playwright (fallback)
 
-   ```bash
-   [ -e ~/.agents/skills/hand-drawn-diagrams ] && echo "global" || echo "project"
-   ```
+## References
 
-   **Global:**
-   ```bash
-   npx skills add muthuishere/hand-drawn-diagrams --skill hand-drawn-diagrams -g -y
-   ```
+- `references/index.md` — full reference index
+- `references/activation-routing.xml` — route selection rules and delivery modes
+- `references/fundamental-shapes.md` — core shape language
 
-   **Project:**
-   ```bash
-   npx skills add muthuishere/hand-drawn-diagrams --skill hand-drawn-diagrams -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
+## Optional: Chrome DevTools MCP
 
-**Heads-up**
-
-- **Requires:** Python with uv (the skill runs scripts/*.py through `uv run python`); Chrome DevTools MCP or Playwright, only for PNG and animated-SVG rendering
-- **License:** MIT (GitHub reports it as NOASSERTION)
-<!-- das:install:end -->
-
-## Invoke after install
-
-- Skill name: `hand-drawn-diagrams`
-- Trigger phrases: "hand drawn diagram", "sketch diagram", "rough diagram"
-
-## What it does
-
-Generates hand-drawn style Excalidraw diagrams (flows, explainers, mind maps, wireframes, page mockups) from a text prompt. It routes to a diagram type, writes and validates a `.excalidraw` file, then produces a hosted edit link, with animated SVG and PNG export as follow-ups. Monochrome sketch output by default. Best for quick whiteboard-style sketches and early ideation where the rough aesthetic communicates "this is exploratory." The edit and animation links open a page on the author's GitHub Pages site with the diagram encoded in the URL, so the diagram data travels in the link.
-
-## When NOT to use
-
-- Polished or structured diagrams with Excalidraw libraries and a render pipeline (use `excalidraw-diagram`)
-- Diagrams that must not leave your machine inside a shareable link (use `excalidraw-diagram`, which renders with a local Playwright browser)
+For fast PNG and animated SVG rendering, install `chrome-devtools-mcp` (uses a real browser, no Playwright needed). See `INSTALL.md` for setup. Without it, rendering falls back to Playwright.

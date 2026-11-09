@@ -1,75 +1,74 @@
 ---
-name: composio-artifacts
-description: |
-  Build elaborate multi-component claude.ai HTML artifacts with React, TypeScript, Vite,
-  Tailwind CSS, and shadcn/ui, then bundle them into a single HTML file. This is the
-  artifacts-builder skill from ComposioHQ's awesome-claude-skills collection, a copy of
-  Anthropic's web-artifacts-builder. It does not integrate Composio tools.
-triggers:
-  - "composio artifacts"
-  - "interactive artifact"
-  - "artifacts builder"
-  - "shadcn artifact"
-  - "bundle artifact to single HTML"
-  - "composio"
-das:
-  category: official-suites
-  upstream: "https://github.com/ComposioHQ/awesome-claude-skills"
-  upstream_path: "artifacts-builder/SKILL.md"
-  version: latest
-  install: true
+name: artifacts-builder
+description: Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web technologies (React, Tailwind CSS, shadcn/ui). Use for complex artifacts requiring state management, routing, or shadcn/ui components - not for simple single-file HTML/JSX artifacts.
+license: Complete terms in LICENSE.txt
 ---
 
-# composio-artifacts
+# Artifacts Builder
 
-> Catalogue stub — full skill: [ComposioHQ/awesome-claude-skills](https://github.com/ComposioHQ/awesome-claude-skills/blob/master/artifacts-builder/SKILL.md)
+To build powerful frontend claude.ai artifacts, follow these steps:
+1. Initialize the frontend repo using `scripts/init-artifact.sh`
+2. Develop your artifact by editing the generated code
+3. Bundle all code into a single HTML file using `scripts/bundle-artifact.sh`
+4. Display artifact to user
+5. (Optional) Test the artifact
 
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
+**Stack**: React 18 + TypeScript + Vite + Parcel (bundling) + Tailwind CSS + shadcn/ui
 
-1. **Is the full skill already installed?**
-   Upstream names this skill `artifacts-builder`, so it installs next to this pointer (the pointer is not replaced).
-   - Global: `f=~/.agents/skills/artifacts-builder/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/artifacts-builder/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `artifacts-builder`, invoke it and proceed
-   - `pointer` → go to step 2
+## Design & Style Guidelines
 
-2. **Detect scope, then install:**
+VERY IMPORTANT: To avoid what is often referred to as "AI slop", avoid using excessive centered layouts, purple gradients, uniform rounded corners, and Inter font.
 
-   ```bash
-   [ -e ~/.agents/skills/composio-artifacts ] && echo "global" || echo "project"
-   ```
+## Quick Start
 
-   **Global:**
-   ```bash
-   npx skills add ComposioHQ/awesome-claude-skills --skill artifacts-builder -g -y
-   ```
+### Step 1: Initialize Project
 
-   **Project:**
-   ```bash
-   npx skills add ComposioHQ/awesome-claude-skills --skill artifacts-builder -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
+Run the initialization script to create a new React project:
+```bash
+bash scripts/init-artifact.sh <project-name>
+cd <project-name>
+```
 
-**Heads-up**
+This creates a fully configured project with:
+- ✅ React + TypeScript (via Vite)
+- ✅ Tailwind CSS 3.4.1 with shadcn/ui theming system
+- ✅ Path aliases (`@/`) configured
+- ✅ 40+ shadcn/ui components pre-installed
+- ✅ All Radix UI dependencies included
+- ✅ Parcel configured for bundling (via .parcelrc)
+- ✅ Node 18+ compatibility (auto-detects and pins Vite version)
 
-- **Requires:** Node.js 18+ and a shell (the bundled init script runs `npm install -g pnpm` if pnpm is missing, then installs npm dependencies)
-- **License:** Apache-2.0 (skill's own LICENSE.txt; the repo has no top-level LICENSE file)
-<!-- das:install:end -->
+### Step 2: Develop Your Artifact
 
-## Invoke after install
+To build the artifact, edit the generated files. See **Common Development Tasks** below for guidance.
 
-- Skill name: `artifacts-builder`
-- Trigger phrases: "composio artifacts", "interactive artifact", "artifacts builder", "shadcn artifact", "bundle artifact to single HTML"
+### Step 3: Bundle to Single HTML File
 
-## What it does
+To bundle the React app into a single HTML artifact:
+```bash
+bash scripts/bundle-artifact.sh
+```
 
-A suite of tools for building complex claude.ai artifacts that need state management, routing, or shadcn/ui components. The skill scaffolds a React + TypeScript + Vite project with Tailwind CSS and a set of pre-installed shadcn/ui components (`scripts/init-artifact.sh`), lets the agent develop the artifact in that project, then bundles everything into one self-contained `bundle.html` with Parcel and html-inline (`scripts/bundle-artifact.sh`) that can be shared as an artifact. It also carries design guidance to avoid "AI slop" (centered layouts, purple gradients, uniform rounded corners, Inter).
+This creates `bundle.html` - a self-contained artifact with all JavaScript, CSS, and dependencies inlined. This file can be directly shared in Claude conversations as an artifact.
 
-The skill is a copy of Anthropic's `web-artifacts-builder` that happens to live in Composio's collection. Despite the stub name and trigger "composio", it contains no Composio integration: no external tool calls, no API key.
+**Requirements**: Your project must have an `index.html` in the root directory.
 
-## When NOT to use
+**What the script does**:
+- Installs bundling dependencies (parcel, @parcel/config-default, parcel-resolver-tspaths, html-inline)
+- Creates `.parcelrc` config with path alias support
+- Builds with Parcel (no source maps)
+- Inlines all assets into single HTML using html-inline
 
-- Simple single-file HTML or JSX artifacts that need no state, routing, or component library
-- When you want Anthropic's own maintained copy — use `anthropics-skills` (installs `web-artifacts-builder`)
-- When you want an artifact wired to external services (GitHub, Slack, Linear, Notion) through Composio: that is a different Composio skill (`connect-apps` in the same upstream repo) and is not part of this catalogue
+### Step 4: Share Artifact with User
+
+Finally, share the bundled HTML file in conversation with the user so they can view it as an artifact.
+
+### Step 5: Testing/Visualizing the Artifact (Optional)
+
+Note: This is a completely optional step. Only perform if necessary or requested.
+
+To test/visualize the artifact, use available tools (including other Skills or built-in tools like Playwright or Puppeteer). In general, avoid testing the artifact upfront as it adds latency between the request and when the finished artifact can be seen. Test later, after presenting the artifact, if requested or if issues arise.
+
+## Reference
+
+- **shadcn/ui components**: https://ui.shadcn.com/docs/components

@@ -1,72 +1,120 @@
 ---
 name: marp-slide-quality
-description: |
-  Analyzes and improves Marp Markdown presentations using SlideGauge quality scoring —
-  checks accessibility (alt text, contrast), code, color, content density and layout on the
-  Markdown source. Use as a companion to marp-slides, run after slide creation.
-triggers:
-  - "marp slide quality"
-  - "SlideGauge"
-  - "marp-slide-quality"
-  - "nibzard marp"
-das:
-  type: skill
-  category: presentations
-  upstream: "https://github.com/nibzard/marp-slide-quality"
-  upstream_path: "SKILL.md"
-  version: latest
-  install: true
+description: Analyze and improve Marp markdown presentations using SlideGauge. Use when working with Marp slides, presentation files ending in .md with marp frontmatter, or when user asks to check, analyze, improve, or validate slide quality. Requires slidegauge package (installed via uvx).
+allowed-tools: Read, Edit, Bash, Grep, Glob
 ---
 
-# marp-slide-quality
+# Marp Slide Quality Analyzer
 
-> Catalogue stub — full skill: [nibzard/marp-slide-quality](https://github.com/nibzard/marp-slide-quality)
+This Skill uses SlideGauge to analyze Marp markdown presentations and help you create high-quality slides that follow best practices.
 
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
+## When to use this Skill
 
-1. **Is the full skill already installed?**
-   - Global: `f=~/.agents/skills/marp-slide-quality/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/marp-slide-quality/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `marp-slide-quality`, invoke it and proceed
-   - `pointer` → go to step 2
+- User is working on a Marp presentation (`.md` file with `marp: true` frontmatter)
+- User asks to check, analyze, validate, or improve slide quality
+- User mentions SlideGauge or slide quality issues
+- User wants to fix specific slide problems (too many bullets, long content, etc.)
 
-2. **Detect scope, then install:**
+## Instructions
 
-   ```bash
-   [ -e ~/.agents/skills/marp-slide-quality ] && echo "global" || echo "project"
-   ```
+### 1. Initial Analysis
 
-   **Global:**
-   ```bash
-   npx skills add nibzard/marp-slide-quality --skill marp-slide-quality -g -y
-   ```
+When user asks to analyze their slides:
 
-   **Project:**
-   ```bash
-   npx skills add nibzard/marp-slide-quality --skill marp-slide-quality -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
+```bash
+# Run SlideGauge with text output for quick overview
+uvx --from git+https://github.com/nibzard/slidegauge slidegauge <path-to-presentation.md> --text
+```
 
-**Heads-up**
+**Explain the results:**
+- Overall score and passing rate
+- Number of issues found
+- Category breakdown (a11y, code, color, content, layout)
 
-- **Requires:** uv (provides uvx): the skill runs `uvx --from git+https://github.com/nibzard/slidegauge slidegauge ...`, which fetches and executes SlideGauge from that GitHub repo at use time (not a PyPI package); jq for the JSON-filter examples in the skill
-- **License:** Apache-2.0
-<!-- das:install:end -->
+### 2. Detailed Analysis
 
-## Invoke after install
+For slides that need fixing (score < 80):
 
-- Skill name: `marp-slide-quality`
-- Trigger phrases: "marp slide quality", "SlideGauge", "marp-slide-quality", "nibzard marp"
+```bash
+# Get JSON output with detailed diagnostics
+uvx --from git+https://github.com/nibzard/slidegauge slidegauge <path-to-presentation.md> --json | jq '.slides[] | select(.score < 80)'
+```
 
-## What it does
+**For each failing slide, identify:**
+- Exact slide number and title
+- Specific issues with deduction amounts
+- Actionable recommendations
 
-Runs SlideGauge quality analysis on Marp Markdown presentations (files with `marp: true` frontmatter) and helps fix what it finds: overall score and pass rate, plus per-category issues for accessibility, code, color, content and layout. Produces a scored report with specific fix recommendations (too many bullets, overlong content and similar) and re-runs the analysis after changes. Best used as a post-creation review pass after `marp-slides` generates the initial deck.
+### 3. Fix Common Issues
 
-SlideGauge is not bundled: the skill runs it through `uvx` from its own GitHub repository each time, so it needs `uv` and network access, and it executes code fetched from that repository.
+Use the Edit tool to fix issues. See [FIXES.md](FIXES.md) for specific fix patterns.
 
-## When NOT to use
+**Common fixes:**
 
-- Reveal.js or Slidev presentations — SlideGauge is Marp-specific
-- Creating slides from scratch — use `marp-slides` first, then run this for quality review
-- When you need Marp rendered output — this analyzes the Markdown source, not the render
+- **Too many bullets**: Split into multiple slides or consolidate
+- **Content too long**: Trim text or split slide
+- **Code too long**: Simplify examples or split
+- **Too many lines**: Reduce content density
+- **Title too long**: Shorten to ≤35 characters
+
+### 4. Validate Fixes
+
+After making changes, re-run SlideGauge:
+
+```bash
+uvx --from git+https://github.com/nibzard/slidegauge slidegauge <path-to-presentation.md> --text
+```
+
+Compare before/after scores and confirm improvements.
+
+## Workflow
+
+1. **Analyze**: Run SlideGauge to get baseline scores
+2. **Prioritize**: Focus on slides scoring < 70 first, then < 80
+3. **Fix**: Apply fixes from FIXES.md based on diagnostics
+4. **Validate**: Re-run to confirm improvements
+5. **Iterate**: Repeat until all slides pass (≥70) or user is satisfied
+
+## Key Thresholds
+
+- **70**: Minimum passing score (slides below this MUST be fixed)
+- **80**: Good quality (recommend fixing these)
+- **90+**: Excellent quality
+- **100**: Perfect score
+
+## Category Scores
+
+- **a11y**: Accessibility (alt text, contrast)
+- **code**: Code block length and complexity
+- **color**: Color usage and contrast ratios
+- **content**: Text length, bullets, line count
+- **layout**: Overall slide structure
+
+## Best Practices
+
+1. **Always show user the results** - don't just fix silently
+2. **Explain WHY** each fix improves the slide
+3. **Get user approval** before making major changes (splitting slides, removing content)
+4. **Preserve user intent** - don't change technical content
+5. **Re-validate after fixes** to show improvement
+
+## Examples
+
+See [EXAMPLES.md](EXAMPLES.md) for detailed examples of:
+- Analyzing a full presentation
+- Fixing specific slide issues
+- Splitting overloaded slides
+- Optimizing code examples
+
+## Reference
+
+See [REFERENCE.md](REFERENCE.md) for complete SlideGauge rule documentation.
+
+## Dependencies
+
+SlideGauge is installed via uvx on-demand:
+```bash
+uvx --from git+https://github.com/nibzard/slidegauge slidegauge --help
+```
+
+No manual installation required - uvx handles it automatically.

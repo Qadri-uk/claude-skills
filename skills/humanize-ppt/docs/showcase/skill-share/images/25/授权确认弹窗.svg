@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-label="授权确认弹窗">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#191510"/>
+      <stop offset=".56" stop-color="#27221b"/>
+      <stop offset="1" stop-color="#3c3225"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#efe4cf" stop-opacity=".14"/>
+      <stop offset="1" stop-color="#efe4cf" stop-opacity=".06"/>
+    </linearGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <g fill="none" stroke="#efe4cf" stroke-opacity=".11">
+    <path d="M120 170H1480"/>
+    <path d="M120 830H1480"/>
+    <path d="M245 96V904"/>
+    <path d="M1355 96V904"/>
+  </g>
+  <circle cx="800" cy="500" r="330" fill="#efe4cf" opacity=".035"/>
+  <circle cx="800" cy="500" r="236" fill="none" stroke="#efe4cf" stroke-opacity=".12"/>
+  <g transform="translate(405 226)">
+    <rect x="-30" y="-30" width="850" height="608" fill="#000" opacity=".24" filter="url(#soft)"/>
+    <rect width="790" height="548" fill="url(#panel)" stroke="#efe4cf" stroke-opacity=".5"/>
+    <g fill="#efe4cf">
+      <text x="54" y="78" font-family="monospace" font-size="22" letter-spacing="9" fill-opacity=".58">OPENCLAW · PERMISSION</text>
+      <text x="54" y="152" font-family="serif" font-size="64">确认后再执行</text>
+      <text x="54" y="208" font-family="sans-serif" font-size="25" fill-opacity=".72">OpenClaw 准备操作办公系统，需要你的确认。</text>
+    </g>
+    <g transform="translate(54 270)" font-family="sans-serif" font-size="25" fill="#efe4cf">
+      <rect width="682" height="74" fill="#efe4cf" opacity=".055" stroke="#efe4cf" stroke-opacity=".18"/>
+      <text x="30" y="46" fill-opacity=".86">发送群消息</text>
+      <text x="520" y="46" font-family="monospace" font-size="20" letter-spacing="6" fill-opacity=".52">REQUIRE</text>
+    </g>
+    <g transform="translate(54 358)" font-family="sans-serif" font-size="25" fill="#efe4cf">
+      <rect width="682" height="74" fill="#efe4cf" opacity=".055" stroke="#efe4cf" stroke-opacity=".18"/>
+      <text x="30" y="46" fill-opacity=".86">更新云文档</text>
+      <text x="520" y="46" font-family="monospace" font-size="20" letter-spacing="6" fill-opacity=".52">REQUIRE</text>
+    </g>
+    <g transform="translate(54 466)">
+      <rect width="290" height="74" fill="none" stroke="#efe4cf" stroke-opacity=".32"/>
+      <text x="145" y="47" text-anchor="middle" fill="#efe4cf" fill-opacity=".7" font-family="monospace" font-size="22" letter-spacing="6">CANCEL</text>
+      <rect x="392" width="290" height="74" fill="#efe4cf" opacity=".9"/>
+      <text x="537" y="47" text-anchor="middle" fill="#211c18" font-family="monospace" font-size="22" letter-spacing="6">AUTHORIZE</text>
+    </g>
+  </g>
+  <g transform="translate(1212 742)" fill="#efe4cf" text-anchor="middle">
+    <circle r="82" fill="none" stroke="#efe4cf" stroke-opacity=".48"/>
+    <path d="M-24 2L-6 20L34-30" fill="none" stroke="#efe4cf" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="0" y="128" font-family="monospace" font-size="20" letter-spacing="8" fill-opacity=".5">HUMAN CONFIRM</text>
+  </g>
+</svg>

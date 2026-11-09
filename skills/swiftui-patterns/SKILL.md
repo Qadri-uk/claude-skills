@@ -1,71 +1,95 @@
 ---
-name: swiftui-patterns
-description: |
-  Best practices and example-driven guidance for SwiftUI views and components:
-  tab architecture, navigation hierarchies, screen composition, custom view
-  modifiers, and responsive layouts. Keeps SwiftUI code idiomatic and maintainable
-  for Apple platform apps.
-triggers:
-  - "SwiftUI patterns"
-  - "SwiftUI components"
-  - "SwiftUI tab architecture"
-  - "SwiftUI screen"
-das:
-  category: visual-components
-  upstream: "https://github.com/Dimillian/Skills"
-  upstream_path: "swiftui-ui-patterns/SKILL.md"
-  version: latest
-  install: true
+name: swiftui-ui-patterns
+description: Best practices and example-driven guidance for building SwiftUI views and components, including navigation hierarchies, custom view modifiers, and responsive layouts with stacks and grids. Use when creating or refactoring SwiftUI UI, designing tab architecture with TabView, composing screens with VStack/HStack, managing @State or @Binding, building declarative iOS interfaces, or needing component-specific patterns and examples.
 ---
 
-# swiftui-patterns
+# SwiftUI UI Patterns
 
-> Catalogue stub — full skill: [Dimillian/Skills](https://github.com/Dimillian/Skills)
+## Quick start
 
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
+Choose a track based on your goal:
 
-1. **Is the full skill already installed?**
-   Upstream names this skill `swiftui-ui-patterns`, so it installs next to this pointer (the pointer is not replaced).
-   - Global: `f=~/.agents/skills/swiftui-ui-patterns/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/swiftui-ui-patterns/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `swiftui-ui-patterns`, invoke it and proceed
-   - `pointer` → go to step 2
+### Existing project
 
-2. **Detect scope, then install:**
+- Identify the feature or screen and the primary interaction model (list, detail, editor, settings, tabbed).
+- Find a nearby example in the repo with `rg "TabView\("` or similar, then read the closest SwiftUI view.
+- Apply local conventions: prefer SwiftUI-native state, keep state local when possible, and use environment injection for shared dependencies.
+- Choose the relevant component reference from `references/components-index.md` and follow its guidance.
+- If the interaction reveals secondary content by dragging or scrolling the primary content away, read `references/scroll-reveal.md` before implementing gestures manually.
+- Build the view with small, focused subviews and SwiftUI-native data flow.
 
-   ```bash
-   [ -e ~/.agents/skills/swiftui-patterns ] && echo "global" || echo "project"
-   ```
+### New project scaffolding
 
-   **Global:**
-   ```bash
-   npx skills add Dimillian/Skills --skill swiftui-ui-patterns -g -y
-   ```
+- Start with `references/app-wiring.md` to wire TabView + NavigationStack + sheets.
+- Add a minimal `AppTab` and `RouterPath` based on the provided skeletons.
+- Choose the next component reference based on the UI you need first (TabView, NavigationStack, Sheets).
+- Expand the route and sheet enums as new screens are added.
 
-   **Project:**
-   ```bash
-   npx skills add Dimillian/Skills --skill swiftui-ui-patterns -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
+## General rules to follow
 
-**Heads-up**
+- Use modern SwiftUI state (`@State`, `@Binding`, `@Observable`, `@Environment`) and avoid unnecessary view models.
+- If the deployment target includes iOS 16 or earlier and cannot use the Observation API introduced in iOS 17, fall back to `ObservableObject` with `@StateObject` for root ownership, `@ObservedObject` for injected observation, and `@EnvironmentObject` only for truly shared app-level state.
+- Prefer composition; keep views small and focused.
+- Use async/await with `.task` and explicit loading/error states. For restart, cancellation, and debouncing guidance, read `references/async-state.md`.
+- Keep shared app services in `@Environment`, but prefer explicit initializer injection for feature-local dependencies and models. For root wiring patterns, read `references/app-wiring.md`.
+- Prefer the newest SwiftUI API that fits the deployment target and call out the minimum OS whenever a pattern depends on it.
+- Maintain existing legacy patterns only when editing legacy files.
+- Follow the project's formatter and style guide.
+- **Sheets**: Prefer `.sheet(item:)` over `.sheet(isPresented:)` when state represents a selected model. Avoid `if let` inside a sheet body. Sheets should own their actions and call `dismiss()` internally instead of forwarding `onCancel`/`onConfirm` closures.
+- **Scroll-driven reveals**: Prefer deriving a normalized progress value from scroll offset and driving the visual state from that single source of truth. Avoid parallel gesture state machines unless scroll alone cannot express the interaction.
 
-- **License:** MIT
-- **Name collision:** `swiftui-ui-patterns` is also written by `swiftui-claude-skills` (its install or its catalogue pointer); installing both overwrites the earlier one.
-<!-- das:install:end -->
+## State ownership summary
 
-## Invoke after install
+Use the narrowest state tool that matches the ownership model:
 
-- Skill name: `swiftui-ui-patterns`
-- Trigger phrases: "SwiftUI patterns", "SwiftUI components", "SwiftUI tab architecture", "SwiftUI screen"
+| Scenario | Preferred pattern |
+| --- | --- |
+| Local UI state owned by one view | `@State` |
+| Child mutates parent-owned value state | `@Binding` |
+| Root-owned reference model on iOS 17+ | `@State` with an `@Observable` type |
+| Child reads or mutates an injected `@Observable` model on iOS 17+ | Pass it explicitly as a stored property |
+| Shared app service or configuration | `@Environment(Type.self)` |
+| Legacy reference model on iOS 16 and earlier | `@StateObject` at the root, `@ObservedObject` when injected |
 
-## What it does
+Choose the ownership location first, then pick the wrapper. Do not introduce a reference model when plain value state is enough.
 
-Provides best practices and example-driven guidance for building SwiftUI views and components on Apple platforms: tab-based navigation architecture with `TabView`, navigation hierarchies, screen composition with stacks and grids, custom view modifiers, `@State` and `@Binding` management, and component-specific patterns with reference examples. Keeps SwiftUI code idiomatic and avoids common architectural mistakes that cause layout or state-management issues.
+## Cross-cutting references
 
-## When NOT to use
+- `references/navigationstack.md`: navigation ownership, per-tab history, and enum routing.
+- `references/sheets.md`: centralized modal presentation and enum-driven sheets.
+- `references/deeplinks.md`: URL handling and routing external links into app destinations.
+- `references/app-wiring.md`: root dependency graph, environment usage, and app shell wiring.
+- `references/async-state.md`: `.task`, `.task(id:)`, cancellation, debouncing, and async UI state.
+- `references/previews.md`: `#Preview`, fixtures, mock environments, and isolated preview setup.
+- `references/performance.md`: stable identity, observation scope, lazy containers, and render-cost guardrails.
 
-- Liquid Glass (iOS 26) APIs → use `liquid-glass-skill`
-- Visual design direction for SwiftUI apps → use `swiftui-design-skill`
-- A broader SwiftUI skill set → use `swiftui-claude-skills`
+## Anti-patterns
+
+- Giant views that mix layout, business logic, networking, routing, and formatting in one file.
+- Multiple boolean flags for mutually exclusive sheets, alerts, or navigation destinations.
+- Live service calls directly inside `body`-driven code paths instead of view lifecycle hooks or injected models/services.
+- Reaching for `AnyView` to work around type mismatches that should be solved with better composition.
+- Defaulting every shared dependency to `@EnvironmentObject` or a global router without a clear ownership reason.
+
+## Workflow for a new SwiftUI view
+
+1. Define the view's state, ownership location, and minimum OS assumptions before writing UI code.
+2. Identify which dependencies belong in `@Environment` and which should stay as explicit initializer inputs.
+3. Sketch the view hierarchy, routing model, and presentation points; extract repeated parts into subviews. For complex navigation, read `references/navigationstack.md`, `references/sheets.md`, or `references/deeplinks.md`. **Build and verify no compiler errors before proceeding.**
+4. Implement async loading with `.task` or `.task(id:)`, plus explicit loading and error states when needed. Read `references/async-state.md` when the work depends on changing inputs or cancellation.
+5. Add previews for the primary and secondary states, then add accessibility labels or identifiers when the UI is interactive. Read `references/previews.md` when the view needs fixtures or injected mock dependencies.
+6. Validate with a build: confirm no compiler errors, check that previews render without crashing, ensure state changes propagate correctly, and sanity-check that list identity and observation scope will not cause avoidable re-renders. Read `references/performance.md` if the screen is large, scroll-heavy, or frequently updated. For common SwiftUI compilation errors — missing `@State` annotations, ambiguous `ViewBuilder` closures, or mismatched generic types — resolve them before updating callsites. **If the build fails:** read the error message carefully, fix the identified issue, then rebuild before proceeding to the next step. If a preview crashes, isolate the offending subview, confirm its state initialisation is valid, and re-run the preview before continuing.
+
+## Component references
+
+Use `references/components-index.md` as the entry point. Each component reference should include:
+- Intent and best-fit scenarios.
+- Minimal usage pattern with local conventions.
+- Pitfalls and performance notes.
+- Paths to existing examples in the current repo.
+
+## Adding a new component reference
+
+- Create `references/<component>.md`.
+- Keep it short and actionable; link to concrete files in the current repo.
+- Update `references/components-index.md` with the new entry.

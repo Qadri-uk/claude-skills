@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1050" role="img" aria-label="飞书对话截图，展示 OpenClaw 判断工作流并写入 Rules">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4efe3"/>
+      <stop offset="1" stop-color="#d6c9b3"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#211b16" flood-opacity=".12"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="1050" fill="url(#bg)"/>
+  <rect x="52" y="54" width="1496" height="942" rx="26" fill="#f8f4ec" stroke="#211b16" stroke-opacity=".12" filter="url(#shadow)"/>
+
+  <rect x="52" y="54" width="1496" height="72" rx="26" fill="#efe7d8"/>
+  <circle cx="102" cy="90" r="10" fill="#d98272"/>
+  <circle cx="132" cy="90" r="10" fill="#d9b56f"/>
+  <circle cx="162" cy="90" r="10" fill="#88a783"/>
+  <text x="220" y="98" fill="#211b16" font-family="Arial, 'Noto Sans SC', sans-serif" font-size="28" font-weight="700">Skill 工作流判断</text>
+  <text x="1390" y="98" fill="#211b16" fill-opacity=".48" font-family="Menlo, monospace" font-size="20">Feishu IM</text>
+
+  <rect x="78" y="150" width="260" height="812" fill="#ede5d5"/>
+  <text x="116" y="208" fill="#211b16" font-family="Arial, 'Noto Sans SC', sans-serif" font-size="28" font-weight="700">OpenClaw 助手</text>
+  <text x="116" y="256" fill="#211b16" fill-opacity=".55" font-family="Arial, 'Noto Sans SC', sans-serif" font-size="22">工作流 / Rules / 交付</text>
+  <line x1="116" y1="304" x2="300" y2="304" stroke="#211b16" stroke-opacity=".16"/>
+  <text x="116" y="360" fill="#211b16" fill-opacity=".58" font-family="Menlo, monospace" font-size="18" letter-spacing="4">TASK</text>
+  <text x="116" y="402" fill="#211b16" font-family="Arial, 'Noto Sans SC', sans-serif" font-size="24">飞书发起</text>
+  <text x="116" y="444" fill="#211b16" font-family="Arial, 'Noto Sans SC', sans-serif" font-size="24">内容生成</text>
+  <text x="116" y="486" fill="#211b16" font-family="Arial, 'Noto Sans SC', sans-serif" font-size="24">页面产出</text>
+  <text x="116" y="528" fill="#211b16" font-family="Arial, 'Noto Sans SC', sans-serif" font-size="24">团队交付</text>
+
+  <g transform="translate(390 164)">
+    <text x="0" y="0" fill="#211b16" fill-opacity=".52" font-family="Menlo, monospace" font-size="18" letter-spacing="5">1 · USER INPUT</text>
+    <rect x="0" y="22" width="930" height="122" rx="16" fill="#e8ddca" stroke="#211b16" stroke-opacity=".1"/>
+    <text x="32" y="70" fill="#211b16" font-family="Arial, 'Noto Sans SC', sans-serif" font-size="27">从飞书发起一个品牌物料任务：</text>
+    <text x="32" y="108" fill="#211b16" font-family="Arial, 'Noto Sans SC', sans-serif" font-size="27">先整理需求，再生成内容和 PPT，最后判断发布还是回传。</text>
+  </g>
+
+  <g transform="translate(500 340)">
+    <text x="0" y="0" fill="#211b16" fill-opacity=".52" font-family="Menlo, monospace" font-size="18" letter-spacing="5">2 · OPENCLAW JUDGEMENT</text>
+    <rect x="0" y="22" width="930" height="240" rx="16" fill="#f4efe5" stroke="#211b16" stroke-opacity=".12"/>
+    <text x="34" y="74" fill="#211b16" font-family="Arial, 'Noto Sans SC', sans-serif" font-size="26" font-weight="700">我会先拆成 5 个步骤：</text>
+    <g font-family="Arial, 'Noto Sans SC', sans-serif" font-size="24" fill="#211b16">
+      <text x="34" y="119">01 识别任务类型和交付目标</text>
+      <text x="34" y="154">02 调用内容 / 结构化 Skill 生成基底</text>
+      <text x="34" y="189">03 调用 HTML PPT Skill 生成页面</text>
+      <text x="34" y="224">04 判断在线演示发布，还是内部评审回传</text>
+      <text x="34" y="259">05 发送、覆盖、上传前先请求确认</text>
+    </g>
+  </g>
+
+  <g transform="translate(390 660)">
+    <text x="0" y="0" fill="#211b16" fill-opacity=".52" font-family="Menlo, monospace" font-size="18" letter-spacing="5">3 · RULES SNIPPET</text>
+    <rect x="0" y="22" width="1040" height="226" rx="16" fill="#ded3c0" stroke="#211b16" stroke-opacity=".14"/>
+    <g font-family="Menlo, 'Noto Sans SC', monospace" font-size="19" fill="#211b16">
+      <text x="34" y="62">当任务从飞书发起，先识别任务类型和交付目标。</text>
+      <text x="34" y="94">如果需要内容生成，先调用文案或结构化 Skill。</text>
+      <text x="34" y="126">如果需要页面产出，再调用 HTML PPT Skill。</text>
+      <text x="34" y="158">如果需要在线演示或对外分享，调用 frontend-slides 发布。</text>
+      <text x="34" y="190">如果只需要内部评审，导出 HTML、PDF、截图或源文件并回传飞书。</text>
+      <text x="34" y="222">涉及发送、覆盖、上传等关键动作时，先请求确认。</text>
+    </g>
+  </g>
+
+</svg>

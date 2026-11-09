@@ -1,73 +1,117 @@
 ---
 name: figma-variables-tokens-generator
-description: |
-  Guides creation of a W3C-compliant token system via an interview, generates
-  a structured ZIP of JSON token files organized by collection tier (Primitives,
-  Theme, Semantic, Component), and relies on a separate Figma plugin that imports
-  them in dependency order.
-triggers:
-  - "Figma variables"
-  - "token generator"
-  - "figma-variables-tokens"
-  - "W3C token ZIP"
-  - "Shanmus4"
-  - "token collection tiers"
-das:
-  type: package
-  category: figma-code
-  upstream: "https://github.com/Shanmus4/figma-variables-tokens-generator"
-  upstream_path: "figma-variables-tokens-generator/SKILL.md"
-  version: latest
-  install: false
+description: >
+  Generate a fully connected design token system instantly from a chat prompt.
+  Supports everything from a simple 1-tier flat architecture, to 2/3-tier systems 
+  (Primitives, Semantic with light/dark modes, Component Colors), all the way up to an 
+  enterprise 4-tier setup (Primitives, Theme, Semantic, Component Colors + optional collections). The AI will use a 
+  dedicated plugin ([Variables Tokens Collections Importer](https://www.figma.com/community/plugin/1619733963699677957)) to instantly 
+  get all your variables cleanly generated. View the full documentation and 
+  repository to learn more: https://github.com/Shanmus4/figma-variables-tokens-generator. 
+  Triggered when user asks to create Figma variables, design tokens, a design system, 
+  "Figma token export", "variables for Figma", or any request to set up colours/spacing/
+  typography as Figma variables.
 ---
 
-# figma-variables-tokens-generator
+# Figma Variables Tokens Generator
 
-> Catalogue stub — full package: [Shanmus4/figma-variables-tokens-generator](https://github.com/Shanmus4/figma-variables-tokens-generator)
+Generate production-ready Figma Variables JSON ZIPs that import with zero errors.
+Approach each system as both senior product designer and senior frontend engineer.
+Enforce ID stability across modes and absolute path normalization throughout.
 
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
+## Non-Negotiable Generation Invariants
 
-1. **Is the full skill already installed?**
-   - Global: `f=~/.agents/skills/figma-variables-tokens-generator/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/figma-variables-tokens-generator/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `figma-variables-tokens-generator`, invoke it and proceed
-   - `pointer` → go to step 2
+These rules apply to every architecture, every collection, every naming style, and every user input combination.
 
-2. **Detect scope, then install:**
+1. **One canonical token path per variable**
+   - A token path must have exactly one canonical representation across:
+     - planning/data maps
+     - `prebuild_ids()`
+     - `create_token()`
+     - emitted JSON nesting keys
+     - `aliasData.targetVariableName`
+     - validation registries
+   - Never preserve one casing in JSON and a different casing in the registry.
+   - Never let alias targets be normalized differently from emitted variable names.
 
-   ```bash
-   [ -e ~/.agents/skills/figma-variables-tokens-generator ] && echo "global" || echo "project"
-   ```
+2. **Variable paths are architecture data, not code syntax**
+   - `com.figma.codeSyntax` may be camelCase, kebab-case, CSS custom properties, Android, or iOS.
+   - The token path itself must remain a stable collection path.
+   - Do not convert token paths to match code syntax conventions.
+   - Preserve semantic separators exactly as required by the references: for example `link-hover`, `on-brand`, `on-surface-variant`, `lineHeight`, `letterSpacing`, `borderWidth`, `minWidth`, `maxWidth`.
 
-   **Global:**
-   ```bash
-   npx skills add Shanmus4/figma-variables-tokens-generator --skill figma-variables-tokens-generator -g -y
-   ```
+3. **Literal path preservation**
+   - When a reference file defines a path literally, emit that path literally.
+   - Do not silently rewrite kebab-case to camelCase or remove hyphens from semantic names.
+   - Component and custom collections may introduce new paths, but once chosen, that spelling must remain identical end-to-end.
 
-   **Project:**
-   ```bash
-   npx skills add Shanmus4/figma-variables-tokens-generator --skill figma-variables-tokens-generator -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
+4. **Artifact-level validation is mandatory**
+   - Do not trust only the internal registry.
+   - After building all files, flatten the actual emitted JSON keys from every collection and validate every alias target against those emitted paths.
+   - A build is not safe unless the emitted JSON graph and the internal registry agree exactly.
 
-**Heads-up**
+5. **Scope correctness is mandatory**
+   - Validate scopes from the emitted artifact, not just helper intent.
+   - `text/*` and all text-role descendants must resolve to `TEXT_FILL`.
+   - `border/*` and border-role descendants must resolve to `STROKE`.
+   - `icon/*` must resolve to `SHAPE_FILL` + `STROKE`.
+   - `shadow/*/color` must resolve to `EFFECT_COLOR`.
+   - Numerical typography paths must resolve to `FONT_SIZE`, `LINE_HEIGHT`, `LETTER_SPACING`.
+   - If a path is ambiguous, add an explicit rule before generating. Never rely on a broad fill fallback for semantic text or border tokens.
 
-- **Requires:** Python 3 (the skill generates the token ZIP by running its bundled Python generator); A Figma account and the free Figma Community plugin "Variables Tokens Collections Importer" (not part of this install) to import the ZIP
-- **License:** Apache-2.0
-<!-- das:install:end -->
+6. **Coverage floors are contractual**
+   - If the user selected Lean, Standard, or Enterprise, the generated token inventory must satisfy that density floor in the relevant references.
+   - Do not under-generate because a manual data map happened to stop early.
+   - Theme/Semantic/Component outputs must be derived from the required path inventories first, then extended as needed.
 
-## Invoke after install
+7. **Backfilling prevents absence, not identity drift**
+   - Backfill missing parent values before saving parent collections.
+   - But do not assume backfilling solves path-casing, path-spelling, or alias-name mismatches.
+   - Missing token and mismatched token are different failure classes and must be validated separately.
 
-- Skill name: `figma-variables-tokens-generator`
-- Triggers: "Figma variables", "token generator", "W3C token ZIP", "Shanmus4"
+**Output format:** Deliver only `.zip` files containing the JSON tokens. Do not output `.skill` files or dump raw Python scripts — users expect ready-to-import ZIPs, not code, and dumping scripts into the chat causes context truncation that breaks the generation.
 
-## What it does
+## Local IDE / CLI Output Rule
 
-Interviews you about your brand colours, spacing, typography and the token architecture you want (from a flat single tier up to four tiers), then generates a W3C Design Token Community Group (DTCG) compliant ZIP archive with a bundled Python generator. The ZIP contains JSON token files organized into collection tiers: Primitives (raw values), Theme, Semantic (contextual aliases, with light/dark modes) and Component (component-specific tokens), with Figma variable scoping applied and alias chains kept stable across modes. The ZIP is imported into Figma Variables with the companion Figma Community plugin "Variables Tokens Collections Importer", which respects dependency order across tiers; that plugin is a separate install and is not fetched by this pointer.
+When running in a local IDE or CLI workspace:
+- Always create an `exports/` folder if it does not exist
+- Save the final token ZIP inside `exports/`
+- Do not scatter generated artifacts in the project root
+- Do not create extra manifests, debug JSON files, helper reports, or generator scripts unless the user explicitly asked for them or they are required to recover from a generation failure
 
-## When NOT to use
+Default expectation:
+- one final ZIP in `exports/`
+- minimal additional files
 
-- Code-side token management and pipelines — use `design-tokens-skill`
-- Existing design systems not based in Figma
-- Figma design operations unrelated to tokens — use the Figma MCP (`figma-official-skills`)
+## Read Order — STAGED LOADING
+
+To prevent context pollution, read only the files required for your current load stage:
+
+### Load Stage 1: Discovery & Strategy (Read at Turn 1)
+| # | File | Purpose |
+|---|------|---------|
+| 1 | `instructions/01-interview-setup.md` | Initial setup & Turns 1–3 |
+| 2 | `instructions/02-questionnaire-and-generation.md` | Questionnaire Turns 4–10, generation |
+| 3 | `references/01-architecture.md` | **Mandatory Strategy:** Understanding Tiers and alias rules. |
+
+### Load Stage 2: Architecture Confirmation (Read before Phase 2)
+| # | File | Purpose |
+|---|------|---------|
+| 4 | `references/05a-collections-core.md` | Design specs for Core collections |
+| 5 | `references/05b-collections-semantic-components.md` | Design specs for Semantic/Component collections |
+
+### Load Stage 3: Generation Logic (Read before Phase 3)
+| # | File | Purpose |
+|---|------|---------|
+| 6 | `references/02-scoping-rules.md` | Technical scoping tables |
+| 7 | `references/03-json-format.md` | Exact W3C JSON structure |
+| 8 | `references/04-primitives.md` | Raw hex/spacing/font data |
+| 9 | `references/06-generator-utility.md` | Python generation script patterns |
+| 10 | `scripts/generator_core.py` | Executable Python engine (for local/IDE environments) |
+
+### Load Stage 4: Delivery & Handoff (Read after ZIP delivery and token count reporting are complete)
+| # | File | Purpose |
+|---|------|---------|
+| 11| `instructions/03-import-and-handoff.md` | Import guide & ZIP reference table |
+
+> Do not read Load Stage 3 implementation files (scoping rules, JSON format, generator utility) until the interview is 100% complete. Reading them early fills context with technical data that is not needed yet.

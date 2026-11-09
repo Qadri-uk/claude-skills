@@ -1,83 +1,66 @@
 ---
 name: styleseed
-description: |
-  Design method engine that teaches agents design judgment, not just data. One
-  entry-point skill routes to internal workflows for setup, build, review, scoring,
-  rendered verification, tokens, motion, accessibility, copy and updates. Compiles
-  project-specific rules from a design lock (STYLESEED.md), with brand skins and
-  structural recipes, and a score-then-fix quality gate. Works with Claude Code,
-  Codex and Cursor.
-triggers:
-  - "styleseed"
-  - "brand skin"
-  - "design judgment"
-  - "ss-tokens"
-  - "ss-component"
-  - "design engine rules"
-das:
-  type: package
-  category: design-systems
-  upstream: "https://github.com/bitjaru/styleseed"
-  upstream_path: "skills/styleseed/SKILL.md"
-  version: latest
+description: Build, improve, or inspect UI with StyleSeed. Preserves project design choices and routes setup, layout, tokens, review, rendered verification, and updates through one entry point.
 ---
 
-# styleseed
+# StyleSeed
 
-> Catalogue stub — full skill: [bitjaru/styleseed](https://github.com/bitjaru/styleseed)
+Use the user's goal to choose one first workflow below. This is the only registered core
+skill; the 22 workflows and their executable dependencies ship inside this directory.
+Read only the selected workflow, then references needed for that task.
 
-<!-- das:install:start — generated from stub.yaml by `npm run generate`; edit stub.yaml, not this block -->
-## Decision tree
+## Registry-first artifact boundary
 
-1. **Is the full skill already installed?**
-   - Global: `f=~/.agents/skills/styleseed/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - Project: `f=.agents/skills/styleseed/SKILL.md; [ -f "$f" ] && ! grep -q "^das:" "$f" && echo "installed" || echo "pointer"`
-   - `installed` → the skill is installed as `styleseed`, invoke it and proceed
-   - `pointer` → go to step 2
+When `.styleseed/project.json` and `.styleseed/artifacts/index.json` exist, resolve the requested
+artifact first. Read its `.styleseed/bundles/<artifact-id>.md` and manifest. A partial or invalid
+registry is an error; never fall back to the global legacy bundle. Legacy projects may use
+`.styleseed/effective-rules.md` only when no registry exists.
 
-2. **Detect scope, then install:**
+Before the first workflow in a project/task session, follow the
+[update preflight](workflows/ss-update/references/update-preflight.md).
 
-   ```bash
-   [ -e ~/.agents/skills/styleseed ] && echo "global" || echo "project"
-   ```
+## Working contract
 
-   **Global:**
-   ```bash
-   npx skills add bitjaru/styleseed --skill styleseed -g -y
-   ```
+- Preserve approved project design choices. Support expert judgment; a score is not human acceptance.
+- Resolve the current artifact first. For multiple plausible artifacts, ask one bounded clarification question.
+- Never fan out to run every workflow. Choose exactly one first workflow; it may call the required gates.
+- Honor the user's authorized scope. Audit, score, verify, and status requests do not authorize edits.
+  Workflow metadata records the intended tool/scope boundary even though it is not host registration metadata.
+- Paths in workflow files are relative to those files. Resolve installed scripts from this skill's
+  actual directory, never assume a particular agent folder or download a missing sibling skill.
+- In older instructions, `/ss-build`, `$ss-build`, and other `ss-*` names mean the corresponding
+  internal workflow. Read `workflows/<name>/WORKFLOW.md`; do not invoke an unregistered skill.
+  Users may say `StyleSeed build`, `$styleseed build`, or the old workflow name in natural language.
+- Learning is an optional extension, not part of the core install. Only for explicit learning capture,
+  use separately installed `ss-learn`; if absent, report that dependency and never auto-install it.
 
-   **Project:**
-   ```bash
-   npx skills add bitjaru/styleseed --skill styleseed -y
-   ```
-   > **Claude Code:** send a command as a chat message starting with `!` to run it without leaving the conversation.
+## Choose exactly one first workflow
 
-**Claude Code plugin route:**
+| Request | Read |
+|---|---|
+| Build or redesign a screen, page, or component | [build](workflows/ss-build/WORKFLOW.md) |
+| First setup or missing design lock | [setup](workflows/ss-setup/WORKFLOW.md) |
+| Explore creative directions; direction not yet selected | [studio](workflows/ss-studio/WORKFLOW.md) |
+| Use screenshot, URL, Figma export, or existing UI as a reference | [reference](workflows/ss-reference/WORKFLOW.md) |
+| What is wrong with this screen; UX critique | [audit](workflows/ss-audit/WORKFLOW.md) |
+| Review implementation against project design rules | [review](workflows/ss-review/WORKFLOW.md) |
+| Score implementation or run code/evidence gates | [score](workflows/ss-score/WORKFLOW.md) |
+| Inspect rendered output, screenshot, or spacing in pixels | [verify](workflows/ss-verify/WORKFLOW.md) |
+| Change spacing/density or another single design axis | [dial](workflows/ss-dial/WORKFLOW.md) |
+| Apply an aesthetic profile | [restyle](workflows/ss-restyle/WORKFLOW.md) |
+| Brand color, semantic palette, or design tokens | [tokens](workflows/ss-tokens/WORKFLOW.md) |
+| Named animation or motion treatment | [motion](workflows/ss-motion/WORKFLOW.md) |
+| Specifically scaffold a page | [page](workflows/ss-page/WORKFLOW.md) |
+| Specifically generate a reusable component | [component](workflows/ss-component/WORKFLOW.md) |
+| Compose existing primitives into a UI pattern | [pattern](workflows/ss-pattern/WORKFLOW.md) |
+| Accessibility audit and requested fixes | [a11y](workflows/ss-a11y/WORKFLOW.md) |
+| Quick design lint | [lint](workflows/ss-lint/WORKFLOW.md) |
+| Navigation and user flows | [flow](workflows/ss-flow/WORKFLOW.md) |
+| UX microcopy | [copy](workflows/ss-copy/WORKFLOW.md) |
+| Loading, empty, success, or error states | [feedback](workflows/ss-feedback/WORKFLOW.md) |
+| Update installation or consolidate old skill entries | [update](workflows/ss-update/WORKFLOW.md) |
+| Compile rules, inspect local install/bundle/evidence health | [resolve](workflows/ss-resolve/WORKFLOW.md) |
 
-```
-claude plugin marketplace add bitjaru/styleseed
-claude plugin install styleseed@styleseed
-```
-
-**Heads-up**
-
-- **Requires:** Node.js and npm (the skill's bundled context compiler and quality gates run as Node scripts); Writes STYLESEED.md (a design lock) and a .styleseed/ directory into your project when its setup and build workflows run
-- **License:** MIT
-- **Download size:** ~77 MB.
-<!-- das:install:end -->
-
-## Invoke after install
-
-- Skill name: `styleseed` (the only registered skill)
-- Claude Code: `/styleseed <request>`, for example `/styleseed Help improve this screen. Preserve our existing design choices.`; Codex: `$styleseed <request>`
-- Name the workflow in the request: `/styleseed setup`, `/styleseed resolve`, `/styleseed build`, `/styleseed review`, `/styleseed score`, `/styleseed verify`, `/styleseed tokens`. The former separate `/ss-*` commands (for example `/ss-build`, `/ss-tokens`) are now internal workflows of this one skill.
-
-## What it does
-
-StyleSeed turns recorded design decisions into project-local rules and implementation workflows. The single `styleseed` skill picks one internal workflow from your request (setup, studio, reference, build, audit, review, score, verify, restyle, tokens, motion, accessibility, microcopy, flows, states, update) and applies the rules that fit the task. Setup writes a `STYLESEED.md` design lock (skin, key colour, radius, motion) so decisions survive new screens and sessions; a context compiler turns it into a small rule bundle under `.styleseed/`, and a render-and-score quality gate reviews the UI before it is shown to you. Skins are inspired-by token sets that restyle the same components. A score supports, but does not replace, human design acceptance.
-
-## When NOT to use
-
-- Component library without token/rule context — use `shadcn-ui` or `baseline-ui`
-- Design token architecture only — use `design-tokens-skill`
-- Single-page design review — use `design-review-garrytan` or `design-auditor`
+For status-only requests use resolve's read-only `scripts/styleseed-doctor.mjs`; do not update,
+recompile, or visually inspect instead. For vague requests infer the first step from project state
+and the user's goal; ask only when an unresolved choice materially changes the work.
