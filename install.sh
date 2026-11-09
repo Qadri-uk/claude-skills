@@ -7,7 +7,7 @@ REPO="qadri-uk/claude-skills"
 STATUS=0
 
 echo "==> Installing skills from $REPO"
-if npx -y skills add "$REPO" --skill '*' --agent claude-code --global --yes --full-depth; then
+if npx -y skills add "$REPO" --skill '*' --agent claude-code --global --yes --full-depth </dev/null; then
   echo "   skills: ok"
 else
   echo "   skills: npx skills add exited non-zero (usually a warning about duplicate names); continuing"
@@ -27,10 +27,10 @@ fi
 
 echo "==> MCP servers"
 if command -v claude >/dev/null 2>&1; then
-  claude mcp add shadcn --scope user -- npx -y shadcn@latest mcp >/dev/null 2>&1 && echo "   shadcn: added" || echo "   shadcn: already present or skipped"
-  claude mcp add chrome-devtools --scope user -- npx -y chrome-devtools-mcp@latest >/dev/null 2>&1 && echo "   chrome-devtools: added" || echo "   chrome-devtools: already present or skipped"
+  claude mcp add shadcn --scope user -- npx -y shadcn@latest mcp </dev/null >/dev/null 2>&1 && echo "   shadcn: added" || echo "   shadcn: already present or skipped"
+  claude mcp add chrome-devtools --scope user -- npx -y chrome-devtools-mcp@latest </dev/null >/dev/null 2>&1 && echo "   chrome-devtools: added" || echo "   chrome-devtools: already present or skipped"
   if [ -n "${MAGIC_API_KEY:-}" ]; then
-    claude mcp add magic --scope user -- npx -y @21st-dev/magic@latest "API_KEY=$MAGIC_API_KEY" >/dev/null 2>&1 && echo "   21st.dev magic: added" || echo "   21st.dev magic: already present or skipped"
+    claude mcp add magic --scope user -- npx -y @21st-dev/magic@latest "API_KEY=$MAGIC_API_KEY" </dev/null >/dev/null 2>&1 && echo "   21st.dev magic: added" || echo "   21st.dev magic: already present or skipped"
   else
     echo "   21st.dev magic: skipped (set MAGIC_API_KEY to enable)"
   fi
