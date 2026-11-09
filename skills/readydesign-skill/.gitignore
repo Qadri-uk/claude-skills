@@ -1,0 +1,8 @@
+.DS_Store
+*.swp
+*~
+Thumbs.db
+node_modules/
+dist/
+.npmrc
+release.md

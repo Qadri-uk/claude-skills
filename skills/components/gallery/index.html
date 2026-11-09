@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>components - live showpiece gallery</title>
+    <meta name="description" content="Showpiece React + Tailwind components, fetched live from their registries at build time by the components skill." />
+    <script>
+      // Set the theme before first paint, from the same key App.tsx's
+      // useTheme writes, so a light-theme visitor never sees a dark flash.
+      try {
+        var t = localStorage.getItem("components-gallery-theme");
+        if (t !== "dark" && t !== "light") t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

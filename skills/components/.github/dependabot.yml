@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # Keep the validation workflow's actions current. No package manifest ships
+  # with this skill, so github-actions is the only ecosystem to track.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # One PR per week for every action bump, instead of one PR per action
+    # (#59, #60 and #61 landed as three separate PRs for one round of bumps).
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    labels:
+      - "dependencies"
+      - "ci"

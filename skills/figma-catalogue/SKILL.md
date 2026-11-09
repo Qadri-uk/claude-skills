@@ -1,0 +1,58 @@
+---
+name: figma-catalogue
+description: |
+  Domain navigator for Figma, design-to-code, design tokens, and official
+  platform skill suites. Routes to the right skill for working between
+  design tools and code, managing design systems, or using official
+  platform skills (Anthropic, Vercel, Expo, Software Mansion, Callstack).
+triggers:
+  - "Figma skills"
+  - "design to code skills"
+  - "design system skills"
+  - "design tokens skills"
+  - "Stitch skills"
+  - "official platform skills"
+  - "platform suite skills"
+---
+
+# figma-catalogue
+
+Domain navigator for Figma, design-to-code workflows, design tokens, and official platform suites.
+Activate when the user asks for a skill that bridges design tools and code.
+
+→ For the full catalogue across all domains: use `design-catalogue`.
+
+## When to use
+
+Activate when the user:
+- Asks about Figma-to-code or code-to-Figma workflows
+- Needs design token management or extraction
+- Wants to work with design systems
+- Asks about official skill suites (Anthropic, Vercel, Expo, Figma)
+
+## Figma & Design-to-Code
+
+| Skill | Best for |
+|-------|----------|
+| [`figma-official-skills`](../figma-official-skills/SKILL.md) | Official Figma skills: design-to-code, generate, library, Code Connect, FigJam, Slides, motion |
+| [`openai-skills`](../openai-skills/SKILL.md) | Official OpenAI skills: Figma, imagegen, screenshot |
+| [`google-stitch-skills`](../google-stitch-skills/SKILL.md) | Google Stitch skills: design-md, prompt enhancement, React components, shadcn, loop |
+| [`extract-design-md`](../extract-design-md/SKILL.md) | Extract Stitch output into DESIGN.md format |
+| [`claude2figma`](../claude2figma/SKILL.md) | Enforces token compliance: colors/fonts/spacing → Figma variables |
+| [`work-with-design-systems`](../work-with-design-systems/SKILL.md) | Inspect (WCAG audit) + Build (6-phase with variable bindings) dual-mode |
+| [`figma-variables-tokens-generator`](../figma-variables-tokens-generator/SKILL.md) | Questionnaire → W3C token ZIP + Figma plugin for import |
+| [`figma-skill`](../figma-skill/SKILL.md) | Figma files via figma-developer-mcp → assets, tokens, code for Tailwind/React/Vue/Svelte/RN/Flutter/CSS (needs Figma token) |
+| [`extract-design-system`](../extract-design-system/SKILL.md) | Reverse-engineers tokens from any live website → tokens.json + tokens.css |
+| [`design-tokens-skill`](../design-tokens-skill/SKILL.md) | W3C DTCG token spec: OKLCH, references/aliasing, Terrazzo, Figma exports |
+
+## Official Platform Suites
+
+| Skill | Best for |
+|-------|----------|
+| [`anthropics-skills`](../anthropics-skills/SKILL.md) | Anthropic: frontend-design, artifacts, canvas, theme, brand, pptx |
+| [`vercel-skills`](../vercel-skills/SKILL.md) | Vercel skills: web-design-guidelines, writing guidelines, React best practices, composition, view transitions |
+| [`microsoft-skills`](../microsoft-skills/SKILL.md) | Microsoft: design review, dark-theme React |
+| [`software-mansion-skills`](../software-mansion-skills/SKILL.md) | Official Software Mansion: RN animations, gestures, SVG, on-device AI |
+| [`callstack-agent-skills`](../callstack-agent-skills/SKILL.md) | Official Callstack: RN best practices, profiling, Turbo Modules, upgrade |
+| [`expo-skills`](../expo-skills/SKILL.md) | Official Expo: Expo SDK, EAS Build/Submit, Expo Router |
+| [`composio-artifacts`](../composio-artifacts/SKILL.md) | Anthropic artifact patterns wired to GitHub/Slack/Linear through Composio (vendored copy) |

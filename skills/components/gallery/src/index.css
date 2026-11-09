@@ -1,0 +1,163 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --animate-marquee: marquee var(--duration) infinite linear;
+    --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+    --animate-meteor: meteor 5s linear infinite;
+    --animate-shimmer-slide: shimmer-slide var(--speed) ease-in-out infinite alternate;
+    --animate-spin-around: spin-around calc(var(--speed) * 2) infinite linear;
+    --animate-shiny-text: shiny-text 8s infinite;
+    --animate-spotlight: spotlight 2s ease .75s 1 forwards;
+  @keyframes marquee {
+  from {
+    transform: translateX(0);
+        }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+        }
+    }
+  @keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+        }
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+        }
+    }
+  @keyframes meteor {
+  0% {
+    transform: rotate(var(--angle)) translateX(0);
+    opacity: 1;
+        }
+  70% {
+    opacity: 1;
+        }
+  100% {
+    transform: rotate(var(--angle)) translateX(-500px);
+    opacity: 0;
+        }
+    }
+  @keyframes shimmer-slide {
+  to {
+    transform: translate(calc(100cqw - 100%), 0);
+        }
+    }
+  @keyframes spin-around {
+  0% {
+    transform: translateZ(0) rotate(0);
+        }
+  15%, 35% {
+    transform: translateZ(0) rotate(90deg);
+        }
+  65%, 85% {
+    transform: translateZ(0) rotate(270deg);
+        }
+  100% {
+    transform: translateZ(0) rotate(360deg);
+        }
+    }
+  @keyframes shiny-text {
+  0%, 90%, 100% {
+    background-position: calc(-100% - var(--shiny-width)) 0;
+        }
+  30%, 60% {
+    background-position: calc(100% + var(--shiny-width)) 0;
+        }
+    }
+  @keyframes spotlight {
+  0% {
+    opacity: 0;
+    transform: translate(-72%, -62%) scale(0.5);
+        }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -40%) scale(1);
+        }
+    }
+}
+
+/*
+ * Gallery chrome tokens (#74). Dark is the default; light applies when
+ * <html data-theme="light">, which index.html sets before first paint from the
+ * viewer's saved choice or prefers-color-scheme. Every text token clears 4.5:1
+ * on page, panel, and raised in its theme (#73):
+ *   dark   ink 16.4-18.2   ink-2 8.3-9.1   ink-3 5.5-6.1   warn 10.9 on warn-bg
+ *   light  ink 17.4-19.8   ink-2 8.4-9.6   ink-3 5.7-6.5   warn 6.4 on warn-bg
+ */
+@theme inline {
+  --color-page: var(--g-page);
+  --color-panel: var(--g-panel);
+  --color-raised: var(--g-raised);
+  --color-line: var(--g-line);
+  --color-ink: var(--g-ink);
+  --color-ink-2: var(--g-ink-2);
+  --color-ink-3: var(--g-ink-3);
+  --color-warn: var(--g-warn);
+  --color-warn-bg: var(--g-warn-bg);
+  --color-cta: var(--g-cta);
+  --color-cta-ink: var(--g-cta-ink);
+}
+
+:root {
+  color-scheme: dark;
+  --g-page: #0a0a0a;
+  --g-panel: #0f0f0f;
+  --g-raised: #171717;
+  --g-line: #2a2a2a;
+  --g-ink: #f5f5f5;
+  --g-ink-2: #b0b0b0;
+  --g-ink-3: #8f8f8f;
+  --g-warn: #fbbf24;
+  --g-warn-bg: #1c1408;
+  --g-cta: #f5f5f5;
+  --g-cta-ink: #0a0a0a;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --g-page: #fafafa;
+  --g-panel: #ffffff;
+  --g-raised: #f0f0f0;
+  --g-line: #dcdcdc;
+  --g-ink: #0a0a0a;
+  --g-ink-2: #454545;
+  --g-ink-3: #5e5e5e;
+  --g-warn: #92400e;
+  --g-warn-bg: #fef3c7;
+  --g-cta: #0a0a0a;
+  --g-cta-ink: #fafafa;
+}
+
+body {
+  background: var(--g-page);
+  color: var(--g-ink);
+}
+
+/* Upstream demos are authored for a dark background, so the stage they
+   render on stays dark in both themes. */
+.preview-stage {
+  color-scheme: dark;
+  background: #111111;
+}
+
+:focus-visible {
+  outline: 2px solid var(--g-ink);
+  outline-offset: 2px;
+}
+
+/* #68: "Pause animations" stops every CSS animation and transition on the
+   preview stages. motion-driven previews are stopped in App.tsx
+   (MotionGlobalConfig.skipAnimations), and the timer-driven ones render
+   their settled frame via usePaused(). */
+[data-motion="paused"] .preview-stage *,
+[data-motion="paused"] .preview-stage *::before,
+[data-motion="paused"] .preview-stage *::after {
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+
+[data-motion="paused"] {
+  scroll-behavior: auto;
+}

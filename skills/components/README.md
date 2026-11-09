@@ -1,0 +1,212 @@
+# components
+
+> **Showpiece UI for AI coding agents.** Describe a *wow* effect - a laptop opening on scroll, a 3D tilt card, animated beams, a spinning globe - and your agent fetches the **real component live** from the best React + Tailwind libraries (Aceternity, Magic UI, Cult UI, ReactBits, 21st.dev) and adapts it to your brand tokens. 1 skill · 39 showpiece effects · 12 plain fallbacks · 5 source libraries.
+
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](./LICENSE)
+![Stack](https://img.shields.io/badge/stack-React%20%2B%20Tailwind-38bdf8)
+![Status](https://img.shields.io/badge/status-v1.3.0-brightgreen)
+![Skill](https://img.shields.io/badge/Claude%20Code-skill-8a5cf6)
+[![GitHub stars](https://img.shields.io/github/stars/AnayDhawan/Components?style=social)](https://github.com/AnayDhawan/Components/stargazers)
+![Last commit](https://img.shields.io/github/last-commit/AnayDhawan/Components)
+
+[Quick start](#quick-start) · [Why](#why-components) · [Showpieces](#showpiece-effects-live-fetched) · [Installation](#installation) · [Sources & licenses](#sources--licenses) · [Contributing](#community--contributing) · [License](#license)
+
+![A macbook-scroll showpiece, fetched live and adapted to brand tokens](docs/media/demo.gif)
+
+*A stylized walkthrough of the workflow, not a screen recording ([higher-res clip](docs/media/demo.mp4)).*
+
+**▶ [Live gallery](https://anaydhawan.github.io/Components/)** - a curated showpiece per library, each one fetched from its real registry when that page was built.
+
+## Quick start
+
+```bash
+# clone, then drop the skill into your project (or ~/.claude for global)
+git clone https://github.com/AnayDhawan/components
+mkdir -p <your-project>/.claude/skills/components
+cp -r components/SKILL.md components/components.json components/references \
+      <your-project>/.claude/skills/components/
+```
+
+```powershell
+# PowerShell / Windows
+git clone https://github.com/AnayDhawan/components
+New-Item -ItemType Directory -Force <your-project>\.claude\skills\components
+Copy-Item -Recurse components\SKILL.md, components\components.json, components\references `
+          <your-project>\.claude\skills\components\
+```
+
+Then just ask your agent: *"add a macbook-scroll hero"* or *"put an interactive globe in the contact section."* It matches the effect, runs the library's registry command live, installs the deps, and adapts the result to your tokens.
+
+## Why components
+
+Anthropic's `frontend-design` skill makes an agent design *well*. It does **not** hand you a scroll-driven 3D MacBook or a WebGL globe - that motion is slow and bug-prone to hand-write, and copy-pasting from a docs site goes stale and skips attribution.
+
+`components` is a **sourcing** skill. It answers one question - *"which proven showpiece fits, and how do I make it on-brand?"* - by pulling the real, maintained component **live at build time**, then handing final polish to a quality skill (`impeccable` / `frontend-design`). It curates *pointers*, not stale copies, so the code is always current and the upstream license travels with it.
+
+## What's included
+
+### The skill
+`SKILL.md` (decision flow + rules) · `components.json` (the registry of pointers, plus `layouts[]` - pre-composed web/video arrangements) · `TASTE.md` (layout curation & anti-slop taste standards, plus a pointer table to compatible third-party Claude Code skills) · `references/live-fetch.md` (registry-CLI / WebFetch / Playwright methods) · `references/adaptation.md` (brand tokens, dark mode, responsive, `prefers-reduced-motion`) · `references/handoff.md` (optional `impeccable` / `frontend-design` polish handoff + graceful degradation when neither is installed) · `references/dependencies.md` (React / Tailwind / shadcn CLI / peer-dep version matrix) · `references/conventions.md` (per-library fetched-file path + export-shape conventions).
+
+### Prerequisites (for full effect, optional)
+`components` works standalone with zero dependencies. To get its `layouts[]` picks judged against a real
+taste standard instead of "whatever's first," install the companion skills `TASTE.md` points at - see its
+[Recommended companion skills](./TASTE.md#recommended-companion-skills-if-installed) table for exact
+`claude plugin install` commands. None are required; the registry and skill both work without them.
+
+### Showpiece effects (live-fetched)
+
+| Effect | Library | Command | License |
+|--------|---------|---------|---------|
+| MacBook lid opens on scroll | aceternity | `npx shadcn@latest add "https://ui.aceternity.com/registry/macbook-scroll.json"` | free¹ |
+| 3D tilt card (cursor depth) | aceternity | `npx shadcn@latest add "https://ui.aceternity.com/registry/3d-card.json"` | free¹ |
+| Cursor / hero spotlight glow | aceternity | `npx shadcn@latest add "https://ui.aceternity.com/registry/spotlight.json"` | free¹ |
+| Animated SVG background beams | aceternity | `npx shadcn@latest add "https://ui.aceternity.com/registry/background-beams.json"` | free¹ |
+| Conic lamp glow heading | aceternity | `npx shadcn@latest add "https://ui.aceternity.com/registry/lamp.json"` | free¹ |
+| Flowing wavy background | aceternity | `npx shadcn@latest add "https://ui.aceternity.com/registry/wavy-background.json"` | free¹ |
+| Infinite looping cards | aceternity | `npx shadcn@latest add "https://ui.aceternity.com/registry/infinite-moving-cards.json"` | free¹ |
+| Staggered text reveal | aceternity | `npx shadcn@latest add "https://ui.aceternity.com/registry/text-generate-effect.json"` | free¹ |
+| Grid hover spotlight | aceternity | `npx shadcn@latest add "https://ui.aceternity.com/registry/card-hover-effect.json"` | free¹ |
+| Beam between nodes | magicui | `npx shadcn@latest add "https://magicui.design/r/animated-beam.json"` | MIT |
+| Logo / ticker marquee | magicui | `npx shadcn@latest add "https://magicui.design/r/marquee.json"` | MIT |
+| Asymmetric bento grid | magicui | `npx shadcn@latest add "https://magicui.design/r/bento-grid.json"` | MIT |
+| Interactive WebGL globe | magicui | `npx shadcn@latest add "https://magicui.design/r/globe.json"` | MIT |
+| Meteor-shower background | magicui | `npx shadcn@latest add "https://magicui.design/r/meteors.json"` | MIT |
+| Shimmer CTA button | magicui | `npx shadcn@latest add "https://magicui.design/r/shimmer-button.json"` | MIT |
+| macOS magnify dock | magicui | `npx shadcn@latest add "https://magicui.design/r/dock.json"` | MIT |
+| Shiny sweeping text | magicui | `npx shadcn@latest add "https://magicui.design/r/animated-shiny-text.json"` | MIT |
+| Interactive particle field | magicui | `npx shadcn@latest add "https://magicui.design/r/particles.json"` | MIT |
+| Staggered split-text entrance | reactbits | `npx shadcn@latest add "https://reactbits.dev/r/SplitText-TS-TW"` | MIT |
+| Blur fade-in text | reactbits | `npx shadcn@latest add "https://reactbits.dev/r/BlurText-TS-TW"` | MIT |
+| Scramble/decode text | reactbits | `npx shadcn@latest add "https://reactbits.dev/r/DecryptedText-TS-TW"` | MIT |
+| Animated number count-up | reactbits | `npx shadcn@latest add "https://reactbits.dev/r/CountUp-TS-TW"` | MIT |
+| WebGL aurora background | reactbits | `npx shadcn@latest add "https://reactbits.dev/r/Aurora-TS-TW"` | MIT |
+| GPU particle field (WebGL) | reactbits | `npx shadcn@latest add "https://reactbits.dev/r/Particles-TS-TW"` | MIT |
+| Hyperspeed light tunnel | reactbits | `npx shadcn@latest add "https://reactbits.dev/r/Hyperspeed-TS-TW"` | MIT |
+| Glitching letter wall | reactbits | `npx shadcn@latest add "https://reactbits.dev/r/LetterGlitch-TS-TW"` | MIT |
+| Fluid-simulation cursor (WebGL) | reactbits | `npx shadcn@latest add "https://reactbits.dev/r/SplashCursor-TS-TW"` | MIT |
+| iOS dynamic island | cult-ui | `npx shadcn@latest add "https://www.cult-ui.com/r/dynamic-island.json"` | MIT |
+| WebGL lens-blur shader | cult-ui | `npx shadcn@latest add "https://www.cult-ui.com/r/shader-lens-blur.json"` | MIT |
+| Fractal grid canvas bg | cult-ui | `npx shadcn@latest add "https://www.cult-ui.com/r/canvas-fractal-grid.json"` | MIT |
+| Tactile texture card | cult-ui | `npx shadcn@latest add "https://www.cult-ui.com/r/texture-card.json"` | MIT |
+| Typewriter text loop | cult-ui | `npx shadcn@latest add "https://www.cult-ui.com/r/typewriter.json"` | MIT |
+| Springy animated number | cult-ui | `npx shadcn@latest add "https://www.cult-ui.com/r/animated-number.json"` | MIT |
+| Floating-shapes hero | 21st.dev | page-fetch² (`@kokonutd/shape-landing-hero`) | MIT² |
+| Matrix text reveal | 21st.dev | `npx shadcn@latest add "https://kokonutui.com/r/matrix-text.json"` | MIT² |
+| Animated light beams bg | 21st.dev | `npx shadcn@latest add "https://kokonutui.com/r/beams-background.json"` | MIT² |
+| Flowing SVG paths hero bg | 21st.dev | `npx shadcn@latest add "https://kokonutui.com/r/background-paths.json"` | MIT² |
+| v0-style AI chat input | 21st.dev | page-fetch² (`@kokonutd/v0-ai-chat`) | MIT² |
+| Interactive cobe globe | 21st.dev | page-fetch² (`@shuding/cobe-globe-interactive`) | MIT² |
+
+¹ Aceternity License: free to use in unlimited personal **and** commercial end products; the component/source itself may not be redistributed (no reselling, templating, or marketplace listing) - see [Sources & licenses](#sources--licenses). Full registry URLs are used (not the namespaced short form) so a fresh shadcn project can fetch a showpiece with no extra registry config - see [#14](https://github.com/AnayDhawan/Components/issues/14).
+
+² 21st.dev's registry endpoint now requires an account/API key, so 21st.dev entries either use the author's own open registry mirror (kokonutui.com) or fall back to fetching the public component page (WebFetch/Playwright). 21st.dev has no blanket license; every curated entry's license is verified against the upstream source repo (KokonutUI and cobe are MIT).
+
+### Plain fallbacks (when no *wow* is needed)
+`button · navbar · hero · pricing-table · feature-grid · form · modal · tabs · data-table · dashboard-stat-cards · toast · empty-state` - standard shadcn/ui, Tremor for data.
+
+### Anti-patterns (the skill enforces these)
+- **Never raw-paste.** Always adapt colors to brand tokens, wrap motion in `prefers-reduced-motion`, check mobile.
+- **Galleries are visual-reference only.** Dribbble / godly.website / Awwwards contain no code and are never fetched from.
+- **One showpiece per viewport.** Showpieces are seasoning, not the meal.
+
+## Installation
+
+`components` is a [Claude Code](https://docs.claude.com/en/docs/claude-code) skill (markdown + a JSON registry - no executable code of its own).
+
+### Recommended: CLI installer
+
+```bash
+npx components-skill@latest add                  # .claude/skills/components, this project
+npx components-skill@latest add --agent all      # Claude Code + Codex + Cursor + Gemini
+npx components-skill@latest add --global         # ~/.claude/skills/components
+npx components-skill@latest update               # refresh, keeping any local edits
+```
+
+Zero dependencies, and it never touches the network: the per-agent bundles are built into the package. `update` records a checksum of every file it writes, so a file you have edited is reported and left alone rather than silently overwritten. Details: [`cli/README.md`](./cli/README.md).
+
+### Manual (fallback)
+
+Copy the payload into a skills directory yourself. Note that a manual copy has no update path - it will not know when the registry upstream has changed.
+
+```bash
+# project-scoped
+mkdir -p <your-project>/.claude/skills/components
+cp -r SKILL.md components.json references <your-project>/.claude/skills/components/
+
+# or global, for every project
+mkdir -p ~/.claude/skills/components
+cp -r SKILL.md components.json references ~/.claude/skills/components/
+```
+
+```powershell
+# PowerShell / Windows, project-scoped
+New-Item -ItemType Directory -Force <your-project>\.claude\skills\components
+Copy-Item -Recurse SKILL.md, components.json, references <your-project>\.claude\skills\components\
+
+# or global, for every project
+New-Item -ItemType Directory -Force $HOME\.claude\skills\components
+Copy-Item -Recurse SKILL.md, components.json, references $HOME\.claude\skills\components\
+```
+
+The agent auto-discovers it from the `description` in `SKILL.md`. It needs **network access** at build time (to fetch live) and a **shadcn-initialised React + Tailwind** project to install into.
+
+## Usage
+
+```
+"make the hero pop - laptop opening as you scroll"   → aceternity/macbook-scroll
+"animated beams behind the features section"         → aceternity/background-beams
+"interactive globe near the contact form"            → magicui/globe
+"marquee of customer logos"                          → magicui/marquee
+"just a normal contact form"                         → fallback: shadcn form
+```
+
+## Sources & licenses
+
+<!-- keep in sync with ATTRIBUTION.md -->
+
+| Library | License | Notes |
+|---------|---------|-------|
+| [Aceternity UI](https://ui.aceternity.com) | Free for personal + commercial ([licence](https://ui.aceternity.com/licence)) | Attribution not required; verify the licence page before relaunch |
+| [Magic UI](https://magicui.design) | MIT | |
+| [Cult UI](https://www.cult-ui.com) | MIT | |
+| [ReactBits](https://www.reactbits.dev) | MIT + Commons Clause (no reselling/redistributing the components themselves) | shadcn registry: `reactbits.dev/r/<Name>-TS-TW` |
+| [21st.dev](https://21st.dev) | Per-component - **verify each** | Community registry; registry endpoint needs an account/API key - curated entries use open mirrors or page-fetch |
+| [shadcn/ui](https://ui.shadcn.com) | MIT | Plain fallbacks |
+| [Tremor](https://tremor.so) | Apache-2.0 | Dashboards / charts |
+| [Vue Bits](https://vue-bits.dev) | MIT + Commons Clause | Official Vue port of ReactBits, same author. Framework-variant only (`frameworks.vue`, see below), one pilot entry so far |
+
+Full attribution: [ATTRIBUTION.md](./ATTRIBUTION.md). Each `components.json` entry records its source + license; fetched code carries its own upstream license, never this repo's.
+
+### Framework variants (Vue, pilot)
+
+This is still a **React + Tailwind** registry. One entry, `split-text`, additionally carries a
+`frameworks.vue` variant pointing at Vue Bits' `SplitText` - a real, live-verified port (`npx
+shadcn-vue@latest add`, builds clean under `vue-tsc -b && vite build`), proving the mechanism rather
+than claiming broad Vue support. See `components.json`'s `split-text` entry and `SKILL.md` §"How to
+fetch live" step 2.
+
+## Supported tools
+
+One source (`SKILL.md` + `components.json` + `references/`), packaged per harness by `scripts/build-agent-dirs.sh`:
+
+| Agent | Bundle | Notes |
+|-------|--------|-------|
+| **Claude Code** | `.claude/skills/components/` | Native. Auto-loads from the `description` in `SKILL.md`. Also emits a `.claude-plugin/plugin.json` manifest. |
+| **Codex CLI** | `.codex/skills/components/` | Same `SKILL.md` format, project-scoped. |
+| **Cursor** | `.cursor/rules/components.mdc` | Rule with frontmatter (`description`, `alwaysApply: false`); payload alongside at `.cursor/components/`. |
+| **Gemini CLI** | `.gemini/extensions/components/` | `gemini-extension.json` + `commands/components.toml` + a `GEMINI.md` generated from `SKILL.md`'s body. |
+
+```bash
+bash scripts/build-agent-dirs.sh    # writes every bundle to dist/
+```
+
+Each output directory is self-contained: copy it into a project (or your user config dir) and the skill works. `dist/` is build output and is not tracked. Beyond these four, any agent that can read a `SKILL.md`, run `npx`, and fetch a URL can use the same `components.json` registry directly.
+
+## Community & contributing
+
+PRs are almost always a new/updated entry in `components.json`. See [CONTRIBUTING.md](./CONTRIBUTING.md), the [Code of Conduct](./CODE_OF_CONDUCT.md), [SECURITY.md](./SECURITY.md) for reporting vulnerabilities, and the [open issues](https://github.com/AnayDhawan/components/issues) for the roadmap.
+
+## License
+
+[Apache-2.0](./LICENSE) © Anay Dhawan. Components fetched via the skill carry their own upstream licenses (recorded per entry in `components.json`).

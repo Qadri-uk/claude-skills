@@ -1,0 +1,102 @@
+# Contributing
+
+Thanks for improving **components**. The skill stores *pointers* to live-fetchable components - contributions are almost always *new or updated entries in `components.json`*.
+
+By participating you agree to the [Code of Conduct](./CODE_OF_CONDUCT.md).
+
+## Repo layout
+
+- **`SKILL.md`** - what the agent actually reads: the decision flow and the rules it follows when matching a request to a component.
+- **`components.json`** - the registry of pointers. Every entry names a component and how to fetch it live; this is what almost every PR touches.
+- **`references/`** - the shared rules that apply to every fetched component: `live-fetch.md` (how to fetch, plus known upstream issues), `adaptation.md` (brand tokens, dark mode, responsive, reduced motion), `dependencies.md`, `handoff.md`, `conventions.md` (per-library file-path and export-shape conventions for fetched output).
+- **`scripts/`** - maintenance tooling. `validate.py` checks `components.json` and is what CI runs; `health-check.py` pings every ref and library site on a schedule and writes `health-report.md` plus `health-report.json` (schema: `references/health-report-schema.md`); both load the registry via the shared `_registry.py`.
+- **`.github/`** - issue and PR templates plus the workflows that run the scripts above.
+
+No component source code lives here. The repo stores pointers, and the real code is fetched from upstream at build time.
+
+## Add a showpiece entry (the main thing)
+
+1. Find a distinctive/animated component with a **proven, maintained, clearly-licensed** React + Tailwind source that is **live-fetchable** (registry command preferred). Code libraries: Aceternity, Magic UI, Cult UI, ReactBits, 21st.dev.
+2. Add an object to `showpiece[]` in `components.json`:
+
+```jsonc
+{
+  "name": "kebab-case-name",          // unique
+  "aliases": ["laptop opening", "..."], // how a user might DESCRIBE the effect - drives matching
+  "effect": "one-line description of what it does",
+  "library": "aceternity",            // must exist in code_libraries[]
+  // What tooling reads - REQUIRED. method is one of fetch_methods' keys;
+  // cli only for registry_cli; url must be https and the full registry URL
+  // (not namespaced shorthand, see #14).
+  "fetch": { "method": "registry_cli", "cli": "shadcn", "url": "https://ui.aceternity.com/registry/<name>.json" },
+  // What a human/agent reads - REQUIRED, and for registry_cli must be exactly
+  // `npx <cli>@latest add "<url>"` rendered from `fetch`. validate.py enforces it.
+  "ref": "npx shadcn@latest add \"https://ui.aceternity.com/registry/<name>.json\"",
+  "license": "MIT",                   // upstream license - REQUIRED
+  "deps": ["motion"],                 // peer deps to install (framer-motion, cobe, ...)
+  "registry_alt": "..."               // optional - see registry_alt below
+}
+```
+
+### Rules
+
+- **`fetch` is the machine-readable half, `ref` is the display half.** Tooling
+  (`smoke-test.mjs`, `health-check.py`, `gallery/scripts/fetch-showpieces.mjs`)
+  reads `fetch.url` / `fetch.cli` and never parses `ref`. Keeping the URL and CLI
+  in named fields is deliberate: with only a command string, the obvious way to
+  "run the ref" is to hand the whole thing to a shell, and every consumer has to
+  re-derive the same regex ([#47](https://github.com/AnayDhawan/Components/issues/47)).
+  `validate.py` fails the build if `ref` is not the exact rendering of `fetch`, so
+  the two cannot drift.
+- **`fetch.method` must be one of `fetch_methods`' keys** (`registry_cli`,
+  `registry_item`, `webfetch`, `playwright`), and `fetch.url` must be `https`.
+  `fetch.cli` is required for `registry_cli` and rejected otherwise.
+- **`registry_item` is for a registry whose JSON is sound but whose files no CLI
+  places correctly** (Svelte Bits, #66). Its `ref` must be exactly
+  `fetch registry item "<url>", write each files[].content to its target with $lib/ as src/lib/, install dependencies[]`;
+  `validate.py` enforces that, as it does the command form for `registry_cli`.
+- **`fetch.pin` is written by `scripts/pin-registry.py`, never by hand.** For a
+  library with a `registry_source` (its registry JSON is committed on GitHub), the
+  pin records the commit whose file matches the live item and a sha256 of it as
+  canonical JSON. `fetch.url` stays live; the pin is a receipt, not a copy (#64).
+  `health-check.py` reports a ref whose live item no longer matches as `drifted`.
+  Review the upstream change at the compare link it prints, then re-run
+  `GITHUB_TOKEN=... python3 scripts/pin-registry.py`. A new entry on a pinnable host
+  fails `scripts/test_validate.py` until it is pinned.
+- **`fetch` applies to `showpiece[]` and its `frameworks.*` variants only.**
+  `fallback_basic` refs are shadcn shorthand or prose compose instructions with no
+  URL, and nothing fetches or executes them.
+- **`ref` must fetch live** - a registry command (preferred) or a resolvable component-page URL. No pasted code in this repo.
+- **`ref` must use the full registry URL form**, not a namespaced shorthand (`@aceternity/<name>` etc.) - shorthand requires the namespace pre-registered in the user's project `components.json` and fails cold on a fresh project.
+- **`aliases` are the match surface** - list how users phrase the effect, not just the canonical name.
+- **`aliases` must be a non-empty list of non-empty strings.** An entry with no aliases is unreachable by description, which is the only way users find it.
+- **No alias may be reused across two showpieces.** Aliases drive matching, so a duplicated string makes the match ambiguous and whichever entry sits first silently wins. Compared case- and whitespace-insensitively.
+- **`deps` must be a list**, never a bare string. `"motion"` iterates as characters, so anything consuming it installs garbage; write `["motion"]`.
+- **`library` must be listed in `code_libraries[]`** (add it there if new, with registry pattern + license). Showpieces only - `fallback_basic` points at shadcn/tremor on purpose and is exempt.
+- **`license` is required**, and must be a real license, not a placeholder. `TBD`, `todo`, `verify`, `unknown`, `n/a`, `none`, `?` and empty strings are rejected: a license field that is present but says nothing passes a required-field check while leaving the legal status just as unknown. Verify it (Aceternity = free/verify, 21st.dev = per-component).
+- **Galleries are not sources.** Dribbble / godly.website / Awwwards go in `galleries_visual_ref_only[]` - visual reference only, never `ref`.
+- **Adaptation is mandatory** at use time (brand tokens + `prefers-reduced-motion`); see `references/adaptation.md`.
+- Keep scope React + Tailwind. Other stacks need a separate discussion (open an issue).
+- **`registry_alt` is optional, free-text.** Use it when `ref` deliberately points somewhere other than the entry's own `library` registry - e.g. an author's own open mirror used in place of an auth-gated one - to record why, plus a page URL for the library it's mirroring. See the 21st.dev / KokonutUI entries and `references/live-fetch.md` § 21st.dev for the worked example.
+
+Plain (non-flashy) components go in `fallback_basic.components[]` with `name`, `aliases`, `ref`, `library`, `license`, and an optional one-line `gotchas` string for a usage note worth surfacing at fetch time (composition advice, a required peer setup, which variant to prefer for a given case). About half of the current fallback entries carry one.
+
+## Before you open a PR
+
+- Run `python3 scripts/validate.py` locally before opening a PR. It is the exact check CI runs, and it prints every problem it finds rather than stopping at the first.
+- `components.json` is valid JSON (`validate.py` checks this, as does CI - see `.github/workflows/validate.yml`).
+- Every `ref` link/command resolves and works on a fresh project. **PRs touching `components.json` run a real Vite + Tailwind smoke test**: CI scaffolds a throwaway React + TS project, runs the registry command for a curated sample (one entry per library), and fails if the fetched code does not build. Run it yourself with `node scripts/smoke-test.mjs --only <entry-name>`.
+  - `smoke-test.mjs` scaffolds into a fresh temp dir every run, so this doesn't apply to it. But if you ever run `npm create vite` yourself in a directory that already has `scripts/` or `src/` present, it silently no-ops: exits without creating anything and without a clear error, leaving a half-scaffolded state that's easy to miss. Use an empty directory.
+- New component genuinely lacks a good existing entry (no duplicates by alias).
+- Fill out the PR template.
+
+## Workflow
+
+1. Fork + branch (`feat/<component>` or `fix/<entry>-link`).
+2. Make your change to `components.json` (and `references/` if adding a shared rule).
+3. Run `python3 scripts/validate.py`.
+4. Open a PR using the template. Link any related issue.
+
+## Maintenance / removal
+
+Quarterly review prunes entries with broken sources or no use for 2 quarters. Flagging a dead link is a valid, welcome PR.
