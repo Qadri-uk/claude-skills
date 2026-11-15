@@ -1,0 +1,23 @@
+{
+  "name": "r3f-router",
+  "description": "Decision framework for React Three Fiber projects. Routes to specialized R3F skills (fundamentals, geometry, materials, performance, drei) based on task requirements. Use when starting an R3F project or needing guidance on which R3F skills to combine.",
+  "tags": [
+    "3d",
+    "r3f",
+    "routing"
+  ],
+  "sub_skills": [],
+  "source": "claude-user",
+  "type": "router",
+  "depends_on": [
+    "r3f-fundamentals",
+    "r3f-geometry",
+    "r3f-materials",
+    "r3f-performance",
+    "r3f-drei"
+  ],
+  "enhances": [],
+  "last_reviewed_at": "2026-09-29",
+  "review_score": 60,
+  "relevance_tier": "A"
+}

@@ -64,7 +64,7 @@ instead of scrolling the full index below:
 | [`taste-skill`](../taste-skill/SKILL.md) | Premium, non-generic UI: researched art directions, real-browser inspector, look-and-fix loop |
 | [`impeccable`](../impeccable/SKILL.md) | Design fluency: slash commands (polish, audit, critique…), anti-pattern detection, theming, typography, motion |
 | [`hallmark`](../hallmark/SKILL.md) | Anti-AI-slop: design, audit, redesign, and extract design DNA from screenshots/URLs; structural variety |
-| [`emilkowalski-skill`](../emilkowalski-skill/SKILL.md) | Animation decision framework, easing curves, interaction principles |
+| [`emil-animate`](../emil-animate/SKILL.md) (+ `emil-choreograph`, `emil-review-animations`, 16 more `emil-*`) | Animation decision framework, easing curves, interaction principles |
 | [`make-interfaces-better`](../make-interfaces-better/SKILL.md) | Polish: micro-interactions, typography details, visual refinement |
 | [`ui-craft`](../ui-craft/SKILL.md) | slash commands, anti-slop CLI, style variants — deepest design engineering skill |
 | [`frontend-design`](../frontend-design/SKILL.md) | 8 aesthetic anchors (Swiss, Brutalist, Aurora Maximalism, Retro-Futuristic…) with locked CSS tokens per theme |
@@ -91,9 +91,9 @@ instead of scrolling the full index below:
 | [`p5js-hermes`](../p5js-hermes/SKILL.md) | p5.js creative coding: noise, particles, GLSL, audio-reactive |
 | [`remotion`](../remotion/SKILL.md) | Programmatic video with React |
 | [`motion-design-skill`](../motion-design-skill/SKILL.md) | Official LottieFiles: timing, easing, choreography, Disney 12 principles for UI |
-| [`gsap-skills`](../gsap-skills/SKILL.md) | Official GSAP: core, timeline, ScrollTrigger, Flip, Draggable, SplitText |
+| [`gsap-core`](../gsap-core/SKILL.md) (+ `gsap-timeline`, `gsap-scrolltrigger`, `gsap-plugins`, `gsap-react`) | Official GSAP: core, timeline, ScrollTrigger, Flip, Draggable, SplitText |
 | [`motion`](../motion/SKILL.md) | Official Motion team skill (Motion, ex Framer Motion, + CSS): best practices, docs/example search, CSS springs, performance audits, upgrades |
-| [`framer-motion-skills`](../framer-motion-skills/SKILL.md) | Framer Motion: Next.js, variants, scroll, gestures, layout |
+| [`framer-motion-core`](../framer-motion-core/SKILL.md) (+ `-scroll`, `-gestures`, `-layout`, `-variants`, `-react`) | Framer Motion: Next.js, variants, scroll, gestures, layout |
 | [`animate-skill`](../animate-skill/SKILL.md) | Emil-inspired Next.js/React patterns: hover, toast, text reveal, modals |
 | [`animate-css-skill`](../animate-css-skill/SKILL.md) | Animate.css v4 + scroll triggers + RTL + prefers-reduced-motion |
 | [`css-animation-skill`](../css-animation-skill/SKILL.md) | Scrapes live app design language, interviews, produces standalone animation file |
@@ -241,12 +241,12 @@ instead of scrolling the full index below:
 
 | Skill | Best for |
 |-------|----------|
-| [`cloudai-threejs`](../cloudai-threejs/SKILL.md) | Three.js 3D scenes, animations, WebGL |
+| [`threejs-fundamentals`](../threejs-fundamentals/SKILL.md) (+ 12 more `threejs-*`) | Three.js 3D scenes, animations, WebGL |
 | [`fal-ai-skills`](../fal-ai-skills/SKILL.md) | fal.ai image/video and 3D model generation |
 | [`composio-artifacts`](../composio-artifacts/SKILL.md) | Artifacts connected to GitHub/Slack/Linear via Composio |
 | [`webgpu-claude-skill`](../webgpu-claude-skill/SKILL.md) | Three.js TSL, node materials, GPU compute, WGSL — r183+ |
 | [`threejs-ecs-ts`](../threejs-ecs-ts/SKILL.md) | Three.js + Entity Component Systems + TypeScript |
-| [`threejs-claude-skill-package`](../threejs-claude-skill-package/SKILL.md) | WebGL, WebGPU, R3F, physics, IFC/BIM architecture, one skill per topic |
+| [`threejs-impl-webgpu`](../threejs-impl-webgpu/SKILL.md) (+ `threejs-impl-*`, `threejs-core-*`, `threejs-syntax-*`) | WebGL, WebGPU, R3F, physics, IFC/BIM architecture, one skill per topic |
 | [`generative-media-skills`](../generative-media-skills/SKILL.md) | AI media via muapi.ai: cinematic video, Nano Banana images, Seedance, product ads, thumbnails (needs muapi account + CLI) |
 | [`scroll-world`](../scroll-world/SKILL.md) | Scroll-scrubbed "fly through the world" landing page from AI-generated scenes (needs funded Higgsfield/Monid account) |
 | [`open-design`](../open-design/SKILL.md) | Local-first Claude Design alternative: app + daemon running design skills and brand design systems on your own agent (an app, not a skill install) |
@@ -317,10 +317,10 @@ instead of scrolling the full index below:
 | "no Inter font", "no 3-column cards", "no centered hero" | `taste-skill` or `ui-craft` |
 | "anti-slop detector", "33 rules", "ui-craft", "slash commands" | `ui-craft` |
 | "polish", "micro-interactions", "make it feel better" | `make-interfaces-better` |
-| "animation principles", "easing curves" | `emilkowalski-skill` |
+| "animation principles", "easing curves" | `emil-animate` |
 | "GLSL", "ray march", "WebGL shader" | `shader-dev` |
 | "generative art", "p5.js", "particle system" | `algorithmic-art` or `p5js-hermes` |
-| "Three.js", "3D scene", "WebGL 3D" | `cloudai-threejs` |
+| "Three.js", "3D scene", "WebGL 3D" | `threejs-fundamentals` |
 | "Figma to code", "implement Figma" | `figma-official-skills` |
 | "Stitch", "DESIGN.md", "stitch loop" | `google-stitch-skills` |
 | "color palette", "OKLCH", "color science" | `color-expert` |
@@ -355,8 +355,8 @@ instead of scrolling the full index below:
 | "design brief", "visual brief", "I-Lang brief" | `design-brief` |
 | "product brief", "project brief", "requirements spec" | `designer-skills` |
 | "motion principles", "purposeful motion", "motion audit", "AI slop motion", "hover state design", "micro-interaction design", "Emil Kowalski motion", "Jhey Tompkins" | `design-motion-principles` |
-| "GSAP", "ScrollTrigger", "GreenSock" | `gsap-skills` |
-| "Framer Motion", "framer animation", "layout animation" | `framer-motion-skills` |
+| "GSAP", "ScrollTrigger", "GreenSock" | `gsap-core` |
+| "Framer Motion", "framer animation", "layout animation" | `framer-motion-core` |
 | "Motion library", "motion.dev", "CSS springs", "MotionScore" | `motion` |
 | "Lottie", "motion principles", "Disney principles" | `motion-design-skill` |
 | "SVG logo animation", "wiggle", "logo GIF" | `wiggle-claude-skill` |
@@ -395,7 +395,7 @@ instead of scrolling the full index below:
 | "parallel data analysis", "data to PowerPoint" | `data-analysis-skill` |
 | "WebGPU", "TSL Three.js", "GPU compute" | `webgpu-claude-skill` |
 | "Three.js ECS", "entity component 3D" | `threejs-ecs-ts` |
-| "Three.js BIM", "IFC architecture", "AEC 3D" | `threejs-claude-skill-package` |
+| "Three.js BIM", "IFC architecture", "AEC 3D" | `threejs-impl-ifc-viewer` |
 | "Midjourney workflow", "Kling", "Veo3", "Flux Kontext" | `generative-media-skills` |
 | "infinite canvas design", "SuperDesign" | `superdesign-skill` |
 | "open-design platform", "local Claude Design alternative" | `open-design` |

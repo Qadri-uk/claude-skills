@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "name": "example-feedback",
+  "motionMode": "system",
+  "interactions": [
+    {
+      "id": "panel-settled",
+      "trigger": "gesture-end",
+      "intent": "settle",
+      "state": {
+        "from": "dragging",
+        "to": "settled",
+        "meaning": "The panel position is committed"
+      },
+      "consequence": "persistent-state-change",
+      "commitPhase": "activation",
+      "feedback": {
+        "full": {
+          "pattern": "settle",
+          "properties": ["transform"],
+          "durationToken": "motion.micro"
+        },
+        "reduced": {"pattern": "instant-state-plus-highlight"},
+        "none": {"pattern": "instant-state"},
+        "semanticAnnouncement": null,
+        "soundEvent": "panel.settled"
+      },
+      "equivalents": {
+        "keyboard": "Arrow keys move; Enter commits; Escape cancels",
+        "singlePointer": "Select the panel, then tap a destination"
+      },
+      "behavior": {
+        "interruptible": true,
+        "oncePerAction": true,
+        "rateLimitMs": 300
+      },
+      "essential": false
+    }
+  ]
+}

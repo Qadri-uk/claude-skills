@@ -1,0 +1,22 @@
+{
+  "name": "r3f-materials",
+  "description": "Three.js materials in R3F, built-in materials (Standard, Physical, Basic, etc.), ShaderMaterial with custom GLSL, uniforms binding and animation, and material properties. Use when choosing materials, creating custom shaders, or binding dynamic uniforms.",
+  "tags": [
+    "3d",
+    "r3f",
+    "react",
+    "code-generation"
+  ],
+  "sub_skills": [],
+  "source": "claude-user",
+  "type": "template",
+  "depends_on": [
+    "r3f-fundamentals"
+  ],
+  "enhances": [
+    "r3f-performance"
+  ],
+  "last_reviewed_at": "2026-09-27",
+  "review_score": 66,
+  "relevance_tier": "A"
+}

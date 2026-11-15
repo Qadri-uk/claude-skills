@@ -1,10 +1,31 @@
 {
   "name": "qadri-uk",
-  "owner": { "name": "qadri-uk" },
-  "metadata": { "description": "qadri-uk's personal Claude skill library, in three plugins." },
+  "owner": {
+    "name": "qadri-uk"
+  },
+  "metadata": {
+    "description": "qadri-uk's personal Claude skill library, in three plugins."
+  },
   "plugins": [
-    { "name": "qadri-design", "source": "./plugins/qadri-design", "description": "Core: UI/UX design skills, proactive-skills instructions, shadcn and chrome-devtools MCP servers. Install this one first." },
-    { "name": "qadri-motion", "source": "./plugins/qadri-motion", "description": "Motion, animation, 3D/WebGL, shaders, diagrams and video." },
-    { "name": "qadri-build", "source": "./plugins/qadri-build", "description": "Build and product: React/Next.js, Vercel, Supabase, AI SDK, mobile, data viz, presentations, PM and marketing." }
+    {
+      "name": "qadri-design",
+      "source": "./plugins/qadri-design",
+      "description": "Core: UI/UX design skills, proactive-skills instructions, shadcn and chrome-devtools MCP servers. Install this one first."
+    },
+    {
+      "name": "qadri-motion",
+      "source": "./plugins/qadri-motion",
+      "description": "Motion, animation, 3D/WebGL, shaders, diagrams and video."
+    },
+    {
+      "name": "qadri-build",
+      "source": "./plugins/qadri-build",
+      "description": "Build and product: React/Next.js, Vercel, Supabase, AI SDK, mobile, data viz, presentations, PM and marketing."
+    },
+    {
+      "name": "qadri-3d",
+      "source": "./plugins/qadri-3d",
+      "description": "Advanced 3D and imagery: Three.js graphics, particles, shaders, post-fx, R3F, model-viewer/AR, splats, parallax, WebGL backgrounds."
+    }
   ]
 }
