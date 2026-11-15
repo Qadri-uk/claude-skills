@@ -37,15 +37,15 @@ Activate when the user:
 
 | Skill | Best for |
 |-------|----------|
-| [`gsap-skills`](../gsap-skills/SKILL.md) | Official GSAP: core, timeline, ScrollTrigger, Flip, Draggable, SplitText |
+| [`gsap-core`](../gsap-core/SKILL.md) (+ `gsap-timeline`, `gsap-scrolltrigger`, `gsap-plugins`, `gsap-react`) | Official GSAP: core, timeline, ScrollTrigger, Flip, Draggable, SplitText |
 | [`motion`](../motion/SKILL.md) | Official Motion team skill (Motion, ex Framer Motion, + CSS): best practices, docs/example search, CSS springs, performance audits, upgrades |
-| [`framer-motion-skills`](../framer-motion-skills/SKILL.md) | Framer Motion: Next.js, variants, scroll, gestures, layout |
+| [`framer-motion-core`](../framer-motion-core/SKILL.md) (+ `-scroll`, `-gestures`, `-layout`, `-variants`, `-react`) | Framer Motion: Next.js, variants, scroll, gestures, layout |
 | [`motion-design-skill`](../motion-design-skill/SKILL.md) | Official LottieFiles: timing, easing, choreography, Disney 12 principles |
 | [`animate-skill`](../animate-skill/SKILL.md) | Emil-inspired Next.js/React patterns: hover, toast, text reveal, modals |
 | [`animate-css-skill`](../animate-css-skill/SKILL.md) | Animate.css v4 + scroll triggers + RTL + prefers-reduced-motion |
 | [`css-animation-skill`](../css-animation-skill/SKILL.md) | Scrapes live app design language → standalone animation file |
 | [`wiggle-claude-skill`](../wiggle-claude-skill/SKILL.md) | Animates SVG logos → Lottie JSON → GIF + MP4 |
-| [`emilkowalski-skill`](../emilkowalski-skill/SKILL.md) | Animation decision framework, easing curves, interaction principles |
+| [`emil-animate`](../emil-animate/SKILL.md) (+ `emil-choreograph`, `emil-review-animations`, 16 more `emil-*`) | Animation decision framework, easing curves, interaction principles |
 | [`design-motion-principles`](../design-motion-principles/SKILL.md) | Motion audit against AI-slop patterns; build or review, weighted by project context |
 | [`fixing-motion-performance`](../fixing-motion-performance/SKILL.md) | Audit and fix janky CSS/JS motion: layout thrashing, compositor properties, scroll-linked motion |
 | [`magic-ui`](../magic-ui/SKILL.md) | Magic UI animated React components: marquee, globe, blur-fade, magic-card, shiny-button |
@@ -67,10 +67,35 @@ Activate when the user:
 | Skill | Best for |
 |-------|----------|
 | [`shader-dev`](../shader-dev/SKILL.md) | GLSL shaders: ray marching, fluid simulation, WebGL effects |
-| [`cloudai-threejs`](../cloudai-threejs/SKILL.md) | Three.js 3D scenes, animations, WebGL |
+| [`threejs-fundamentals`](../threejs-fundamentals/SKILL.md) (+ 12 more `threejs-*`) | Three.js 3D scenes, animations, WebGL |
 | [`webgpu-claude-skill`](../webgpu-claude-skill/SKILL.md) | Three.js TSL, node materials, GPU compute, WGSL — r183+ |
 | [`threejs-ecs-ts`](../threejs-ecs-ts/SKILL.md) | Three.js + Entity Component Systems + TypeScript |
-| [`threejs-claude-skill-package`](../threejs-claude-skill-package/SKILL.md) | WebGL, WebGPU, R3F, physics, IFC/BIM architecture, one skill per topic |
+| [`threejs-impl-webgpu`](../threejs-impl-webgpu/SKILL.md) (+ `threejs-impl-*`, `threejs-core-*`, `threejs-syntax-*`) | WebGL, WebGPU, R3F, physics, IFC/BIM architecture, one skill per topic |
 | [`fal-ai-skills`](../fal-ai-skills/SKILL.md) | fal.ai image/video and 3D model generation |
 | [`generative-media-skills`](../generative-media-skills/SKILL.md) | AI media via muapi.ai: cinematic video, Nano Banana images, Seedance, product ads, thumbnails (needs muapi account + CLI) |
 | [`scroll-world`](../scroll-world/SKILL.md) | Scroll-scrubbed "fly through the world" landing page from AI-generated scenes (needs funded Higgsfield/Monid account) |
+
+## Scroll storytelling (start with `scroll-story-site`)
+
+| Skill | Best for |
+|-------|----------|
+| [`scroll-story-site`](../scroll-story-site/SKILL.md) | Router + Astro/Lenis/GSAP glue for storybook scroll homepages |
+| [`cinematic-gsap-lenis-motion-system`](../cinematic-gsap-lenis-motion-system/SKILL.md) | Full Lenis + GSAP motion system: preloader, chapters, cursor |
+| [`cinematic-scroll-storytelling`](../cinematic-scroll-storytelling/SKILL.md) | Narrative chapter structure for cinematic scroll pages |
+| [`lenis-smooth-scroll`](../lenis-smooth-scroll/SKILL.md) | Lenis setup, anchors, nested scroll, ScrollTrigger sync |
+| [`css-scroll-driven-animations`](../css-scroll-driven-animations/SKILL.md) | Native `animation-timeline: scroll()/view()` |
+| [`view-transitions-api`](../view-transitions-api/SKILL.md) / [`astro-view-transitions`](../astro-view-transitions/SKILL.md) | Page-to-page morphs; Astro ClientRouter |
+| [`gsap-astro`](../gsap-astro/SKILL.md) | GSAP lifecycle inside Astro navigations |
+| [`image-sequence-scrubbing`](../image-sequence-scrubbing/SKILL.md) / [`hero-video-scrub-apple`](../hero-video-scrub-apple/SKILL.md) | Apple-style scrubbed frames and video |
+| [`horizontal-scroll-scenes`](../horizontal-scroll-scenes/SKILL.md) | Pinned horizontal panels |
+| [`parallax-depth-systems`](../parallax-depth-systems/SKILL.md) | Layered depth parallax |
+| [`gsap-splittext-kinetic-type`](../gsap-splittext-kinetic-type/SKILL.md) / [`scroll-scrubbed-word-reveal`](../scroll-scrubbed-word-reveal/SKILL.md) | Kinetic type and word reveals |
+| [`gsap-scroll-smoother`](../gsap-scroll-smoother/SKILL.md), [`gsap-flip`](../gsap-flip/SKILL.md), [`gsap-svg`](../gsap-svg/SKILL.md) | Deep dives on ScrollSmoother, Flip, DrawSVG/MorphSVG |
+| [`theatre-js`](../theatre-js/SKILL.md) | Keyframed cinematic sequences with Theatre.js studio |
+| [`magnetic-cursor-interactions`](../magnetic-cursor-interactions/SKILL.md), [`marquee-infinite-ticker`](../marquee-infinite-ticker/SKILL.md) | Cursor, magnetic buttons, marquees |
+| [`narrative-scrollytelling`](../narrative-scrollytelling/SKILL.md) | Accessibility-first scrollytelling |
+| [`awwwards-site-builder`](../awwwards-site-builder/SKILL.md) | Award-level site from a one-line brief |
+| [`web-video-backgrounds`](../web-video-backgrounds/SKILL.md) | Encoding, poster/LCP and autoplay for video backgrounds |
+| `emil-*` (19) | Emil Kowalski: animate, choreograph, review, remove, performance |
+
+Advanced 3D (atmosphere, ocean, procedural materials, particles, post-fx, model-viewer, splats) is in the **qadri-3d** plugin.

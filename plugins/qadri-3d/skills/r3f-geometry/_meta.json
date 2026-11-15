@@ -1,0 +1,22 @@
+{
+  "name": "r3f-geometry",
+  "description": "BufferGeometry creation, built-in geometries, custom geometry with buffer attributes, instanced meshes for rendering thousands of objects, and geometry manipulation. Use when creating custom shapes, optimizing with instancing, or working with vertex data directly.",
+  "tags": [
+    "3d",
+    "r3f",
+    "react",
+    "code-generation"
+  ],
+  "sub_skills": [],
+  "source": "claude-user",
+  "type": "template",
+  "depends_on": [
+    "r3f-fundamentals"
+  ],
+  "enhances": [
+    "r3f-performance"
+  ],
+  "last_reviewed_at": "2026-09-26",
+  "review_score": 66,
+  "relevance_tier": "A"
+}

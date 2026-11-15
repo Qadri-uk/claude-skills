@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scroll Video Website"
+  short_description: "Build canvas-based scroll video animations"
+  default_prompt: "$scroll-video-website {path/to/video.mp4}"

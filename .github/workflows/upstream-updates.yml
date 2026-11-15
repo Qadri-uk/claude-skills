@@ -1,0 +1,24 @@
+name: Upstream skill updates
+on:
+  schedule: [{ cron: "17 6 1 * *" }]   # 06:17 UTC on the 1st of each month
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node scripts/vendor.mjs --check
+      - run: node scripts/vendor.mjs
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          branch: upstream-skill-updates
+          title: "Upstream skill updates"
+          commit-message: "Re-vendor upstream skills at their latest commits"
+          body: |
+            Monthly re-vendor of every source in vendor.json. Review the diff before merging:
+            upstream changes are new instructions for Claude. `node scripts/vendor.mjs --lint` passed in this run if the job is green.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Semantic Micro-interactions"
+  short_description: "Accessible, meaningful interface feedback"
+  default_prompt: "Use $semantic-micro-interactions to map meaningful feedback for these interface state changes, including reduced-motion and input alternatives."

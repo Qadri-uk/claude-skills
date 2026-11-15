@@ -1,0 +1,913 @@
+{
+  "about": "Upstream skills vendored by scripts/vendor.mjs. Every source here was licence-checked before being added; sha is the upstream commit currently vendored.",
+  "sources": [
+    {
+      "repo": "emilkowalski/skills",
+      "license": "MIT",
+      "plugin": "qadri-motion",
+      "path": "skills",
+      "prefix": "emil-",
+      "sha": "0f2e23b32bb1265e84cff8d3e75785fec953fb1b",
+      "fetched": "2026-11-15",
+      "skills": [
+        "emil-animate",
+        "emil-animate-expo",
+        "emil-animation-performance",
+        "emil-animation-vocabulary",
+        "emil-apple-design",
+        "emil-ask-sonner",
+        "emil-break-ui",
+        "emil-choreograph",
+        "emil-emil-design-eng",
+        "emil-find-animation-opportunities",
+        "emil-gestures",
+        "emil-improve-animations",
+        "emil-learn-taste",
+        "emil-mobile-native",
+        "emil-pick-ui-library",
+        "emil-prototype",
+        "emil-remove-animations",
+        "emil-review-animations",
+        "emil-write-swift"
+      ]
+    },
+    {
+      "repo": "C-Jeril/framer-motion-skills",
+      "license": "MIT",
+      "plugin": "qadri-motion",
+      "sha": "837d7268fc4a3cf5b1f8904616ec97c7485e3eda",
+      "fetched": "2026-11-15",
+      "skills": [
+        "framer-motion-core",
+        "framer-motion-gestures",
+        "framer-motion-layout",
+        "framer-motion-react",
+        "framer-motion-scroll",
+        "framer-motion-variants"
+      ]
+    },
+    {
+      "license": "MIT",
+      "plugin": "qadri-motion",
+      "repo": "mengto/skills",
+      "path": "agent-skills/web-design",
+      "only": [
+        "cinematic-gsap-lenis-motion-system",
+        "cinematic-scroll-storytelling",
+        "horizontal-scroll-scenes",
+        "scroll-scrubbed-visual-sequence",
+        "scroll-scrubbed-word-reveal",
+        "staggered-word-reveal",
+        "masked-reveal",
+        "scroll-progress-timeline",
+        "reveal-hover-effect",
+        "paper-cinder-transition",
+        "animation-on-scroll",
+        "animation-systems",
+        "build-awwwards-quality-sites",
+        "scroll-world-storytelling",
+        "marquee-loop",
+        "webgl-landing-steering",
+        "webgl-3d-object",
+        "background-grid-webgl",
+        "shaders-cursor-ripples",
+        "add-shader-cursor-trail",
+        "mesh-gradient-dark-blue-clean",
+        "dither-background",
+        "atmosphere-background",
+        "progressive-blur",
+        "globe-particles",
+        "ambient-section-particles",
+        "build-threejs-scroll-worlds"
+      ],
+      "sha": "3cc93458c4949c39a04e938ea7892a1d6d3d40bf",
+      "fetched": "2026-11-15",
+      "skills": [
+        "add-shader-cursor-trail",
+        "ambient-section-particles",
+        "animation-on-scroll",
+        "animation-systems",
+        "atmosphere-background",
+        "background-grid-webgl",
+        "build-awwwards-quality-sites",
+        "build-threejs-scroll-worlds",
+        "cinematic-gsap-lenis-motion-system",
+        "cinematic-scroll-storytelling",
+        "dither-background",
+        "globe-particles",
+        "horizontal-scroll-scenes",
+        "marquee-loop",
+        "masked-reveal",
+        "mesh-gradient-dark-blue-clean",
+        "paper-cinder-transition",
+        "progressive-blur",
+        "reveal-hover-effect",
+        "scroll-progress-timeline",
+        "scroll-scrubbed-visual-sequence",
+        "scroll-scrubbed-word-reveal",
+        "scroll-world-storytelling",
+        "shaders-cursor-ripples",
+        "staggered-word-reveal",
+        "webgl-3d-object",
+        "webgl-landing-steering"
+      ]
+    },
+    {
+      "license": "MIT",
+      "plugin": "qadri-motion",
+      "repo": "AvnehSBhatia/UltraUI",
+      "path": "skills",
+      "only": [
+        "lenis-smooth-scroll",
+        "css-scroll-driven-animations",
+        "view-transitions-api",
+        "image-sequence-scrubbing",
+        "gsap-splittext-kinetic-type",
+        "parallax-depth-systems",
+        "gsap-svg-draw-morph",
+        "magnetic-cursor-interactions",
+        "custom-cursor-systems",
+        "marquee-infinite-ticker",
+        "sticky-pinning-sequences",
+        "text-scramble-decode",
+        "page-transition-choreography",
+        "scroll-chapter-pinned-story",
+        "scroll-lenis-gsap-integration-harness",
+        "scroll-native-css-timeline-page",
+        "scroll-video-chapters",
+        "scroll-parallax-layers-depth",
+        "scroll-text-highlight-reading",
+        "scroll-mobile-performance-strategy",
+        "hero-video-scrub-apple",
+        "hero-liquid-distortion-image",
+        "hero-webgl-shader-fullscreen",
+        "hero-gradient-mesh-aurora",
+        "hero-noise-grain-cinematic",
+        "hero-masked-video-type",
+        "hero-gltf-product-showcase",
+        "hero-tilt-3d-layers",
+        "ogl-lightweight-webgl",
+        "noise-grain-texture",
+        "shader-postprocessing",
+        "color-oklch-palettes",
+        "scroll-shader-transition-sections"
+      ],
+      "sha": "592ae7f1bf52c33c0491cc6c8d8c1b830d38f7e8",
+      "fetched": "2026-11-15",
+      "skills": [
+        "color-oklch-palettes",
+        "css-scroll-driven-animations",
+        "custom-cursor-systems",
+        "gsap-splittext-kinetic-type",
+        "gsap-svg-draw-morph",
+        "hero-gltf-product-showcase",
+        "hero-gradient-mesh-aurora",
+        "hero-liquid-distortion-image",
+        "hero-masked-video-type",
+        "hero-noise-grain-cinematic",
+        "hero-tilt-3d-layers",
+        "hero-video-scrub-apple",
+        "hero-webgl-shader-fullscreen",
+        "image-sequence-scrubbing",
+        "lenis-smooth-scroll",
+        "magnetic-cursor-interactions",
+        "marquee-infinite-ticker",
+        "noise-grain-texture",
+        "ogl-lightweight-webgl",
+        "page-transition-choreography",
+        "parallax-depth-systems",
+        "scroll-chapter-pinned-story",
+        "scroll-lenis-gsap-integration-harness",
+        "scroll-mobile-performance-strategy",
+        "scroll-native-css-timeline-page",
+        "scroll-parallax-layers-depth",
+        "scroll-shader-transition-sections",
+        "scroll-text-highlight-reading",
+        "scroll-video-chapters",
+        "shader-postprocessing",
+        "sticky-pinning-sequences",
+        "text-scramble-decode",
+        "view-transitions-api"
+      ]
+    },
+    {
+      "license": "MIT",
+      "plugin": "qadri-motion",
+      "repo": "johnpolacek/animaxxing-skills",
+      "path": "skills",
+      "only": [
+        "gsap-astro",
+        "gsap-vanilla"
+      ],
+      "sha": "8ddf542ec239b018ba43ce0878842205c529b1c6",
+      "fetched": "2026-11-15",
+      "skills": [
+        "gsap-astro",
+        "gsap-vanilla"
+      ]
+    },
+    {
+      "license": "MIT",
+      "plugin": "qadri-motion",
+      "repo": "fabiensalles/claude-marketplace",
+      "path": "plugins/astro/skills",
+      "only": [
+        "astro-view-transitions"
+      ],
+      "sha": "479b264ec17cc5fafbf36287a1087472d3a386d3",
+      "fetched": "2026-11-15",
+      "skills": [
+        "astro-view-transitions"
+      ]
+    },
+    {
+      "license": "MIT",
+      "plugin": "qadri-motion",
+      "repo": "agents-inc/skills",
+      "path": "src/skills",
+      "only": [
+        "web-animation-view-transitions"
+      ],
+      "sha": "845a1f2833eedc494bb82e3172710c06cab547a1",
+      "fetched": "2026-11-15",
+      "skills": [
+        "web-animation-view-transitions"
+      ]
+    },
+    {
+      "license": "MIT",
+      "plugin": "qadri-motion",
+      "repo": "juliobsz/skills",
+      "only": [
+        "awwwards"
+      ],
+      "rename": {
+        "awwwards": "awwwards-site-builder"
+      },
+      "sha": "add880bd6ec9f5592a1482846fc0dd282c9161bc",
+      "fetched": "2026-11-15",
+      "skills": [
+        "awwwards-site-builder"
+      ]
+    },
+    {
+      "license": "MIT",
+      "plugin": "qadri-motion",
+      "repo": "thehetpatel/claude-gsap",
+      "path": "skills",
+      "only": [
+        "gsap-scroll-smoother",
+        "gsap-flip",
+        "gsap-text",
+        "gsap-svg"
+      ],
+      "sha": "ca34912b28a6b35f09d1b9324b6f465c439fb6fe",
+      "fetched": "2026-11-15",
+      "skills": [
+        "gsap-flip",
+        "gsap-scroll-smoother",
+        "gsap-svg",
+        "gsap-text"
+      ]
+    },
+    {
+      "license": "MIT",
+      "plugin": "qadri-motion",
+      "repo": "glebis/humane-agentic-design",
+      "path": "humane/skills",
+      "only": [
+        "narrative-scrollytelling",
+        "semantic-micro-interactions"
+      ],
+      "sha": "e7d867ddcc8cb5a34ecf5eaacaee8fc5aa117c93",
+      "fetched": "2026-11-15",
+      "skills": [
+        "narrative-scrollytelling",
+        "semantic-micro-interactions"
+      ]
+    },
+    {
+      "license": "MIT",
+      "plugin": "qadri-motion",
+      "repo": "jbmanllr/agent-skills",
+      "path": "skills",
+      "only": [
+        "theatre-js"
+      ],
+      "sha": "319a0f1aac3b3580e736d457f217d716b356aa35",
+      "fetched": "2026-11-15",
+      "skills": [
+        "theatre-js"
+      ]
+    },
+    {
+      "license": "MIT",
+      "plugin": "qadri-motion",
+      "repo": "musoyangrigor/scroll-video-website-skill",
+      "only": [
+        "scroll-video-website"
+      ],
+      "sha": "e61e534f9e828215f25b0b153bb705988dbb90c1",
+      "fetched": "2026-11-15",
+      "skills": [
+        "scroll-video-website"
+      ]
+    },
+    {
+      "license": "MIT",
+      "plugin": "qadri-motion",
+      "repo": "tommychryst/claude-web-animations",
+      "only": [
+        "scroll-reveal-video",
+        "hero-loop-background"
+      ],
+      "sha": "eba9e40f0506a1d7f9a2f95b9ee41a14ee1e01b0",
+      "fetched": "2026-11-15",
+      "skills": [
+        "hero-loop-background",
+        "scroll-reveal-video"
+      ]
+    },
+    {
+      "license": "MIT",
+      "plugin": "qadri-motion",
+      "repo": "soilmass/motion-design-agent",
+      "path": "skills",
+      "only": [
+        "scrollytelling",
+        "cinematic",
+        "reveals",
+        "ui-micro",
+        "microstate"
+      ],
+      "prefix": "motion-agent-",
+      "sha": "132c9d59231cf0fd91964ee433ba9e7e0b3bbf6d",
+      "fetched": "2026-11-15",
+      "skills": [
+        "motion-agent-cinematic",
+        "motion-agent-microstate",
+        "motion-agent-reveals",
+        "motion-agent-scrollytelling",
+        "motion-agent-ui-micro"
+      ]
+    },
+    {
+      "license": "MIT",
+      "plugin": "qadri-motion",
+      "repo": "mustbesimo/web-design-studio",
+      "path": "skills",
+      "only": [
+        "cinematic-scroll",
+        "scroll-audit"
+      ],
+      "sha": "a3e1794fa0a60d398ea7fbd572a3b844b4d3fb64",
+      "fetched": "2026-11-15",
+      "skills": [
+        "cinematic-scroll",
+        "scroll-audit"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "mengto/skills",
+      "plugin": "qadri-3d",
+      "path": "agent-skills/3d",
+      "prefix": "3d-",
+      "sha": "3cc93458c4949c39a04e938ea7892a1d6d3d40bf",
+      "fetched": "2026-11-15",
+      "skills": [
+        "3d-3d-cloth-material",
+        "3d-3d-falling-leaves",
+        "3d-3d-four-seasons",
+        "3d-3d-high-poly-models",
+        "3d-3d-high-resolution-textures",
+        "3d-3d-metal-material",
+        "3d-3d-orbit-inspect-demo",
+        "3d-3d-paper-material",
+        "3d-3d-retina-resolution",
+        "3d-3d-sky-background",
+        "3d-3d-sky-rays",
+        "3d-3d-ultra-realistic-water",
+        "3d-3d-underwater-god-rays",
+        "3d-3d-virtual-tour",
+        "3d-3d-wood-lighting-scorecard",
+        "3d-3d-wood-material"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "mengto/skills",
+      "plugin": "qadri-design",
+      "path": "agent-skills/illustration",
+      "prefix": "illustration-",
+      "sha": "3cc93458c4949c39a04e938ea7892a1d6d3d40bf",
+      "fetched": "2026-11-15",
+      "skills": [
+        "illustration-illustration-bold-pop",
+        "illustration-illustration-flat",
+        "illustration-illustration-flat-with-black",
+        "illustration-illustration-framed-panel",
+        "illustration-illustration-grainy-gouache",
+        "illustration-illustration-halftone-line",
+        "illustration-illustration-ink-sketch",
+        "illustration-illustration-isometric-mono",
+        "illustration-illustration-line-interior",
+        "illustration-illustration-one-line",
+        "illustration-illustration-outlined-cartoon",
+        "illustration-illustration-teal-spot",
+        "illustration-illustration-two-colour-brush",
+        "illustration-illustration-vintage-emblem"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "scottstts/threejs-awesome-graphics-agent-skills",
+      "plugin": "qadri-3d",
+      "path": "skills",
+      "sha": "53eb5a24097425d82532ec33697ad472750132a4",
+      "fetched": "2026-11-15",
+      "skills": [
+        "threejs-atmosphere-aerial-perspective",
+        "threejs-bloom",
+        "threejs-camera-direction",
+        "threejs-exposure-color-grading",
+        "threejs-image-pipeline",
+        "threejs-parallax-occlusion-mapping",
+        "threejs-precipitation-surfaces",
+        "threejs-procedural-animation",
+        "threejs-procedural-architecture",
+        "threejs-procedural-fields",
+        "threejs-procedural-geometry",
+        "threejs-procedural-materials",
+        "threejs-procedural-planets",
+        "threejs-procedural-vegetation",
+        "threejs-procedural-vfx",
+        "threejs-raymarched-space-effects",
+        "threejs-screen-space-ambient-occlusion",
+        "threejs-shadow-systems",
+        "threejs-skill-router",
+        "threejs-spectral-ocean",
+        "threejs-temporal-surfaces",
+        "threejs-visual-validation",
+        "threejs-volumetric-clouds",
+        "threejs-water-optics"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "bbeierle12/skill-mcp-claude",
+      "plugin": "qadri-3d",
+      "path": "skills",
+      "only": [
+        "particles-gpu",
+        "particles-lifecycle",
+        "particles-physics",
+        "particles-router",
+        "shader-noise",
+        "shader-sdf",
+        "shader-effects",
+        "shader-fundamentals",
+        "shader-router",
+        "postfx-bloom",
+        "postfx-composer",
+        "postfx-effects",
+        "postfx-router",
+        "r3f-drei",
+        "r3f-fundamentals",
+        "r3f-geometry",
+        "r3f-materials",
+        "r3f-performance",
+        "r3f-router"
+      ],
+      "sha": "0a2807fad1503247b936220c0d5cc08f73368a0d",
+      "fetched": "2026-11-15",
+      "skills": [
+        "particles-gpu",
+        "particles-lifecycle",
+        "particles-physics",
+        "particles-router",
+        "postfx-bloom",
+        "postfx-composer",
+        "postfx-effects",
+        "postfx-router",
+        "r3f-drei",
+        "r3f-fundamentals",
+        "r3f-geometry",
+        "r3f-materials",
+        "r3f-performance",
+        "r3f-router",
+        "shader-effects",
+        "shader-fundamentals",
+        "shader-noise",
+        "shader-router",
+        "shader-sdf"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "ahmettasdemirusa/threejs-product-skills",
+      "plugin": "qadri-3d",
+      "path": "skills",
+      "only": [
+        "model-viewer-ar",
+        "360-product-spin",
+        "product-configurator",
+        "3d-asset-optimization",
+        "threejs-product-viewer"
+      ],
+      "sha": "a8150ad12ca565c36fcc609ede06bed0acc74523",
+      "fetched": "2026-11-15",
+      "skills": [
+        "360-product-spin",
+        "3d-asset-optimization",
+        "model-viewer-ar",
+        "product-configurator",
+        "threejs-product-viewer"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "emiliodominguez/threejs-skills",
+      "plugin": "qadri-3d",
+      "path": "skills",
+      "only": [
+        "threejs-splats",
+        "web3d-model-viewer"
+      ],
+      "sha": "ac4464c88ea395fc7df938de8db912b81d18c768",
+      "fetched": "2026-11-15",
+      "skills": [
+        "threejs-splats",
+        "web3d-model-viewer"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "judyzz/threejs-parallax-skill",
+      "plugin": "qadri-3d",
+      "sha": "2e9e083cba725a734791710ccc043116572f0be7",
+      "fetched": "2026-11-15",
+      "skills": [
+        "threejs-parallax"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "flornkm/skills",
+      "plugin": "qadri-3d",
+      "path": "skills",
+      "only": [
+        "webgl-components"
+      ],
+      "sha": "cf1c0094e1826230623ecdb6e7b3c44bdfc593c3",
+      "fetched": "2026-11-15",
+      "skills": [
+        "webgl-components"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "tdimino/claude-code-minoan",
+      "plugin": "qadri-3d",
+      "path": "skills/design-media",
+      "only": [
+        "grainient",
+        "atmosphere-shader"
+      ],
+      "sha": "634a7057c0776806115f91a418bdc3862cc8d53c",
+      "fetched": "2026-11-15",
+      "skills": [
+        "atmosphere-shader",
+        "grainient"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "wundercorp/gradient-mesh-skill",
+      "plugin": "qadri-3d",
+      "path": "skills",
+      "sha": "86119af66aeb39a6414777f75680fc2119201458",
+      "fetched": "2026-11-15",
+      "skills": [
+        "gradient-mesh"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "Leonxlnx/taste-skill",
+      "plugin": "qadri-design",
+      "path": "skills",
+      "only": [
+        "taste-skill"
+      ],
+      "sha": "f6b76575f949707b4e3c37cd86cb44b0b98643e8",
+      "fetched": "2026-11-15",
+      "skills": [
+        "taste-skill"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "bergside/awesome-design-skills",
+      "plugin": "qadri-design",
+      "path": "skills",
+      "skip": [
+        "glassmorphism",
+        "impeccable",
+        "shadcn"
+      ],
+      "prefix": "style-",
+      "sha": "f631a09b4fcc0166f2e2c1a8c81906ef680c57e8",
+      "fetched": "2026-11-15",
+      "skills": [
+        "style-agentic",
+        "style-ant",
+        "style-artistic",
+        "style-basic",
+        "style-bento",
+        "style-bold",
+        "style-brutalism",
+        "style-cafe",
+        "style-claude",
+        "style-claymorphism",
+        "style-clean",
+        "style-codex",
+        "style-colorful",
+        "style-contemporary",
+        "style-corporate",
+        "style-cosmic",
+        "style-creative",
+        "style-dithered",
+        "style-doodle",
+        "style-dramatic",
+        "style-editorial",
+        "style-enterprise",
+        "style-expressive",
+        "style-fantasy",
+        "style-fiction",
+        "style-flat",
+        "style-friendly",
+        "style-futuristic",
+        "style-geometric",
+        "style-gradient",
+        "style-immersive",
+        "style-levels",
+        "style-lingo",
+        "style-material",
+        "style-matrix",
+        "style-minimal",
+        "style-modern",
+        "style-mono",
+        "style-neobrutalism",
+        "style-neon",
+        "style-neumorphism",
+        "style-pacman",
+        "style-paper",
+        "style-perspective",
+        "style-power",
+        "style-premium",
+        "style-professional",
+        "style-pulse",
+        "style-refined",
+        "style-retro",
+        "style-riso",
+        "style-roku",
+        "style-sega",
+        "style-sketch",
+        "style-skeumorphism",
+        "style-sleek",
+        "style-spacious",
+        "style-square",
+        "style-stitch",
+        "style-storytelling",
+        "style-terracotta",
+        "style-tetris",
+        "style-vibrant",
+        "style-vintage"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "jakubkrehel/skills",
+      "plugin": "qadri-design",
+      "path": "skills",
+      "only": [
+        "better-typography",
+        "better-colors",
+        "better-layout",
+        "better-ui",
+        "better-interface"
+      ],
+      "sha": "a72290d140249813898ba8648becf6415abcb059",
+      "fetched": "2026-11-15",
+      "skills": [
+        "better-colors",
+        "better-interface",
+        "better-layout",
+        "better-typography",
+        "better-ui"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "jakubkrehel/oklch-skill",
+      "plugin": "qadri-design",
+      "path": "skills",
+      "sha": "0e81f040e16d48fcc61d3e1b7ea548542371321f",
+      "fetched": "2026-11-15",
+      "skills": [
+        "oklch-skill"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "conardli/garden-skills",
+      "plugin": "qadri-design",
+      "path": "skills",
+      "only": [
+        "web-design-engineer"
+      ],
+      "sha": "9578a34edf3c359da23d8a632b72790834961d11",
+      "fetched": "2026-11-15",
+      "skills": [
+        "web-design-engineer"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "curiositech/some_claude_skills",
+      "plugin": "qadri-design",
+      "path": ".claude/skills",
+      "only": [
+        "neobrutalist-web-designer",
+        "swiss-modern-web-designer",
+        "vaporwave-glassomorphic-ui-designer",
+        "web-cloud-designer",
+        "typography-expert",
+        "color-theory-palette-harmony-expert",
+        "dark-mode-design-expert"
+      ],
+      "sha": "d47e2e5ded912f448b36da6c391be724d3e50496",
+      "fetched": "2026-11-15",
+      "skills": [
+        "color-theory-palette-harmony-expert",
+        "dark-mode-design-expert",
+        "neobrutalist-web-designer",
+        "swiss-modern-web-designer",
+        "typography-expert",
+        "vaporwave-glassomorphic-ui-designer",
+        "web-cloud-designer"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "madebymustafa/design-taste",
+      "plugin": "qadri-design",
+      "path": "skills",
+      "prefix": "dt-",
+      "sha": "c4a6bff0871eb4b15371b0e7d2751628b0ed4608",
+      "fetched": "2026-11-15",
+      "skills": [
+        "dt-brutalist-industrial",
+        "dt-cinematic-motion",
+        "dt-corporate-trust",
+        "dt-dark-tech",
+        "dt-design-taste",
+        "dt-editorial-minimal",
+        "dt-japanese-minimal",
+        "dt-neo-brutalism",
+        "dt-playful-color",
+        "dt-quiet-luxury",
+        "dt-retro-print",
+        "dt-taste-accessibility",
+        "dt-taste-brand-identity",
+        "dt-taste-code-craft",
+        "dt-taste-code-review",
+        "dt-taste-color",
+        "dt-taste-design-review",
+        "dt-taste-design-system",
+        "dt-taste-gsap",
+        "dt-taste-landing-page",
+        "dt-taste-motion",
+        "dt-taste-typography",
+        "dt-taste-ux-copy",
+        "dt-taste-web-performance"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "barrey/fullstack-web-ui-skills",
+      "plugin": "qadri-design",
+      "path": ".agents/skills",
+      "only": [
+        "style-cyberpunk-hud",
+        "style-neo-brutalism",
+        "style-spatial-glass",
+        "style-warm-editorial",
+        "style-linear-dark",
+        "style-quiet-minimal",
+        "style-playful-creative",
+        "style-ops-terminal",
+        "style-clean-enterprise",
+        "landing-page-anatomy"
+      ],
+      "sha": "73363891ce9c2844b125812e94424d59b5de188c",
+      "fetched": "2026-11-15",
+      "skills": [
+        "landing-page-anatomy",
+        "style-clean-enterprise",
+        "style-cyberpunk-hud",
+        "style-linear-dark",
+        "style-neo-brutalism",
+        "style-ops-terminal",
+        "style-playful-creative",
+        "style-quiet-minimal",
+        "style-spatial-glass",
+        "style-warm-editorial"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "jezweb/claude-skills",
+      "plugin": "qadri-design",
+      "path": "plugins",
+      "only": [
+        "tailwind-theme-builder",
+        "color-palette",
+        "landing-page",
+        "seo-local-business"
+      ],
+      "rename": {
+        "landing-page": "jezweb-landing-page"
+      },
+      "sha": "1260fa7439b36b18dbf16648ccc7fb44783f6c23",
+      "fetched": "2026-11-15",
+      "skills": [
+        "color-palette",
+        "jezweb-landing-page",
+        "seo-local-business",
+        "tailwind-theme-builder"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "arnavpuri/designskills",
+      "plugin": "qadri-design",
+      "path": "skills",
+      "only": [
+        "hero-section",
+        "landing-page-design",
+        "image-treatment",
+        "layout-composition"
+      ],
+      "sha": "c7873015add8571ca95043febad0d9e6c97ee5c6",
+      "fetched": "2026-11-15",
+      "skills": [
+        "hero-section",
+        "image-treatment",
+        "landing-page-design",
+        "layout-composition"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "dembrandt/dembrandt-skills",
+      "plugin": "qadri-design",
+      "path": "skills",
+      "only": [
+        "algorithmic-color-palette",
+        "modular-scale-typography",
+        "brand-visual-language",
+        "elevation-and-depth",
+        "color-mode-and-theme",
+        "marketing-vs-product-system"
+      ],
+      "sha": "66d033183cba0c25461134102eea088e20bc814e",
+      "fetched": "2026-11-15",
+      "skills": [
+        "algorithmic-color-palette",
+        "brand-visual-language",
+        "color-mode-and-theme",
+        "elevation-and-depth",
+        "marketing-vs-product-system",
+        "modular-scale-typography"
+      ]
+    },
+    {
+      "license": "MIT",
+      "repo": "wshobson/agents",
+      "plugin": "qadri-design",
+      "path": "plugins",
+      "only": [
+        "tailwind-design-system",
+        "visual-design-foundations"
+      ],
+      "sha": "9c61ab243def98f72da12abd41cfcf5bcd91af9d",
+      "fetched": "2026-11-15",
+      "skills": [
+        "tailwind-design-system",
+        "visual-design-foundations"
+      ]
+    }
+  ]
+}

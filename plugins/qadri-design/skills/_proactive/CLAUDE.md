@@ -14,7 +14,14 @@ Treat them as mandatory tooling, not optional extras:
      plus awwwards / designer-skills for anything customer-facing.
    - Any motion -> gsap-* or motion/framer-motion skills + design-motion-principles +
      accessible-animation. Prefer library-specific skills over hand-rolled CSS guesses.
-   - Any 3D / WebGL / shader -> threejs-* skills (CloudAI-X set first) + open-3d-skills.
+   - Any new site or redesign -> website-type-playbooks first (section order, action, schema),
+     then a style skill (style-*, dt-*, taste-skill) + tailwind-theme-builder / oklch-skill.
+   - Any storybook / scrollytelling / cinematic scroll page -> scroll-story-site (the router
+     and Astro glue), which names the technique skills for each chapter.
+   - Any background or hero video -> web-video-backgrounds.
+   - Any 3D / WebGL / shader -> threejs-* skills (CloudAI-X set first); advanced graphics,
+     particles, post-fx, model-viewer/AR, splats and gradient/grain backgrounds live in the
+     qadri-3d plugin (threejs-skill-router, particles-router, shader-router, postfx-router).
    - Any "wow" component (tilt card, beams, globe, animated button) -> Components skill /
      shadcn skills / 21st.dev Magic MCP, fetching real registry components.
    - Any database / schema / RLS -> supabase + supabase-postgres-best-practices +

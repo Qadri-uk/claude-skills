@@ -1,0 +1,23 @@
+{
+  "name": "particles-router",
+  "description": "Decision framework for particle system projects. Routes to specialized particle skills (gpu, physics, lifecycle) based on task requirements. Use when building particle effects or needing guidance on which particle techniques to combine.",
+  "tags": [
+    "3d",
+    "routing"
+  ],
+  "sub_skills": [],
+  "source": "claude-user",
+  "type": "router",
+  "depends_on": [
+    "particles-gpu",
+    "particles-physics",
+    "particles-lifecycle"
+  ],
+  "enhances": [
+    "shader-noise",
+    "shader-effects"
+  ],
+  "last_reviewed_at": "2026-09-14",
+  "review_score": 60,
+  "relevance_tier": "C"
+}

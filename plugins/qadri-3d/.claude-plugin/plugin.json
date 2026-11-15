@@ -1,0 +1,7 @@
+{
+  "name": "qadri-3d",
+  "version": "1.0.0",
+  "description": "qadri-uk advanced 3D and imagery skills: Three.js graphics (atmosphere, ocean, clouds, procedural materials), particles, shader noise/SDF, post-processing, R3F, model-viewer/AR, Gaussian splats, 2.5D parallax, WebGL decorations and gradient/grain backgrounds.",
+  "author": { "name": "qadri-uk" },
+  "homepage": "https://github.com/qadri-uk/claude-skills"
+}
