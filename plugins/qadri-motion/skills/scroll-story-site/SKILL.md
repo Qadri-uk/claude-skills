@@ -52,41 +52,63 @@ Animation is plain `<script>` in an `.astro` component. Astro bundles it, and th
 ships no React. Use a React island only when the beat is itself an R3F scene, and give
 it `client:visible`.
 
-`src/scripts/motion.ts`:
+`src/scripts/motion.ts` (tested on a live Astro 7 site):
 
 ```ts
+/**
+ * Smooth scroll + GSAP for pages that tell a story as you scroll.
+ *
+ *   startMotion(() => { ...create ScrollTriggers... });
+ *
+ * Everything `setup` creates runs inside gsap.matchMedia, so it is reverted in
+ * one go: when the reader turns on reduced motion, and before an Astro
+ * ClientRouter swap. With reduced motion nothing runs at all, and the page is
+ * the plain document it was rendered as. Pages must read correctly that way.
+ */
 import Lenis from 'lenis';
+import 'lenis/dist/lenis.css';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-gsap.registerPlugin(ScrollTrigger);
+import { SplitText } from 'gsap/SplitText';
 
-const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-let lenis: Lenis | null = null;
-const tick = (t: number) => lenis?.raf(t * 1000);
+gsap.registerPlugin(ScrollTrigger, SplitText);
 
-export function startMotion(setup: () => void) {
+export { gsap, ScrollTrigger, SplitText };
+
+export function startMotion(setup: () => void | (() => void)) {
   const run = () => {
-    if (!reduce.matches) {
-      lenis = new Lenis({ autoRaf: false });
+    let lenis: Lenis | null = null;
+    const tick = (t: number) => lenis?.raf(t * 1000);
+    const mm = gsap.matchMedia();
+
+    mm.add('(prefers-reduced-motion: no-preference)', () => {
+      lenis = new Lenis({ autoRaf: false, lerp: 0.09 });
       lenis.on('scroll', ScrollTrigger.update);
       gsap.ticker.add(tick);
       gsap.ticker.lagSmoothing(0);
-    }
-    // gsap.matchMedia reverts everything it created when a query stops matching.
-    const mm = gsap.matchMedia();
-    mm.add({ motion: '(prefers-reduced-motion: no-preference)' }, (ctx) => {
-      if (ctx.conditions?.motion) setup();
+      document.documentElement.classList.add('motion-on');
+      const cleanup = setup();
+      return () => {
+        if (typeof cleanup === 'function') cleanup();
+        document.documentElement.classList.remove('motion-on');
+        gsap.ticker.remove(tick);
+        lenis?.destroy();
+        lenis = null;
+      };
     });
-    document.addEventListener('astro:before-swap', () => {
-      mm.revert();
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-      gsap.ticker.remove(tick);
-      lenis?.destroy();
-      lenis = null;
-    }, { once: true });
+
+    // Webfonts and images change heights after first layout.
+    window.addEventListener('load', () => ScrollTrigger.refresh(), { once: true });
+    document.addEventListener('astro:before-swap', () => mm.revert(), { once: true });
   };
-  // astro:page-load fires on first load and after every ClientRouter navigation.
-  document.addEventListener('astro:page-load', run);
+  // astro:page-load is dispatched only by the ClientRouter (on first load and
+  // after each navigation). Without it, module scripts run once the DOM is
+  // parsed, so start straight away.
+  if (document.querySelector('[name="astro-view-transitions-enabled"]')) {
+    document.addEventListener('astro:page-load', run);
+  } else {
+    run();
+  }
 }
 ```
 
@@ -110,8 +132,17 @@ In the page:
 
 - Prefer CSS `position: sticky` in a tall section over `pin: true`. It needs no
   pin-spacer, survives Lenis, and degrades to a normal section without JS.
-- Add `import 'lenis/dist/lenis.css'` once in the layout.
-- Without the ClientRouter, `astro:page-load` still fires once, so the same code works.
+- `lenis/dist/lenis.css` is imported by the helper. Add the `motion-on` class checks in CSS
+  for anything that should only look different while animating (dimmed steps, a caret).
+- **Typing effects:** do not clip an inline span with `clip-path` because the text wraps and
+  the last line is hidden. Split it with `SplitText.create(el, { type: 'chars' })` and scrub
+  `autoAlpha` 0 to 1 with a stagger (`display: 'none'` with a zero duration does not render).
+- **Horizontal pinned track:** keep the grid as the default markup, and have the script add
+  an `is-horizontal` class that switches it to `display: flex; width: max-content`. Make a
+  wrapper as tall as panel height + track travel, with the panel `position: sticky` inside it.
+  Sticky fails under any ancestor with `overflow: hidden`, so put the overflow on the panel.
+- `astro:page-load` is dispatched **only by the ClientRouter**. Without it the event never
+  fires, so the helper above runs immediately instead. Do not just listen for the event.
 - `gsap-astro` and `astro-view-transitions` cover persisted islands and `transition:name`.
   Page-to-page morphs belong to View Transitions (`view-transitions-api`,
   `web-animation-view-transitions`), not GSAP.
