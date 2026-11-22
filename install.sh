@@ -17,8 +17,9 @@ fi
 echo "==> Proactive-skills instructions"
 MD="$HOME/.claude/CLAUDE.md"; mkdir -p "$HOME/.claude"
 SRC="$HOME/.claude/skills/_proactive/CLAUDE.md"
-if grep -q "BEGIN proactive-skills" "$MD" 2>/dev/null; then
-  echo "   CLAUDE.md: block already present"
+if [ -f "$SRC" ] && grep -q "BEGIN proactive-skills" "$MD" 2>/dev/null; then
+  # Replace the old block with the current one, so a changed rule reaches machines installed earlier.
+  sed -i.bak '/BEGIN proactive-skills/,/END proactive-skills/d' "$MD" && cat "$SRC" >> "$MD" && echo "   CLAUDE.md: block refreshed"
 elif [ -f "$SRC" ]; then
   cat "$SRC" >> "$MD" && echo "   CLAUDE.md: block appended"
 else
