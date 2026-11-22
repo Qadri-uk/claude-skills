@@ -125,6 +125,12 @@ for (const s of manifest.sources) {
       fs.copyFileSync(path.join(src, licenseFile), path.join(target, 'LICENSE'));
     installed.push(name);
   }
+  // Plugin-level files a source needs beside its skills (e.g. hooks/), copied as-is.
+  for (const extra of s.extra || []) {
+    const to = path.join(root, 'plugins', s.plugin, extra);
+    fs.rmSync(to, { recursive: true, force: true });
+    fs.cpSync(path.join(src, extra), to, { recursive: true });
+  }
   s.skills = installed.sort();
   console.log(`${s.repo} @ ${s.sha.slice(0, 8)} -> ${s.plugin}: ${installed.length} skills`);
 }

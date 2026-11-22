@@ -26,6 +26,11 @@
       "name": "qadri-3d",
       "source": "./plugins/qadri-3d",
       "description": "Advanced 3D and imagery: Three.js graphics, particles, shaders, post-fx, R3F, model-viewer/AR, splats, parallax, WebGL backgrounds."
+    },
+    {
+      "name": "superpowers",
+      "source": "./plugins/superpowers",
+      "description": "obra/superpowers (MIT): brainstorm, plan, test-driven development, systematic debugging, verification before completion, code review. Its SessionStart hook loads the using-superpowers rules into every session."
     }
   ]
 }

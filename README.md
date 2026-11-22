@@ -4,7 +4,7 @@ Personal Claude Code skill library: 777 vendored skills for UI/UX, motion, 3D, v
 components, databases, dashboards and SaaS, plus standing instructions that make
 Claude use them proactively. Upstream skills are vendored with `scripts/vendor.mjs` from the sources in `vendor.json` (see Maintenance).
 
-The skills are split into four Claude plugins under `plugins/`:
+The skills are split into five Claude plugins under `plugins/`, plus gstack, which installs separately (below):
 
 | Plugin | What it holds |
 |---|---|
@@ -12,10 +12,11 @@ The skills are split into four Claude plugins under `plugins/`:
 | `qadri-motion` | Motion, animation, 3D/WebGL, shaders, diagrams and video. |
 | `qadri-3d` | Advanced 3D and imagery: Three.js graphics (atmosphere, ocean, clouds, procedural materials), particles, shader noise/SDF, post-processing, R3F, model-viewer/AR, Gaussian splats, 2.5D parallax, gradient and grain backgrounds. |
 | `qadri-build` | React/Next.js, Vercel, Supabase, AI SDK, mobile, data viz, presentations, product management and marketing. |
+| `superpowers` | [obra/superpowers](https://github.com/obra/superpowers) (MIT), vendored whole under its own name because its skills refer to each other as `superpowers:<skill>`: brainstorming, writing and executing plans, test-driven development, systematic debugging, verification before completion, requesting and receiving code review, git worktrees, parallel agents. Its SessionStart hook loads the `using-superpowers` rules into every session. |
 
 ## Install as plugins on your Claude account (claude.ai, desktop, Claude Code)
 In claude.ai: **Customize > Plugins > Add > Add marketplace**, enter `qadri-uk/claude-skills`,
-then install `qadri-design`, `qadri-motion`, `qadri-3d` and `qadri-build`. Plugins on your account sync
+then install `qadri-design`, `qadri-motion`, `qadri-3d`, `qadri-build` and `superpowers`. Plugins on your account sync
 to Claude Code when you are signed in with that account.
 
 In Claude Code directly:
@@ -25,8 +26,24 @@ In Claude Code directly:
 /plugin install qadri-motion@qadri-uk
 /plugin install qadri-3d@qadri-uk
 /plugin install qadri-build@qadri-uk
+/plugin install superpowers@qadri-uk
 ```
 Plugin skills are namespaced, e.g. `/qadri-motion:gsap-core`.
+
+## gstack (installed by install.sh, not a plugin)
+
+[garrytan/gstack](https://github.com/garrytan/gstack) (MIT) is 64 skills plus the runtime they call:
+helper scripts in `bin/`, a Bun-built browser tool, hooks in `~/.claude/settings.json` and a
+self-updater. Its skills call `~/.claude/skills/gstack/bin/...` by path, and the checkout is over
+5,000 files, so it cannot be vendored into a plugin. `install.sh` installs Bun if needed, clones it
+to `~/.claude/skills/gstack`, runs `./setup --prefix` (skills become `/gstack-review`, `/gstack-qa`,
+`/gstack-ship`, `/gstack-office-hours` ...) and fetches the Chromium build its browser tool needs.
+It keeps itself current (stable channel); `/gstack-upgrade` forces an update.
+
+Setup also turns on three hooks: a one-line hint naming the gstack skill a prompt fits, a check
+that a skill with required steps finished them, and a confirmation before destructive commands
+(`rm -rf`, `DROP TABLE`, force-push). Turn one off with
+`~/.claude/skills/gstack/bin/gstack-config set <skill_routing|skill_contracts|destructive_guard> off`.
 
 ## Install on any machine (desktop, laptop)
 ```bash
