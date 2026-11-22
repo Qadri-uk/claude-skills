@@ -38,6 +38,30 @@ else
   echo "   claude CLI not found; MCP step skipped"
 fi
 
+echo "==> gstack (garrytan/gstack, MIT): a runtime with its own setup, not plugin skills"
+GSTACK="$HOME/.claude/skills/gstack"
+if ! command -v bun >/dev/null 2>&1 && [ ! -x "$HOME/.bun/bin/bun" ]; then
+  curl -fsSL https://bun.sh/install | bash >/dev/null 2>&1 && echo "   bun: installed" || echo "   bun: install failed"
+fi
+export PATH="$HOME/.bun/bin:$PATH"
+if command -v bun >/dev/null 2>&1; then
+  if [ -d "$GSTACK/.git" ]; then
+    echo "   gstack: already installed (it updates itself; /gstack-upgrade to force)"
+  else
+    git clone -q --single-branch --depth 1 https://github.com/garrytan/gstack.git "$GSTACK" || STATUS=1
+  fi
+  # --prefix: skills are /gstack-review, /gstack-qa ... so none shadows another skill's name.
+  if (cd "$GSTACK" && ./setup --prefix --quiet </dev/null >/dev/null 2>&1); then
+    echo "   gstack: setup ok"
+    # Its Playwright wants a newer Chromium build than a cloud container ships; this adds it beside the others.
+    GSTACK_CHROMIUM_NO_SANDBOX=1 "$GSTACK/bin/gstack-browser-ensure" --quiet </dev/null 2>/dev/null | tail -1 | sed 's/^/   gstack browser: /'
+  else
+    echo "   gstack: ./setup failed; run it by hand in $GSTACK"; STATUS=1
+  fi
+else
+  echo "   gstack: skipped (bun unavailable)"; STATUS=1
+fi
+
 COUNT=$(ls "$HOME/.claude/skills" 2>/dev/null | wc -l | tr -d ' ')
 echo "==> Done: $COUNT skills in ~/.claude/skills from $REPO. Restart Claude Code to load CLAUDE.md and MCPs."
 exit $STATUS
