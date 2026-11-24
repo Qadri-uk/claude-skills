@@ -1,0 +1,186 @@
+/*
+ * MERIDIAN HOUSE — the scroll story at /meridian-house/, in the manner of an
+ * Apple product page: no site chrome, a slim translucent product bar, huge
+ * tightly tracked headlines that hold while each chapter's scene plays, and
+ * a fixed WebGL world underneath. Chapter copy is driven by three CSS
+ * variables the page script sets per section: --vis (fade), --in (arrival)
+ * and --read (how far through the sentence the reader is).
+ */
+@layer components {
+  .mh-stage { position: fixed; inset: 0; z-index: 0; background: var(--color-stage); transition: opacity 600ms ease; }
+  .mh-stage.is-done { opacity: 0; pointer-events: none; }
+  .mh-stage > .stage-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .mh-loading { position: absolute; inset: 0; display: grid; place-items: center; font-size: 0.8125rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--color-stage-muted); }
+  .mh-loading .loading { animation: mh-breathe 1.8s ease-in-out infinite; }
+  .mh-loading .nogl { display: none; }
+  .mh-stage[data-state="ready"] .mh-loading { display: none; }
+  .mh-stage[data-state="nogl"] .mh-loading .loading { display: none; }
+  .mh-stage[data-state="nogl"] .mh-loading .nogl { display: block; }
+  @keyframes mh-breathe { 50% { opacity: 0.35; } }
+
+  /* Product bar */
+  .mh-nav {
+    position: fixed; inset: 0 0 auto; z-index: 20;
+    padding-top: env(safe-area-inset-top, 0px);
+    background: color-mix(in oklab, var(--color-stage) 62%, transparent);
+    -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
+    color: var(--color-stage-ink);
+  }
+  .mh-nav-inner {
+    margin-inline: auto; max-width: 72rem; height: 3.25rem;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    padding-inline: max(1.25rem, env(safe-area-inset-left, 0px)) max(1.25rem, env(safe-area-inset-right, 0px));
+  }
+  .mh-brand { display: flex; align-items: baseline; gap: 0.6rem; white-space: nowrap; }
+  .mh-brand span { font-size: 0.75rem; color: var(--color-stage-muted); }
+  .mh-brand b { font-size: 1.125rem; font-weight: 600; letter-spacing: -0.02em; }
+  .mh-nav nav { display: flex; align-items: center; gap: 1.4rem; font-size: 0.8125rem; }
+  .mh-nav nav a:not(.mh-pill) { color: var(--color-stage-muted); transition: color 160ms ease; }
+  .mh-nav nav a:not(.mh-pill):hover { color: var(--color-stage-ink); }
+  @media (max-width: 639px) { .mh-hide-sm { display: none; } .mh-brand span { display: none; } }
+  .mh-pill {
+    display: inline-flex; align-items: center; min-height: 1.9rem; padding: 0.3rem 0.95rem;
+    border-radius: var(--radius-pill); font-size: 0.8125rem; font-weight: 500;
+    background: var(--scene-accent); color: var(--color-stage);
+    transition: transform 100ms ease-out, filter 160ms ease;
+  }
+  .mh-pill:hover { filter: brightness(1.08); }
+  .mh-pill:active { transform: scale(0.97); }
+  .mh-pill-lg { min-height: 2.9rem; padding-inline: 1.5rem; font-size: 1rem; }
+  .mh-progress { height: 2px; background: oklch(1 0 0 / 0.08); }
+  .mh-progress i { display: block; height: 100%; transform-origin: left; transform: scaleX(0); background: linear-gradient(90deg, var(--scene-accent), var(--scene-accent-2)); }
+
+  /* Visualisation plates: full-bleed, dissolved over the 3D model by the page script. */
+  .mh-plates { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+  .mh-plate { position: absolute; inset: 0; margin: 0; opacity: 0; overflow: hidden; background: var(--color-stage); will-change: opacity; }
+  .mh-plate img {
+    width: 100%; height: 100%; object-fit: cover;
+    transform: scale(calc(1.02 + var(--push, 0) * 0.1)) translateY(calc(var(--push, 0) * -1.2%));
+    will-change: transform;
+  }
+  .mh-plate-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .mh-plate figcaption {
+    position: absolute; right: max(3.5rem, env(safe-area-inset-right, 0px)); bottom: max(1.1rem, env(safe-area-inset-bottom, 0px));
+    display: flex; gap: 0.6rem; align-items: center;
+    font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--color-stage-ink); text-shadow: 0 1px 8px oklch(0 0 0 / 0.7);
+  }
+  .mh-plate figcaption span { padding: 0.2rem 0.5rem; border: 1px solid var(--color-stage-rim); border-radius: var(--radius-pill); background: var(--color-stage-glass); }
+  @media (max-width: 767px) { .mh-plate figcaption { right: 2rem; bottom: 4.2rem; } }
+  /* Cinematic letterbox (2.39:1 on a 16:9 screen) during the walk-through. */
+  .mh-bars { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+  .mh-bars::before, .mh-bars::after {
+    content: ""; position: absolute; left: 0; right: 0; height: calc(var(--bars, 0) * 11vh); background: var(--color-stage);
+  }
+  .mh-bars::before { top: 0; }
+  .mh-bars::after { bottom: 0; }
+  .mh-hud { position: fixed; z-index: 15; left: max(1rem, env(safe-area-inset-left, 0px)); bottom: max(1rem, env(safe-area-inset-bottom, 0px)); pointer-events: none; }
+  .mh-chip {
+    display: inline-block; padding: 0.45rem 0.85rem; border-radius: var(--radius-pill);
+    font-family: var(--font-mono); font-size: 0.6875rem; letter-spacing: 0.1em; font-variant-numeric: tabular-nums;
+    color: var(--color-stage-ink); background: var(--color-stage-glass); border: 1px solid var(--color-stage-rim);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  }
+  .mh-floor {
+    position: fixed; z-index: 15; bottom: max(5rem, calc(env(safe-area-inset-bottom, 0px) + 4rem)); left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem 1.4rem; border-radius: 1.25rem;
+    background: var(--color-stage-glass); border: 1px solid var(--color-stage-rim); color: var(--mh-warm-light);
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+    font-size: 2.5rem; font-weight: 600; letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
+  }
+  .mh-floor span { font-size: 1rem; opacity: 0.7; }
+
+  .mh-rail { position: fixed; z-index: 15; right: max(0.75rem, env(safe-area-inset-right, 0px)); top: 50%; transform: translateY(-50%); }
+  .mh-rail ol { display: grid; gap: 0.1rem; }
+  .mh-rail a { display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; min-height: 1.6rem; padding-inline: 0.4rem; border-radius: var(--radius-pill); color: var(--color-stage-muted); }
+  .mh-rail-label { font-size: 0.6875rem; font-weight: 500; opacity: 0; transform: translateX(6px); transition: opacity 240ms ease, transform 240ms ease; text-shadow: 0 1px 8px oklch(0 0 0 / 0.7); }
+  .mh-dot { width: 0.4rem; height: 0.4rem; border-radius: 50%; background: oklch(1 0 0 / 0.4); transition: transform 300ms cubic-bezier(0.25, 1, 0.5, 1), background-color 300ms ease; }
+  .mh-rail a[aria-current] .mh-dot { background: var(--color-stage-ink); transform: scale(1.7); }
+  .mh-rail a[aria-current] .mh-rail-label { opacity: 1; transform: none; color: var(--color-stage-ink); }
+  @media (hover: hover) { .mh-rail:hover .mh-rail-label { opacity: 1; transform: none; } }
+  @media (max-width: 767px) { .mh-rail-label { display: none; } .mh-rail { right: 0.25rem; } }
+
+  /* Chapters */
+  .mh-story { position: relative; z-index: 1; }
+  .mh-chapter { height: 175svh; }
+  .mh-chapter:first-child { height: 150svh; }
+  .mh-sticky {
+    position: sticky; top: 0; height: 100svh; display: flex; align-items: flex-end;
+    padding: 5rem max(2.5rem, env(safe-area-inset-right, 0px)) 4.5rem max(1.25rem, env(safe-area-inset-left, 0px));
+    pointer-events: none;
+  }
+  @media (min-width: 768px) {
+    .mh-sticky { align-items: center; padding-inline: clamp(2rem, 7vw, 7rem); }
+    .mh-right { justify-content: flex-end; }
+    .mh-center { justify-content: center; text-align: center; }
+  }
+  /* One soft, edgeless vignette for legibility, instead of a scrim per chapter. */
+  .mh-scrim {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background:
+      linear-gradient(to top, color-mix(in oklab, var(--color-stage) 62%, transparent), transparent 46%),
+      radial-gradient(120% 90% at 50% 50%, transparent 55%, color-mix(in oklab, var(--color-stage) 45%, transparent));
+  }
+  .mh-copy {
+    max-width: 34rem; pointer-events: auto; color: var(--color-stage-ink);
+    text-shadow: 0 1px 2px oklch(0 0 0 / 0.35), 0 4px 28px oklch(0 0 0 / 0.45);
+    opacity: var(--vis, 1);
+    transform: translateY(calc((1 - var(--in, 1)) * 2.5rem)) scale(calc(0.97 + var(--in, 1) * 0.03));
+    will-change: opacity, transform;
+  }
+  .mh-center .mh-copy { max-width: 52rem; }
+  .mh-eyebrow { font-size: clamp(0.875rem, 0.8rem + 0.3vw, 1.0625rem); font-weight: 600; letter-spacing: -0.01em; color: var(--scene-accent); }
+  .mh-h {
+    margin-top: 0.5rem; font-size: clamp(2.5rem, 1.6rem + 3.8vw, 5rem); font-weight: 700; color: var(--color-stage-ink);
+    line-height: 1.02; letter-spacing: -0.045em; text-wrap: balance;
+  }
+  .mh-h-xl { font-size: clamp(3.4rem, 1.6rem + 8vw, 9rem); letter-spacing: -0.055em; line-height: 0.95; }
+  .mh-lede {
+    margin-top: 1.1rem; font-size: clamp(1.125rem, 1rem + 0.55vw, 1.5rem); font-weight: 600;
+    line-height: 1.32; letter-spacing: -0.015em; text-wrap: pretty;
+  }
+  .mh-center .mh-lede { margin-inline: auto; max-width: 38rem; }
+  /* Words light up as the reader moves through the chapter. */
+  .mh-lede span { opacity: clamp(0.22, calc(var(--read, 1) * (var(--n) + 3) - var(--i)), 1); transition: opacity 120ms linear; }
+  .mh-figs { margin-top: 1.75rem; display: flex; flex-wrap: wrap; gap: 1.25rem 2.5rem; }
+  .mh-center .mh-figs { justify-content: center; }
+  .mh-figs > div { display: flex; flex-direction: column-reverse; }
+  .mh-figs dt { margin-top: 0.15rem; font-size: 0.8125rem; color: var(--color-stage-muted); }
+  .mh-figs dd { font-size: clamp(2rem, 1.5rem + 2vw, 3.25rem); font-weight: 700; letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .mh-figs small { margin-left: 0.2rem; font-size: 0.45em; font-weight: 600; letter-spacing: 0; color: var(--color-stage-muted); }
+  .mh-cue { margin-top: 2.5rem; display: inline-flex; flex-direction: column; align-items: center; gap: 0.6rem; font-size: 0.8125rem; color: var(--color-stage-muted); }
+  .mh-cue span { width: 1px; height: 2.75rem; background: linear-gradient(var(--color-stage-ink), transparent); transform-origin: top; animation: mh-line 2s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
+  @keyframes mh-line { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+
+  /* At a glance */
+  .mh-spec { position: relative; z-index: 1; background: var(--color-stage); color: var(--color-stage-ink); padding-top: clamp(6rem, 12vw, 10rem); }
+  .mh-wrap { margin-inline: auto; max-width: 68rem; padding-inline: max(1.25rem, env(safe-area-inset-left, 0px)) max(1.25rem, env(safe-area-inset-right, 0px)); }
+  .mh-spec-h { color: var(--color-stage-ink); margin-top: 0.6rem; font-size: clamp(2.4rem, 1.6rem + 3.6vw, 4.75rem); font-weight: 700; letter-spacing: -0.045em; line-height: 1.02; text-wrap: balance; }
+  .mh-mt { margin-top: clamp(5rem, 10vw, 8rem); }
+  .mh-grad { background: linear-gradient(100deg, var(--scene-accent), var(--scene-accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .mh-glance { margin-top: 3.5rem; display: grid; gap: 3rem 2rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
+  .mh-glance > div { display: flex; flex-direction: column-reverse; border-top: 1px solid var(--color-stage-rim); padding-top: 1.25rem; }
+  .mh-glance dd { font-size: clamp(2.75rem, 2rem + 3vw, 4.5rem); font-weight: 700; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .mh-glance small { margin-left: 0.3rem; font-size: 0.32em; font-weight: 600; letter-spacing: 0; color: var(--color-stage-muted); }
+  .mh-glance dt { margin-top: 0.6rem; font-size: 1rem; color: var(--color-stage-muted); }
+  .mh-points { margin-top: 3rem; display: grid; gap: 2.5rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+  .mh-points h3 { color: var(--color-stage-ink); font-size: 1.375rem; font-weight: 600; letter-spacing: -0.02em; }
+  .mh-points p { margin-top: 0.6rem; font-size: 1.0625rem; line-height: 1.5; color: var(--color-stage-muted); }
+  .mh-credits { margin-top: 2.5rem; display: grid; gap: 1.5rem 2rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); }
+  .mh-credits dt { font-size: 0.8125rem; color: var(--color-stage-muted); }
+  .mh-credits dd { margin-top: 0.2rem; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; }
+  .mh-cta { margin-block: clamp(6rem, 12vw, 9rem); text-align: center; }
+  .mh-cta-h { font-size: clamp(2rem, 1.4rem + 2.6vw, 3.5rem); font-weight: 700; letter-spacing: -0.04em; line-height: 1.05; text-wrap: balance; }
+  .mh-cta-row { margin-top: 2rem; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1.25rem 2rem; }
+  .mh-link { font-size: 1.0625rem; color: var(--scene-accent); }
+  .mh-link:hover { text-decoration: underline; }
+  .mh-foot { border-top: 1px solid var(--color-stage-rim); padding: 1.5rem max(1.25rem, env(safe-area-inset-left, 0px)) calc(2rem + env(safe-area-inset-bottom, 0px)); text-align: center; font-size: 0.75rem; color: var(--color-stage-muted); }
+  .mh-foot p { margin-inline: auto; max-width: 44rem; }
+  .mh-foot a { text-decoration: underline; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mh-copy { transform: none; filter: none; }
+    .mh-cue span, .mh-loading .loading { animation: none; }
+    .mh-lede span { transition: none; }
+  }
+}

@@ -52,6 +52,10 @@ proposed for them. Then build.
      then a style skill (style-*, dt-*, taste-skill) + tailwind-theme-builder / oklch-skill.
    - Any storybook / scrollytelling / cinematic scroll page -> scroll-story-site (the router
      and Astro glue), which names the technique skills for each chapter.
+   - Any story that takes a building, place or product from vision to completion as a 3D
+     scroll film (architecture, property, construction, product build) -> cinematic-3d-story
+     (qadri-3d): story clock, camera language, real CC0 imagery, AI visualisation plates,
+     phone performance fixes and a one-file Artifact build.
    - Any background or hero video -> web-video-backgrounds.
    - Any 3D / WebGL / shader -> threejs-* skills (CloudAI-X set first); advanced graphics,
      particles, post-fx, model-viewer/AR, splats and gradient/grain backgrounds live in the

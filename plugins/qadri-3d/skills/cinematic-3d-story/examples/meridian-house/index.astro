@@ -1,0 +1,383 @@
+---
+/**
+ * Meridian House: a scroll-driven 3D build story, from vision to occupation.
+ *
+ * A design and build demonstration. Atelier North and Meridian House are
+ * fictional, and the page says so at the end; it is kept out of search
+ * (noindex) for the same reason.
+ *
+ * The WebGL world (src/lib/three/tower.ts) sits on a fixed full-screen canvas.
+ * Twelve chapters of ordinary HTML scroll over it; each holds its headline in
+ * place (CSS sticky) while its part of the story plays, and the scroll
+ * position drives the scene's story clock. Without WebGL or JavaScript the
+ * chapters still read in order as a plain document.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+type Fig = [label: string, value: number, unit: string, decimals?: number];
+const chapters: { id: string; label: string; align: 'left' | 'right' | 'center'; eyebrow: string; title: string; lede: string; figs: Fig[] }[] = [
+  { id: 'vision', label: 'Vision', align: 'center', eyebrow: 'Atelier North presents', title: 'Meridian House.', lede: 'Sixteen storeys, drawn line by line, then built floor by floor. Scroll to take it from vision to occupation.', figs: [] },
+  { id: 'site', label: 'Site', align: 'left', eyebrow: 'Stage 1 · Set-out', title: 'It begins with a plot of land.', lede: 'A corner site in the new business quarter. Before a spade goes in, every gridline on the drawing is staked out on the ground.', figs: [['Site area', 0.64, 'ha', 2], ['Footprint', 676, 'm²']] },
+  { id: 'excavation', label: 'Groundworks', align: 'right', eyebrow: 'Stage 2 · Groundworks', title: 'Eight metres down.', lede: 'Room for plant, cycles and parking. The earth leaves one lorry at a time.', figs: [['Excavated', 7200, 'm³'], ['Depth', 8, 'm']] },
+  { id: 'foundations', label: 'Foundations', align: 'left', eyebrow: 'Stage 3 · Substructure', title: 'Forty-nine piles. One raft.', lede: 'Bored deep into firm clay, then tied together by a metre of reinforced concrete.', figs: [['Piles', 49, ''], ['Concrete', 2400, 'm³']] },
+  { id: 'structure', label: 'Structure', align: 'right', eyebrow: 'Stage 4 · Frame', title: 'A floor every nine days.', lede: 'The core climbs first. The steel follows, every beam set by the crane.', figs: [['Steel', 1850, 't'], ['Floor cycle', 9, 'days']] },
+  { id: 'envelope', label: 'Envelope', align: 'left', eyebrow: 'Stage 5 · Envelope', title: 'Wrapped in light.', lede: 'Unitised glass with aluminium fins, tuned to the sun on every face, so no desk sits more than seven metres from daylight.', figs: [['Glass panels', 508, ''], ['To daylight', 7, 'm max']] },
+  { id: 'completion', label: 'Completion', align: 'center', eyebrow: 'Stage 6 · Handover', title: 'Complete.', lede: 'The hoardings come down, the plaza is planted, and as the light goes the building comes alive.', figs: [['Programme', 31, 'months'], ['Height', 67, 'm']] },
+  { id: 'arrival', label: 'Arrival', align: 'left', eyebrow: 'Ground floor', title: 'Arrive on axis.', lede: 'Across the reflecting pool, under a deep canopy, through doors that open as you reach them.', figs: [] },
+  { id: 'foyer', label: 'Foyer', align: 'right', eyebrow: 'Ground floor · Reception', title: 'A welcome, seven metres tall.', lede: 'Honed stone, a timber wall, sixty-four glass globes, and someone to greet you by name.', figs: [['Ceiling', 7, 'm'], ['Globes', 64, '']] },
+  { id: 'lift', label: 'Ascent', align: 'left', eyebrow: 'Core · Lift 2', title: 'Rise through the core.', lede: 'Glass-fronted cars pass every floor at work on the way up.', figs: [] },
+  { id: 'occupation', label: 'Occupation', align: 'right', eyebrow: 'Level 16', title: 'Occupied.', lede: 'People, light and the city at their feet. What every drawing was for.', figs: [['Workstations', 1120, ''], ['Let', 100, '%']] },
+  { id: 'finale', label: 'Meridian', align: 'center', eyebrow: 'Meridian House · 2027', title: 'From vision to occupation.', lede: 'Designed by Atelier North. First sketch to first tenant in thirty-one months.', figs: [] },
+];
+
+const glance: Fig[] = [
+  ['Height', 67, 'm'],
+  ['Storeys', 16, ''],
+  ['Net internal area', 10816, 'm²'],
+  ['Workstations', 1120, ''],
+  ['Embodied carbon', 410, 'kgCO₂e/m²'],
+  ['Programme', 31, 'months'],
+];
+/*
+ * "The model and the reality": each chapter dissolves from the live 3D model to a
+ * photoreal visualisation of the same moment. Images are AI-generated (Canva),
+ * the tower ones referenced to one anchor image so the architecture stays consistent.
+ */
+/* A plate may also name a `video`: a muted clip the reader scrubs with scroll
+ * (encode it all-keyframe, see the skill's encode-scrub script). */
+const plates: { ch: number; file: string; alt: string; caption: string; video?: string }[] = [
+  { ch: 0, file: 'vision', alt: "A white architectural model of the tower on an architect's table among printed plans.", caption: 'Presentation model' },
+  { ch: 1, file: 'site', alt: 'Aerial view of the empty fenced plot with surveyors setting out the footprint.', caption: 'Stage 1 · Set-out' },
+  { ch: 2, file: 'excavation', alt: 'An excavator loading a dump truck at the edge of the deep basement excavation.', caption: 'Stage 2 · Groundworks' },
+  { ch: 3, file: 'foundations', alt: 'Workers pouring concrete into the reinforced foundation raft from a pump boom.', caption: 'Stage 3 · Substructure' },
+  { ch: 4, file: 'structure', alt: 'The steel frame rising around the core, with a tower crane lifting a beam.', caption: 'Stage 4 · Frame' },
+  { ch: 5, file: 'envelope', alt: 'Glaziers fitting the last curtain wall panels at sunset.', caption: 'Stage 5 · Envelope' },
+  { ch: 6, file: 'completion', alt: 'The finished tower at dusk, lit floors reflected in the plaza pool.', caption: 'Stage 6 · Handover' },
+  { ch: 8, file: 'foyer', alt: 'The double-height foyer with its globe chandelier and a receptionist waving hello.', caption: 'Ground floor · Reception' },
+  { ch: 10, file: 'occupation', alt: 'The occupied open-plan office on level 16 at night, the city below.', caption: 'Level 16 · Occupied' },
+];
+
+const fmt = (v: number, d = 0) => v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d });
+---
+
+<BaseLayout
+  title="Meridian House"
+  description="A scroll-driven 3D story of an office tower, from the architect's first drawing through excavation, frame and glass to a lit foyer and an occupied top floor."
+  noindex
+  bare
+>
+  <div class="mh-stage" data-scene="tower" aria-hidden="true">
+    <div class="mh-loading"><span class="loading">Unrolling the drawings</span><span class="nogl">The 3D scene needs WebGL. The story below still reads in order.</span></div>
+  </div>
+
+  <header class="mh-nav">
+    <div class="mh-nav-inner">
+      <a href="#vision" class="mh-brand"><span>Atelier North</span><b>Meridian House</b></a>
+      <nav aria-label="Page">
+        <a href="#vision" class="mh-hide-sm">Story</a>
+        <a href="#spec" class="mh-hide-sm">At a glance</a>
+        <a href="#spec" class="mh-pill">Book a viewing</a>
+      </nav>
+    </div>
+    <div class="mh-progress" aria-hidden="true"><i data-progress></i></div>
+  </header>
+
+  <div class="mh-plates">
+    {plates.map((pl) => (
+      <figure class="mh-plate" data-plate={pl.ch}>
+        <img
+          src={`/meridian/plates/${pl.file}-1920.jpg`}
+          srcset={`/meridian/plates/${pl.file}-1280.jpg 1280w, /meridian/plates/${pl.file}-1920.jpg 1920w`}
+          sizes="100vw"
+          width="1920"
+          height="1080"
+          alt={pl.alt}
+          loading="lazy"
+          decoding="async"
+        />
+        {pl.video && (
+          <video class="mh-plate-video" src={`/meridian/plates/${pl.video}`} muted playsinline preload="auto" aria-hidden="true" data-scrub></video>
+        )}
+        <figcaption><span>Visualisation</span>{pl.caption}</figcaption>
+      </figure>
+    ))}
+  </div>
+  <div class="mh-scrim" aria-hidden="true"></div>
+  <div class="mh-bars" aria-hidden="true"></div>
+  <div class="mh-hud" aria-hidden="true"><span class="mh-chip" data-log>REV C · CONCEPT DESIGN</span></div>
+  <div class="mh-floor" data-floor hidden aria-hidden="true"><span>▲</span><b data-floor-num>G</b></div>
+
+  <nav class="mh-rail" aria-label="Chapters">
+    <ol>
+      {chapters.map((c, i) => (
+        <li><a href={`#${c.id}`} data-goto={i}><span class="mh-rail-label">{c.label}</span><span class="mh-dot"></span></a></li>
+      ))}
+    </ol>
+  </nav>
+
+  <div class="mh-story" data-story>
+    {chapters.map((c, i) => {
+      const words = c.lede.split(' ');
+      return (
+        <section id={c.id} class="mh-chapter" data-ch={i} aria-labelledby={`h-${c.id}`}>
+          <div class={`mh-sticky mh-${c.align}`}>
+            <div class="mh-copy">
+              <p class="mh-eyebrow">{c.eyebrow}</p>
+              {i === 0 ? (
+                <h1 id={`h-${c.id}`} class="mh-h mh-h-xl">{c.title}</h1>
+              ) : (
+                <h2 id={`h-${c.id}`} class="mh-h">{c.title}</h2>
+              )}
+              <p class="mh-lede" style={`--n:${words.length}`}>
+                {words.map((w, k) => <span style={`--i:${k}`}>{w} </span>)}
+              </p>
+              {c.figs.length > 0 && (
+                <dl class="mh-figs">
+                  {c.figs.map(([label, v, unit, d]) => (
+                    <div>
+                      <dt>{label}</dt>
+                      <dd><span data-count={v} data-dec={d ?? 0}>{fmt(v, d ?? 0)}</span>{unit && <small>{unit}</small>}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+              {i === 0 && <p class="mh-cue">Scroll <span aria-hidden="true"></span></p>}
+            </div>
+          </div>
+        </section>
+      );
+    })}
+  </div>
+
+  <section id="spec" class="mh-spec" aria-labelledby="h-spec">
+    <div class="mh-wrap">
+      <p class="mh-eyebrow">At a glance</p>
+      <h2 id="h-spec" class="mh-spec-h">Meridian House, <span class="mh-grad">in numbers.</span></h2>
+      <dl class="mh-glance">
+        {glance.map(([label, v, unit, d]) => (
+          <div>
+            <dt>{label}</dt>
+            <dd><span class="mh-grad">{fmt(v, d ?? 0)}</span>{unit && <small>{unit}</small>}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <h2 class="mh-spec-h mh-mt">Designed in detail.</h2>
+      <div class="mh-points">
+        <div>
+          <h3>Daylight first</h3>
+          <p>A 26 metre plate around a compact core puts every desk within seven metres of glass. Fins on each face are angled to the sun they meet.</p>
+        </div>
+        <div>
+          <h3>A lighter frame</h3>
+          <p>A steel frame on a concrete core, with recycled-content steel and a low-cement raft, keeps embodied carbon well under the city's target.</p>
+        </div>
+        <div>
+          <h3>A ground floor for the city</h3>
+          <p>A seven metre foyer, a public plaza and a reflecting pool make the building's front door part of the street.</p>
+        </div>
+      </div>
+
+      <h2 class="mh-spec-h mh-mt">The team.</h2>
+      <dl class="mh-credits">
+        <div><dt>Client</dt><dd>Meridian Estates</dd></div>
+        <div><dt>Architect</dt><dd>Atelier North</dd></div>
+        <div><dt>Structure</dt><dd>Vale Halden Engineers</dd></div>
+        <div><dt>Facade</dt><dd>Corve Facade Studio</dd></div>
+        <div><dt>Contractor</dt><dd>Lantern Build</dd></div>
+        <div><dt>Completion</dt><dd>Spring 2027</dd></div>
+      </dl>
+
+      <div class="mh-cta">
+        <p class="mh-cta-h">Have a site? Let’s draw what comes next.</p>
+        <div class="mh-cta-row">
+          <a href="#vision" class="mh-pill mh-pill-lg">Replay the story</a>
+          <a href="/3d-website/" class="mh-link">How scenes like this are built ›</a>
+        </div>
+      </div>
+    </div>
+    <footer class="mh-foot">
+      <p>Atelier North, Meridian House and the team above are fictional. This page is a design and build demonstration by <a href="/">v-code.ai</a>: the 3D model is generated in code in your browser, and the visualisations that it dissolves into are AI-generated images.</p>
+    </footer>
+  </section>
+
+  <script>
+    import type { Phases } from '../../lib/three/tower';
+    const FLOORS = 16;
+    const N = 12;
+
+    const host = document.querySelector<HTMLElement>('[data-scene="tower"]')!;
+    const story = document.querySelector<HTMLElement>('[data-story]')!;
+    const sections = [...story.querySelectorAll<HTMLElement>('[data-ch]')];
+    const log = document.querySelector<HTMLElement>('[data-log]')!;
+    const progress = document.querySelector<HTMLElement>('[data-progress]')!;
+    const floorBox = document.querySelector<HTMLElement>('[data-floor]')!;
+    const floorNum = document.querySelector<HTMLElement>('[data-floor-num]')!;
+    const rail = [...document.querySelectorAll<HTMLAnchorElement>('.mh-rail [data-goto]')];
+    const counters = sections.map((s) => [...s.querySelectorAll<HTMLElement>('[data-count]')]);
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const ss = (x: number, a: number, b: number) => {
+      const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+      return t * t * (3 - 2 * t);
+    };
+
+    // Scroll position → story clock c: chapter index plus progress through it.
+    let tops: number[] = [];
+    let heights: number[] = [];
+    const measure = () => {
+      tops = sections.map((s) => s.getBoundingClientRect().top + scrollY);
+      heights = sections.map((s) => s.offsetHeight);
+    };
+    measure();
+    addEventListener('resize', measure);
+    addEventListener('load', measure);
+    const clock = () => {
+      const y = scrollY;
+      let c = 0;
+      for (let i = 0; i < sections.length; i++) {
+        if (y >= tops[i]) c = i + Math.min(1, (y - tops[i]) / heights[i]);
+      }
+      return Math.min(N, c);
+    };
+
+    // Each chapter's copy: blur in, hold while its scene plays, fade out.
+    const fmt = (v: number, d: number) => v.toLocaleString('en-GB', { minimumFractionDigits: d, maximumFractionDigits: d });
+    const paintCopy = (c: number) => {
+      sections.forEach((s, i) => {
+        const local = c - i;
+        if (local < -1 || local > 2) {
+          s.style.setProperty('--vis', '0');
+          return;
+        }
+        const vin = i === 0 ? 1 : ss(local, -0.02, 0.18);
+        const vout = i === N - 1 ? 1 : 1 - ss(local, 0.78, 0.96);
+        const read = i === 0 ? 1 : ss(local, 0.02, 0.42);
+        s.style.setProperty('--vis', (vin * vout).toFixed(3));
+        s.style.setProperty('--in', vin.toFixed(3));
+        s.style.setProperty('--read', read.toFixed(3));
+        const k = i === 0 ? 1 : ss(local, 0.04, 0.38);
+        counters[i].forEach((el) => {
+          el.textContent = fmt(+el.dataset.count! * k, +(el.dataset.dec ?? 0));
+        });
+      });
+    };
+
+    const day = (d: number) => `DAY ${String(Math.round(d)).padStart(3, '0')}`;
+    const pct = (x: number) => `${Math.round(x * 100)}%`;
+    const describe = (c: number, p: Phases) => {
+      if (c < 0.9) return 'REV C · CONCEPT DESIGN';
+      if (c < 1.9) return `${day(1 + (c - 0.9) * 20)} · SET-OUT`;
+      if (c < 2.9) return `${day(21 + p.dig * 70)} · EXCAVATION ${pct(p.dig)}`;
+      if (c < 3.9) return `${day(91 + (c - 2.9) * 60)} · PILES ${Math.round(p.piles * 49)}/49 · RAFT ${pct(p.pour)}`;
+      if (c < 5.0) return `${day(151 + p.frame * 330)} · LEVEL ${Math.max(1, Math.ceil(p.frame * FLOORS))} OF ${FLOORS}`;
+      if (c < 5.95) return `${day(481 + p.glass * 300)} · GLAZING ${pct(p.glass)}`;
+      if (c < 7.2) return 'DAY 940 · PRACTICAL COMPLETION';
+      if (c < 10.2) return 'OCCUPIED · GROUND FLOOR';
+      return 'OCCUPIED · LEVEL 16';
+    };
+
+    let lastLog = '';
+    let lastActive = -1;
+    let assetsNote = '';
+    const onAssets = (done: number, total: number) => {
+      assetsNote = done < total ? ` · LOADING REAL SKIES & MATERIALS ${done}/${total}` : '';
+      lastLog = '';
+    };
+    const bars = document.querySelector<HTMLElement>('.mh-bars')!;
+    // Model → reality: dissolve to each chapter's visualisation, with a slow push-in.
+    const plateEls = [...document.querySelectorAll<HTMLElement>('[data-plate]')].map((el) => ({ el, ch: +el.dataset.plate! }));
+    let covered = false;
+    let towerRef: { setOccluded(o: boolean): void } | null = null;
+    // Seek to the remembered scroll position; a seek in flight retries when it lands.
+    const seekTo = (v: HTMLVideoElement) => {
+      if (!v.duration || v.seeking) return;
+      const t = +(v.dataset.push ?? 0) * (v.duration - 0.05);
+      if (Math.abs(v.currentTime - t) > 1 / 30) v.currentTime = t;
+    };
+    document.querySelectorAll<HTMLVideoElement>('video[data-scrub]').forEach((v) => {
+      v.addEventListener('seeked', () => seekTo(v));
+      v.addEventListener('loadedmetadata', () => seekTo(v));
+    });
+    const paintPlates = (c: number) => {
+      let top = 0;
+      for (const { el, ch } of plateEls) {
+        const local = c - ch;
+        const o = local < 0.3 || local > 1.05 ? 0 : ss(local, 0.42, 0.56) * (1 - ss(local, 0.9, 1.02));
+        if (o <= 0) {
+          if (el.style.opacity !== '0') el.style.opacity = '0';
+          continue;
+        }
+        top = Math.max(top, o);
+        el.style.opacity = o.toFixed(3);
+        const push = reduce ? 0 : ss(local, 0.35, 1.05);
+        el.style.setProperty('--push', push.toFixed(4));
+        // Scrubbed footage: the clip's time follows the scroll, never plays on its own.
+        const v = el.querySelector<HTMLVideoElement>('video[data-scrub]');
+        if (v) {
+          v.dataset.push = String(push);
+          seekTo(v);
+        }
+      }
+      // Nothing to see behind an opaque plate: let the GPU rest.
+      const now = top > 0.995;
+      if (now !== covered && towerRef) {
+        covered = now;
+        towerRef.setOccluded(now);
+      }
+    };
+    addEventListener('scroll', () => paintPlates(clock()), { passive: true });
+    paintPlates(clock());
+
+    const onFrame = (c: number, p: Phases) => {
+      // Letterbox in for the walk-through: we've stepped from the brochure into the film.
+      bars.style.setProperty('--bars', (ss(c, 7.15, 7.6) * (1 - ss(c, 10.85, 11.3))).toFixed(3));
+      const text = describe(c, p) + assetsNote;
+      if (text !== lastLog) log.textContent = lastLog = text;
+      progress.style.transform = `scaleX(${(c / N).toFixed(4)})`;
+      const active = Math.min(N - 1, Math.floor(c));
+      if (active !== lastActive) {
+        lastActive = active;
+        rail.forEach((b, i) => (i === active ? b.setAttribute('aria-current', 'step') : b.removeAttribute('aria-current')));
+      }
+      const riding = c > 9.3 && c < 10.15;
+      floorBox.hidden = !riding;
+      if (riding) {
+        const k = Math.min(1, Math.max(0, (c - 9.45) / 0.4));
+        const f = Math.round(k * (FLOORS - 1));
+        floorNum.textContent = f === 0 ? 'G' : String(f + 1).padStart(2, '0');
+      }
+      host.classList.toggle('is-done', story.getBoundingClientRect().bottom < innerHeight * 0.5);
+    };
+
+    // Copy follows the raw scroll (crisp), the camera follows an eased clock.
+    const onScroll = () => paintCopy(clock());
+    addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    rail.forEach((a) =>
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const i = +a.dataset.goto!;
+        scrollTo({ top: tops[i] + heights[i] * 0.22, behavior: reduce ? 'auto' : 'smooth' });
+      }),
+    );
+
+    import('../../lib/three/tower')
+      .then(({ mount }) => {
+        const tower = mount(host, onFrame, onAssets);
+        towerRef = tower;
+        if (!tower) {
+          host.dataset.state = 'nogl';
+          return;
+        }
+        const sync = (jump = false) => tower.setTarget(clock(), jump);
+        sync(true);
+        addEventListener('scroll', () => sync(), { passive: true });
+        addEventListener('resize', () => sync());
+      })
+      .catch((err) => {
+        console.error(err);
+        host.dataset.state = 'nogl';
+      });
+  </script>
+</BaseLayout>
