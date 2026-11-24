@@ -1,0 +1,34 @@
+/* Meridian House (/meridian-house/): the construction story's materials. */
+:root {
+  --mh-sky-top:       oklch(0.55 0.13 250);
+  --mh-sky-horizon:   oklch(0.90 0.04 230);
+  --mh-sky-golden:    oklch(0.78 0.14 55);
+  --mh-sky-night-top: oklch(0.12 0.03 270);
+  --mh-sky-night-hz:  oklch(0.30 0.07 300);
+  --mh-ground:        oklch(0.36 0.01 250);
+  --mh-grass:         oklch(0.62 0.11 135);
+  --mh-mud:           oklch(0.50 0.06 60);
+  --mh-dirt:          oklch(0.46 0.07 55);
+  --mh-dirt-dark:     oklch(0.36 0.06 50);
+  --mh-concrete:      oklch(0.78 0.01 80);
+  --mh-steel:         oklch(0.48 0.02 250);
+  --mh-glass:         oklch(0.36 0.05 228);
+  --mh-fin:           oklch(0.86 0.008 250);
+  --mh-mullion:       oklch(0.28 0.01 250);
+  --mh-machine:       oklch(0.80 0.16 85);
+  --mh-hivis:         oklch(0.72 0.18 50);
+  --mh-crane:         oklch(0.75 0.17 75);
+  --mh-paving:        oklch(0.86 0.015 80);
+  --mh-stone:         oklch(0.93 0.01 85);
+  --mh-stone-vein:    oklch(0.80 0.01 85);
+  --mh-wood:          oklch(0.55 0.08 55);
+  --mh-walnut:        oklch(0.38 0.05 45);
+  --mh-brass:         oklch(0.75 0.11 80);
+  --mh-fabric:        oklch(0.45 0.05 160);
+  --mh-blazer:        oklch(0.30 0.05 260);
+  --mh-hair:          oklch(0.28 0.04 40);
+  --mh-carpet:        oklch(0.40 0.02 250);
+  --mh-warm-light:    oklch(0.93 0.09 80);
+  --mh-cool-light:    oklch(0.95 0.03 230);
+  --mh-red-light:     oklch(0.62 0.22 28);
+}

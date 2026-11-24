@@ -18,6 +18,7 @@ heavy techniques in one beat is the most common way these pages get slow and noi
 | Beat needs | Technique | Load this skill |
 |---|---|---|
 | Camera moves through a rendered world | Scrubbed frame sequence / video | `scroll-film`, `image-sequence-scrubbing`, `hero-video-scrub-apple`, `scroll-video-website` |
+| A whole world built from nothing to finished, as a film (vision to completion) | One procedural three.js world on a story clock, dissolving into photoreal plates | `cinematic-3d-story` (qadri-3d) |
 | Real-time 3D object turning or exploding | Three.js / R3F on a pinned canvas | `threejs-fundamentals`, `react-three-fiber`, `build-threejs-scroll-worlds` (qadri-3d: `threejs-product-viewer`, `threejs-splats`) |
 | Layers sliding at different depths | Parallax depth layers | `parallax-depth-systems`, `scroll-parallax-layers-depth`, `threejs-parallax` |
 | A sentence that builds word by word | Scrubbed word reveal / SplitText | `scroll-scrubbed-word-reveal`, `gsap-splittext-kinetic-type`, `gsap-text`, `scroll-text-highlight-reading` |
